@@ -1,0 +1,22 @@
+﻿@page "/"
+@inject AkkaService AkkaService
+
+<h1>Akka.NET Integration</h1>
+
+<div>
+    <input type="text" @bind="key" placeholder="Enter the key">
+    <input type="text" @bind="message" placeholder="Enter the message">
+    <button @onclick="SendMessageToRouter">Send Message</button>
+</div>
+<p>@response</p>
+
+@code {
+    private string key;
+    private string message;
+    private string response;
+
+    private async Task SendMessageToRouter()
+    {
+        response = await AkkaService.SendMessage(key, message);
+    }
+}
