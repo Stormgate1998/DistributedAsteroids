@@ -8,20 +8,32 @@ using Akka.Routing;
 using Microsoft.Extensions.Hosting;
 using System.Threading;
 using System.Threading.Tasks;
+using Akka.Configuration;
 
-public class AkkaService : IHostedService, IActorBridge
+public class RemoteAkkaService : IHostedService, IActorBridge
 {
     private readonly ActorSystem _actorSystem;
-    private readonly IActorRef _router;
+    private readonly IActorRef _remoteRouter;
 
-    public AkkaService()
+    public RemoteAkkaService()
     {
-        _actorSystem = ActorSystem.Create("MyActorSystem");
+        var config = ConfigurationFactory.ParseString(@"
+            akka {
+                actor {
+                    provider = remote
+                }
+                remote {
+                    dot-netty.tcp {
+                        hostname = je-akka
+                        port = 2555
+                    }
+                }
+            }"
+        );
 
-        // Create a ConsistentHashingPool router with 5 instances of the MyActor actor
-        _router = _actorSystem.ActorOf(Props.Create<MyActor>().WithRouter(new ConsistentHashingPool(5)), "myRouter");
+        _actorSystem = ActorSystem.Create("BlazorActorSystem", config);
+        _remoteRouter = _actorSystem.ActorSelection("/user/myRouter").ResolveOne(TimeSpan.FromSeconds(3)).Result; // Resolve the remote router
     }
-
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         // StartAsync method implementation
@@ -36,7 +48,7 @@ public class AkkaService : IHostedService, IActorBridge
     public async Task<string> SendMessage(string key, string message)
     {
         // Send the message to the router with the given key
-        var response = await _router.Ask<string>(new ConsistentHashableEnvelope(message, key));
+        var response = await _remoteRouter.Ask<string>(new ConsistentHashableEnvelope(message, key));
         return response;
     }
 }
