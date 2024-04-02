@@ -1,6 +1,13 @@
 using Akka.Actor;
 using Microsoft.Extensions.Hosting;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Akka.Actor;
 using Akka.Routing;
+using Microsoft.Extensions.Hosting;
+using System.Threading;
+using System.Threading.Tasks;
 using Akka.Configuration;
 
 public class AkkaService : IHostedService, IActorBridge
@@ -10,21 +17,8 @@ public class AkkaService : IHostedService, IActorBridge
 
     public AkkaService()
     {
-        var config = ConfigurationFactory.ParseString(@"
-            akka {
-                actor {
-                    provider = cluster
-                }
-                remote {
-                    dot-netty.tcp {
-                        hostname = ""localhost""
-                        port = 8081
-                    }
-                }
-            }
-            ");
 
-        _actorSystem = ActorSystem.Create("MyActorSystem", config);
+        _actorSystem = ActorSystem.Create("MyActorSystem");
 
         // Create a ConsistentHashingPool router with 5 instances of the MyActor actor
         _router = _actorSystem.ActorOf(Props.Create<MyActor>().WithRouter(new ConsistentHashingPool(5)), "myRouter");
