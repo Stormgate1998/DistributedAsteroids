@@ -11,7 +11,7 @@ using Akka.Configuration;
 public class RemoteAkkaService : IHostedService, IActorBridge
 {
     private ActorSystem _actorSystem;
-    private IActorRef _remoteRouter;
+    private IActorRef _router;
 
     public RemoteAkkaService()
     {
@@ -19,23 +19,23 @@ public class RemoteAkkaService : IHostedService, IActorBridge
     }
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var config = ConfigurationFactory.ParseString
-            (@"
-            akka {
-                actor {
-                    provider = remote
-                }
-                remote {
-                    dot-netty.tcp {
-                        hostname = ""localhost""
-                        port = 8081
-                    }
-                }
-            }"
-            );
+        // var config = ConfigurationFactory.ParseString
+        //     (@"
+        //     akka {
+        //         actor {
+        //             provider = remote
+        //         }
+        //         remote {
+        //             dot-netty.tcp {
+        //                 hostname = ""localhost""
+        //                 port = 8081
+        //             }
+        //         }
+        //     }"
+        //     );
 
-        _actorSystem = ActorSystem.Create("BlazorActorSystem", config);
-        _remoteRouter = _actorSystem.ActorSelection("/user/myRouter").ResolveOne(TimeSpan.FromSeconds(10)).Result; // Resolve the remote router
+        _actorSystem = ActorSystem.Create("BlazorActorSystem");
+        _router = _actorSystem.ActorOf(Props.Create<MyActor>().WithRouter(new ConsistentHashingPool(5)), "myRouter");
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -47,7 +47,7 @@ public class RemoteAkkaService : IHostedService, IActorBridge
     public async Task<string> SendMessage(string key, string message)
     {
         // Send the message to the router with the given key
-        var response = await _remoteRouter.Ask<string>(new ConsistentHashableEnvelope(message, key));
+        var response = await _router.Ask<string>(new ConsistentHashableEnvelope(message, key));
         return response;
     }
 }
