@@ -15,7 +15,8 @@ public class RemoteAkkaService : IHostedService, IActorBridge
 
     public RemoteAkkaService()
     {
-
+        _actorSystem = ActorSystem.Create("BlazorActorSystem");
+        _router = _actorSystem.ActorOf(Props.Create<MyActor>().WithRouter(new ConsistentHashingPool(5)), "myRouter");
     }
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -34,8 +35,7 @@ public class RemoteAkkaService : IHostedService, IActorBridge
         //     }"
         //     );
 
-        _actorSystem = ActorSystem.Create("BlazorActorSystem");
-        _router = _actorSystem.ActorOf(Props.Create<MyActor>().WithRouter(new ConsistentHashingPool(5)), "myRouter");
+
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
