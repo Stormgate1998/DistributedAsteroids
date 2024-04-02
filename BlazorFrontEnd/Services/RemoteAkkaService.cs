@@ -1,35 +1,41 @@
 using Akka.Actor;
+using Microsoft.Extensions.Hosting;
+using System.Threading;
+using System.Threading.Tasks;
+using Akka.Remote;
+
+using Akka.Actor;
 using Akka.Routing;
 using Akka.Configuration;
 
 public class RemoteAkkaService : IHostedService, IActorBridge
 {
-    private readonly ActorSystem _actorSystem;
-    private readonly IActorRef _remoteRouter;
+    private ActorSystem _actorSystem;
+    private IActorRef _remoteRouter;
 
     public RemoteAkkaService()
     {
-        var config = ConfigurationFactory.ParseString(@"
+
+    }
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        var config = ConfigurationFactory.ParseString
+            (@"
             akka {
                 actor {
-                    provider = remote
+                    provider = cluster
                 }
                 remote {
                     dot-netty.tcp {
-                        hostname = je-akka
-                        port = 2555
+                        hostname = ""localhost""
+                        port = 8081
                     }
                 }
             }"
-        );
+            );
 
         _actorSystem = ActorSystem.Create("BlazorActorSystem", config);
-        _remoteRouter = _actorSystem.ActorSelection("/user/myRouter").ResolveOne(TimeSpan.FromSeconds(3)).Result; // Resolve the remote router
-    }
-
-    public async Task StartAsync(CancellationToken cancellationToken)
-    {
-        // StartAsync method implementation
+        _remoteRouter = _actorSystem.ActorSelection("/user/myRouter").ResolveOne(TimeSpan.FromSeconds(10)).Result; // Resolve the remote router
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
