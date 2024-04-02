@@ -17,4 +17,5 @@ services:
       context: .
       dockerfile: BlazorFrontEnd/Dockerfile
     ports:
+      # - 2556:80
       - 2556:8080

@@ -6,9 +6,6 @@ using Akka.Remote;
 
 using Akka.Actor;
 using Akka.Routing;
-using Microsoft.Extensions.Hosting;
-using System.Threading;
-using System.Threading.Tasks;
 using Akka.Configuration;
 
 public class RemoteAkkaService : IHostedService, IActorBridge
@@ -63,7 +60,7 @@ public class MyActor : ReceiveActor
         Receive<string>(message =>
         {
             i += 1;
-            Sender.Tell($"Received message: {message} {i} {Self.Path.ToString()}");
+            Sender.Tell($"Received message: {message} {i} {Self.Path}");
         });
     }
 }
