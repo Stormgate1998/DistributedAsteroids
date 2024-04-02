@@ -1,9 +1,6 @@
 using Akka.Actor;
 using Microsoft.Extensions.Hosting;
 using Akka.Routing;
-using Microsoft.Extensions.Hosting;
-using System.Threading;
-using System.Threading.Tasks;
 using Akka.Configuration;
 
 public class AkkaService : IHostedService, IActorBridge
@@ -13,8 +10,7 @@ public class AkkaService : IHostedService, IActorBridge
 
     public AkkaService()
     {
-        var config = ConfigurationFactory.ParseString
-            (@"
+        var config = ConfigurationFactory.ParseString(@"
             akka {
                 actor {
                     provider = cluster
@@ -25,8 +21,8 @@ public class AkkaService : IHostedService, IActorBridge
                         port = 8081
                     }
                 }
-            }"
-            );
+            }
+            ");
 
         _actorSystem = ActorSystem.Create("MyActorSystem", config);
 
