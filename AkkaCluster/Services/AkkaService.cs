@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Akka.Remote;
 using Akka.Actor;
 using Akka.Routing;
 using Microsoft.Extensions.Hosting;
@@ -21,7 +22,7 @@ public class AkkaService : IHostedService, IActorBridge
             (@"
             akka {
                 actor {
-                    provider = cluster
+                    provider = remote
                 }
                 remote {
                     dot-netty.tcp {

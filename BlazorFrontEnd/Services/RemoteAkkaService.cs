@@ -26,7 +26,7 @@ public class RemoteAkkaService : IHostedService, IActorBridge
             (@"
             akka {
                 actor {
-                    provider = cluster
+                    provider = remote
                 }
                 remote {
                     dot-netty.tcp {
