@@ -1,13 +1,6 @@
 using Akka.Actor;
 using Microsoft.Extensions.Hosting;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Akka.Actor;
 using Akka.Routing;
-using Microsoft.Extensions.Hosting;
-using System.Threading;
-using System.Threading.Tasks;
 
 public class AkkaService : IHostedService, IActorBridge
 {

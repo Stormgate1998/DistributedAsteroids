@@ -1,13 +1,5 @@
 using Akka.Actor;
-using Microsoft.Extensions.Hosting;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Akka.Actor;
 using Akka.Routing;
-using Microsoft.Extensions.Hosting;
-using System.Threading;
-using System.Threading.Tasks;
 using Akka.Configuration;
 
 public class RemoteAkkaService : IHostedService, IActorBridge
@@ -34,6 +26,7 @@ public class RemoteAkkaService : IHostedService, IActorBridge
         _actorSystem = ActorSystem.Create("BlazorActorSystem", config);
         _remoteRouter = _actorSystem.ActorSelection("/user/myRouter").ResolveOne(TimeSpan.FromSeconds(3)).Result; // Resolve the remote router
     }
+
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         // StartAsync method implementation
@@ -61,7 +54,7 @@ public class MyActor : ReceiveActor
         Receive<string>(message =>
         {
             i += 1;
-            Sender.Tell($"Received message: {message} {i} {Self.Path.ToString()}");
+            Sender.Tell($"Received message: {message} {i} {Self.Path}");
         });
     }
 }
