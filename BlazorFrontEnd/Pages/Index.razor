@@ -1,22 +1,47 @@
 ﻿@page "/"
 @inject RemoteAkkaService AkkaService
-
+@* @rendermode InteractiveServer *@
 <h1>Akka.NET Integration</h1>
 
 <div>
-    <input type="text" @bind="key" placeholder="Enter the key">
-    <input type="text" @bind="message" placeholder="Enter the message">
-    <button @onclick="SendMessageToRouter">Send Message</button>
+    @* <input type="text" @bind="key" placeholder="Enter the key"> *@
+    <input type="text" @bind="message" placeholder="Enter the username">
+    <button @onclick="SendMessageToRouter">CreateLobby</button>
+    <button @onclick="GetList">Get Lobby List</button>
 </div>
 <p>@response</p>
+@foreach(var item in list){
+    <p>@item</p>
+}
+<div>
+    @* <input type="text" @bind="key" placeholder="Enter the key"> *@
+    <input type="text" @bind="lobbytodie" placeholder="Enter the lobby to be killed">
+
+    <button @onclick="KillLobby">Kill Lobby</button>
+</div>
+
+
+
 
 @code {
     private string key;
     private string message;
     private string response;
+    private string lobbytodie;
+    private List<string> list = new();
 
     private async Task SendMessageToRouter()
     {
-        response = await AkkaService.SendMessage(key, message);
+        response = await AkkaService.CreateLobby(message);
+    }
+
+    private async Task GetList(){
+        list = (await AkkaService.GetLobbies()).ToList();
+    }
+
+    private async Task KillLobby(){
+        AkkaService.CommandToLobby(lobbytodie, "kill");
+        Thread.Sleep(100);
+        await GetList();
     }
 }
