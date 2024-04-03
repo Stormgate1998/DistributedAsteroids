@@ -65,20 +65,32 @@ public class SupervisorActor : ReceiveActor
     public SupervisorActor()
     {
         Receive<(string, string)>(tuple =>
-        {
-            var (lobbyName, command) = tuple;
-            if (command == "CreateLobby")
             {
-                if (!lobbies.ContainsKey(lobbyName))
+                var (lobbyName, command) = tuple;
+                if (command == "CreateLobby")
                 {
-                    var newLobby = Context.ActorOf(Props.Create(() => new LobbyActor(lobbyName, OnLobbyDeath)), lobbyName);
-                    lobbies.Add(lobbyName, newLobby);
-                    Sender.Tell($"Lobby '{lobbyName}' created.");
+                    if (!lobbies.ContainsKey(lobbyName))
+                    {
+                        var newLobby = Context.ActorOf(Props.Create(() => new LobbyActor(lobbyName)), lobbyName);
+                        Context.Watch(newLobby); // Watch the new lobby actor
+                        lobbies.Add(lobbyName, newLobby);
+                        Sender.Tell($"Lobby '{lobbyName}' created.");
+                    }
+                    else
+                    {
+                        Sender.Tell($"Lobby '{lobbyName}' already exists.");
+                    }
                 }
-                else
-                {
-                    Sender.Tell($"Lobby '{lobbyName}' already exists.");
-                }
+            });
+
+        // Handle terminated lobby actors
+        Receive<Terminated>(terminated =>
+        {
+            var lobbyName = terminated.ActorRef.Path.Name;
+            if (lobbies.ContainsKey(lobbyName))
+            {
+                lobbies.Remove(lobbyName);
+                OnLobbyDeath(lobbyName);
             }
         });
 
@@ -95,7 +107,6 @@ public class SupervisorActor : ReceiveActor
             var (lobbyName, obj) = tuple;
             if (lobbies.TryGetValue(lobbyName, out var lobby))
             {
-                var originalSender = Sender;
                 lobby.Forward(obj);
             }
             else
@@ -116,11 +127,9 @@ public class SupervisorActor : ReceiveActor
 
 public class LobbyActor : ReceiveActor
 {
-    private readonly Action<string> onDeathCallback;
 
-    public LobbyActor(string lobbyName, Action<string> onDeathCallback)
+    public LobbyActor(string lobbyName)
     {
-        this.onDeathCallback = onDeathCallback;
         Receive<string>(message =>
         {
             var self = Self;
@@ -141,7 +150,6 @@ public class LobbyActor : ReceiveActor
     protected override void PostStop()
     {
         base.PostStop();
-        onDeathCallback?.Invoke(Self.Path.Name);
     }
 }
 
