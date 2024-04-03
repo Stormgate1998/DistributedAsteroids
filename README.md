@@ -6,7 +6,7 @@
 - [ ] Set up websocket hub
 - [X] Set up Nginx
 - [ ] Set up Raft cluster
-- [ ] Set up telemetry services
+- [X] Set up telemetry services
   - Grafana
   - Loki
   - Prometheus
