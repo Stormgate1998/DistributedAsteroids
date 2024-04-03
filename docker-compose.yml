@@ -1,21 +1,28 @@
 version: "3"
 
 services:
-  je-akka:
-    container_name: je-akka
-    image: je-akka-node
-    build:
-      context: .
-      dockerfile: AkkaCluster/Dockerfile
-    ports:
-      - 2555:8081
-
   je-web:
     container_name: je-web
     image: je-web
     build:
       context: .
       dockerfile: BlazorFrontEnd/Dockerfile
+
+  je-reverse-proxy:
+    container_name: je-reverse-proxy
+    image: nginx
+    depends_on:
+      - je-web
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
-      # - 2556:80
-      - 2556:8080
+      - 2550:80
+
+  # je-akka:
+  #   container_name: je-akka
+  #   image: je-akka-node
+  #   build:
+  #     context: .
+  #     dockerfile: AkkaCluster/Dockerfile
+  #   ports:
+  #     - 2555:8081
