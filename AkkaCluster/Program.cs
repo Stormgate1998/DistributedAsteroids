@@ -11,6 +11,5 @@ internal class Program
                 services.AddHostedService<AkkaService>();
             })
             .RunConsoleAsync();
-        Console.WriteLine("Hello, World!");
     }
 }

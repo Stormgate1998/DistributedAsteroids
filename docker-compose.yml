@@ -1,28 +1,92 @@
 version: "3"
 
 services:
-  je-web:
-    container_name: je-web
-    image: je-web
+  je-asteroids-web:
+    container_name: je-asteroids-web
+    image: je-asteroids-web
     build:
       context: .
       dockerfile: BlazorFrontEnd/Dockerfile
 
-  je-reverse-proxy:
-    container_name: je-reverse-proxy
+  je-asteroids-reverse-proxy:
+    container_name: je-asteroids-reverse-proxy
     image: nginx
     depends_on:
-      - je-web
+      - je-asteroids-web
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - 2550:80
 
-  # je-akka:
-  #   container_name: je-akka
-  #   image: je-akka-node
+  # je-asteroids-akka:
+  #   container_name: je-asteroids-akka
+  #   image: je-asteroids-akka-node
   #   build:
   #     context: .
   #     dockerfile: AkkaCluster/Dockerfile
   #   ports:
   #     - 2555:8081
+
+  je-asteroids-otel-collector:
+    container_name: je-asteroids-otel-collector
+    image: otel/opentelemetry-collector-contrib
+    volumes:
+      - ./telemetry/otel-collector-config.yml:/etc/otelcol-contrib/config.yml
+    ports:
+      - 1888:1888 # pprof extension
+      - 8888:8888 # Prometheus metrics exposed by the Collector
+      - 8889:8889 # Prometheus exporter metrics
+      - 13133:13133 # health_check extension
+      - 4317:4317 # OTLP gRPC receiver
+      - 4318:4318 # OTLP http receiver
+      - 55679:55679 # zpages extension
+    depends_on:
+      - je-asteroids-prometheus
+      - je-asteroids-loki
+      - je-asteroids-zipkin
+
+  je-asteroids-grafana:
+    container_name: je-asteroids-grafana
+    image: grafana/grafana
+    user: 1000:1000
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./telemetry/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./telemetry/grafana-dashboards.yml:/etc/grafana/provisioning/dashboards/default.yml
+    ports:
+      - 3000:3000
+    depends_on:
+      - je-asteroids-prometheus
+      - je-asteroids-loki
+
+  je-asteroids-prometheus:
+    container_name: je-asteroids-prometheus
+    image: prom/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    volumes:
+      - ./telemetry/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
+
+  je-asteroids-loki:
+    container_name: je-asteroids-loki
+    image: grafana/loki
+    volumes:
+      - ./telemetry/loki.yml:/etc/loki/local-config.yml
+    ports:
+      - 3100:3100
+
+  je-asteroids-zipkin:
+    container_name: je-asteroids-zipkin
+    image: ghcr.io/openzipkin/zipkin-slim:${TAG:-latest}
+    environment:
+      STORAGE_TYPE: mem
+    ports:
+      - 9411:9411
+
+volumes:
+  grafana_data:

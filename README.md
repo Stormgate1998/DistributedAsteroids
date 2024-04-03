@@ -1,10 +1,10 @@
 ﻿# DistributedAsteroids
 
 ## Week 1 - April 6th
-- [ ] Set up Akka cluster
-- [ ] Set up Blazor frontend
+- [ ] Set up 1 Akka.NET node
+- [X] Set up Blazor frontend
 - [ ] Set up websocket hub
-- [ ] Set up Nginx
+- [X] Set up Nginx
 - [ ] Set up Raft cluster
 - [ ] Set up telemetry services
   - Grafana
