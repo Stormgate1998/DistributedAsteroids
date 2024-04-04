@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorFrontEnd", "BlazorFro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AkkaCluster", "AkkaCluster\AkkaCluster.csproj", "{4522A52B-21A6-4C49-A494-4458E8B0458C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActorTests", "ActorTests\ActorTests.csproj", "{132BE6B7-006A-4F53-945F-4177850D5F4D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{4522A52B-21A6-4C49-A494-4458E8B0458C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4522A52B-21A6-4C49-A494-4458E8B0458C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4522A52B-21A6-4C49-A494-4458E8B0458C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{132BE6B7-006A-4F53-945F-4177850D5F4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{132BE6B7-006A-4F53-945F-4177850D5F4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{132BE6B7-006A-4F53-945F-4177850D5F4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{132BE6B7-006A-4F53-945F-4177850D5F4D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -19,8 +19,13 @@
 
     <button @onclick="KillLobby">Kill Lobby</button>
 </div>
+<div>
+    @* <input type="text" @bind="key" placeholder="Enter the key"> *@
+    <input type="text" @bind="lobbypath" placeholder="Enter the desired lobby">
 
-
+    <button @onclick="GetLobbyName">Get Lobby Path</button>
+    <p>@lobbypathresult</p>
+</div>
 
 
 @code {
@@ -28,6 +33,8 @@
     private string message;
     private string response;
     private string lobbytodie;
+    private string lobbypath;
+    private string lobbypathresult;
     private List<string> list = new();
 
     private async Task SendMessageToRouter()
@@ -43,5 +50,9 @@
         AkkaService.CommandToLobby(lobbytodie, "kill");
         Thread.Sleep(100);
         await GetList();
+    }
+
+     private async Task GetLobbyName(){
+       lobbypathresult= await AkkaService.CommandToLobby(lobbypath, "returnName");
     }
 }
