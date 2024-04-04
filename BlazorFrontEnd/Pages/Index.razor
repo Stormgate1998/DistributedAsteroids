@@ -52,7 +52,7 @@
         await GetList();
     }
 
-     private async Task GetLobbyName(){
-       lobbypathresult= await AkkaService.CommandToLobby(lobbypath, "returnName");
+    private async Task GetLobbyName(){
+        lobbypathresult= await AkkaService.CommandToLobby(lobbypath, "returnName");
     }
 }
