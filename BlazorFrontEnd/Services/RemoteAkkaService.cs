@@ -65,7 +65,22 @@ public class RemoteAkkaService : IHostedService
 SuperVisor
 Take in string (username) and use it to make LobbyActor with the name of that string
 
+Have list of usernames/dictionary with connections 
 
+ship:
+location
+direction
+health
+username
+
+
+on keypress,
+send moveleft,right, forward, backward, fire as
+
+
+
+
+*/
 
 
 */
