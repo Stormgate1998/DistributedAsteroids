@@ -1,7 +1,8 @@
 using Akka.Actor;
-using Akka.TestKit;
 using FluentAssertions;
 using Akka.TestKit.Xunit2;
+using Asteroids.Shared.Actors;
+
 namespace ActorTests;
 
 public class UnitTest1 : TestKit
@@ -10,12 +11,12 @@ public class UnitTest1 : TestKit
     public void TestCanCreateLobby()
     {
         var probe = CreateTestProbe();
-
         var supervisor = Sys.ActorOf<SupervisorActor>();
-        supervisor.Tell(("testLobby", "CreateLobby"), probe.Ref);
-        var response = probe.ExpectMsg<string>();
 
-        Assert.Equal("Lobby 'testLobby' created.", response);
+        supervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        var response = probe.ExpectMsg<CreateLobbyResponse>();
+
+        response.Message.Should().Be("Lobby 'testLobby' created.");
     }
 
     [Fact]
@@ -24,13 +25,20 @@ public class UnitTest1 : TestKit
         var probe = CreateTestProbe();
 
         var supervisor = Sys.ActorOf<SupervisorActor>();
-        supervisor.Tell(("testLobby1", "CreateLobby"));
-        supervisor.Tell(("testLobby2", "CreateLobby"));
-        supervisor.Tell(("testLobby3", "CreateLobby"));
-        supervisor.Tell("getLobbies", probe.Ref);
-        var response = probe.ExpectMsg<List<string>>();
+        supervisor.Tell(new CreateLobby("testLobby1"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        supervisor.Tell(new CreateLobby("testLobby2"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        supervisor.Tell(new CreateLobby("testLobby3"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        supervisor.Tell(new GetLobbies(), probe.Ref);
+        var response = probe.ExpectMsg<GetLobbiesResponse>();
+
         List<string> TestList = ["testLobby1", "testLobby2", "testLobby3"];
-        Assert.Equal(TestList, response);
+        response.Lobbies.Should().BeEquivalentTo(TestList);
     }
 
     [Fact]
@@ -39,9 +47,12 @@ public class UnitTest1 : TestKit
         var probe = CreateTestProbe();
 
         var supervisor = Sys.ActorOf<SupervisorActor>();
-        supervisor.Tell(("testLobby1", "CreateLobby"));
-        supervisor.Tell(("testLobby2", "CreateLobby"));
-        supervisor.Tell(("testLobby3", "CreateLobby"));
+        supervisor.Tell(("testLobby1", "CreateLobby"), probe.Ref);
+        probe.ExpectMsg<string>();
+        supervisor.Tell(("testLobby2", "CreateLobby"), probe.Ref);
+        probe.ExpectMsg<string>();
+        supervisor.Tell(("testLobby3", "CreateLobby"), probe.Ref);
+        probe.ExpectMsg<string>();
 
         supervisor.Tell("getLobbies", probe.Ref);
         var response = probe.ExpectMsg<List<string>>();

@@ -12,4 +12,8 @@
     <PackageReference Include="Akka.Remote" Version="1.5.18" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Asteroids.Shared\Asteroids.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

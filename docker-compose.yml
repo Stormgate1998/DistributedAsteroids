@@ -18,6 +18,13 @@ services:
     ports:
       - 2550:80
 
+  je-asteroids-signalr:
+    container_name: je-asteroids-websocket
+    image: signalr-server
+    build:
+      context: .
+      dockerfile: Websocket/Dockerfile
+
   # je-asteroids-akka:
   #   container_name: je-asteroids-akka
   #   image: je-asteroids-akka-node
