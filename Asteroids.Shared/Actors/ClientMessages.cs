@@ -1,4 +1,5 @@
-namespace ClientMessages;
+namespace Asteroids.Shared.Actors;
 
-public record EnterLobby(Ship UserShip);
-public record CreateClientActor(string Username, string HubConnectionId);
+// public record EnterLobby(Ship UserShip);
+public record CreateClientActor();
+public record CreateClientActorResponse();

@@ -13,7 +13,7 @@ public class ClientTests : TestKit
     var probe = CreateTestProbe();
     var clientSupervisor = Sys.ActorOf<ClientSupervisorActor>();
 
-    clientSupervisor.Tell(new CreateClient(), probe.Ref);
-    
+    clientSupervisor.Tell(new CreateClientActor(), probe.Ref);
+    probe.ExpectMsg<CreateClientActorResponse>();
   }
 }

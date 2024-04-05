@@ -1,5 +1,6 @@
 using Akka.Actor;
 using Akka.Routing;
+using Asteroids.Shared.Actors;
 
 public class RemoteAkkaService : IHostedService
 {

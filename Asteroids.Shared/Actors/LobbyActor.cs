@@ -17,21 +17,21 @@ public class LobbyActor : ReceiveActor
             Context.Stop(self);
 
         });
-        Receive<EnterLobby>(entry =>
-        {
-            string userName = entry.UserShip.Username;
-            bool noMatch = !ships.Any(ship => ship.Username == userName);
-            if (noMatch)
-            {
-                Ship user = entry.UserShip;
-                user.Direction = 45;
-                user.Xpos = 50;
-                user.Ypos = 50;
-                user.Health = 50;
-                user.Score = 0;
-                ships.Add(user);
-            }
-        });
+        // Receive<EnterLobby>(entry =>
+        // {
+        //     string userName = entry.UserShip.Username;
+        //     bool noMatch = !ships.Any(ship => ship.Username == userName);
+        //     if (noMatch)
+        //     {
+        //         Ship user = entry.UserShip;
+        //         user.Direction = 45;
+        //         user.Xpos = 50;
+        //         user.Ypos = 50;
+        //         user.Health = 50;
+        //         user.Score = 0;
+        //         ships.Add(user);
+        //     }
+        // });
 
     }
 
