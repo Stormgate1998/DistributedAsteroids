@@ -13,7 +13,23 @@ public class ClientTests : TestKit
     var probe = CreateTestProbe();
     var clientSupervisor = Sys.ActorOf<ClientSupervisorActor>();
 
-    clientSupervisor.Tell(new CreateClientActor(), probe.Ref);
-    probe.ExpectMsg<CreateClientActorResponse>();
+    clientSupervisor.Tell(new CreateClientActor("tony"), probe.Ref);
+    var item = probe.ExpectMsg<CreateClientActorResponse>();
+    item.Message.Should().Be("tony");
   }
+
+  [Fact]
+  public void CantCreateDuplicateClientActor()
+  {
+    var probe = CreateTestProbe();
+    var clientSupervisor = Sys.ActorOf<ClientSupervisorActor>();
+
+    clientSupervisor.Tell(new CreateClientActor("tony"), probe.Ref);
+    probe.ExpectMsg<CreateClientActorResponse>();
+    clientSupervisor.Tell(new CreateClientActor("tony"), probe.Ref);
+    var item = probe.ExpectMsg<CreateClientActorResponse>();
+    item.Message.Should().Be("Client tony already created");
+  }
+
+
 }
