@@ -12,10 +12,11 @@ public class LobbySupervisorActor : ReceiveActor
         {
             if (!lobbies.ContainsKey(message.LobbyName))
             {
+                var self = Self;
                 IActorRef newLobby = Context.ActorOf(Props.Create(() => new LobbyActor(message.LobbyName, OnLobbyDeath)), message.LobbyName);
 
                 lobbies.Add(message.LobbyName, newLobby);
-                Sender.Tell(new CreateLobbyResponse($"Lobby '{message.LobbyName}' created."));
+                Sender.Tell(new CreateLobbyResponse($"Lobby '{message.LobbyName}' created.", self));
             }
             else
             {

@@ -6,17 +6,29 @@ public class ClientActor : ReceiveActor
 {
     public string Username { get; private set; }
     public string HubConnectionId { get; private set; }
-    public string CurrentLobby { get; private set; }
+    public IActorRef? CurrentLobby { get; private set; }
 
     public ClientActor(string username)
     {
         Username = username;
+        CurrentLobby = null;
         // HubConnectionId = hubConnectionId;
 
         Receive<CreateLobby>(createLobby =>
         {
-            // Logic to create lobby
-            CurrentLobby = createLobby.LobbyName;
+            IActorRef lobbySupervisor = Context.ActorSelection("/user/lobbySupervisor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+
+            lobbySupervisor.Tell(new CreateLobby(Username));
+
+        });
+
+        Receive<CreateLobbyResponse>(response =>
+        {
+            IActorRef result = response.Actor;
+            if (result != null)
+            {
+                CurrentLobby = result;
+            }
         });
 
         // Receive<UpdateShip>(updateShip =>

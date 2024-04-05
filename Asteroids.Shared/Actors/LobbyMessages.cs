@@ -1,8 +1,9 @@
 using Asteroids.Shared.GameObjects;
+using Akka.Actor;
 namespace Asteroids.Shared.Actors;
 
 public record CreateLobby(string LobbyName);
-public record CreateLobbyResponse(string Message);
+public record CreateLobbyResponse(string Message, IActorRef? Actor = null);
 public record GetLobbies();
 public record GetLobbiesResponse(List<string> Lobbies);
 public record LobbyError(string Message);
