@@ -53,14 +53,3 @@ public class SupervisorActor : ReceiveActor
         }
     }
 }
-
-
-
-/*
-SuperVisor
-Take in string (username) and use it to make LobbyActor with the name of that string
-
-
-
-
-*/

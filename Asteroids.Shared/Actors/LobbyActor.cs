@@ -9,6 +9,7 @@ public class LobbyActor : ReceiveActor
     public LobbyActor(string lobbyName, Action<string> onDeathCallback)
     {
         this.onDeathCallback = onDeathCallback;
+
         Receive<string>(message =>
         {
             var self = Self;
@@ -21,6 +22,7 @@ public class LobbyActor : ReceiveActor
                 Sender.Tell($"Lobby name: {lobbyName}, Path: {self.Path}");
             }
         });
+
         Receive<object>(obj =>
         {
             Sender.Tell("Not supported");
@@ -34,14 +36,3 @@ public class LobbyActor : ReceiveActor
         onDeathCallback?.Invoke(Self.Path.Name);
     }
 }
-
-
-
-/*
-SuperVisor
-Take in string (username) and use it to make LobbyActor with the name of that string
-
-
-
-
-*/

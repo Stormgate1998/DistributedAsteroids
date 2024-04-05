@@ -1,7 +1,7 @@
 ﻿# DistributedAsteroids
 
 ## Week 1 - April 6th
-- [ ] Set up 1 Akka.NET node
+- [X] Set up 1 Akka.NET node
 - [X] Set up Blazor frontend
 - [ ] Set up websocket hub
 - [X] Set up Nginx

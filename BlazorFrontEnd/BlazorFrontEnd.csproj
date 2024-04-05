@@ -10,6 +10,7 @@
     <PackageReference Include="akka" Version="1.5.18" />
     <PackageReference Include="Akka.Cluster" Version="1.5.18" />
     <PackageReference Include="Akka.Remote" Version="1.5.18" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.3" />
   </ItemGroup>
 
   <ItemGroup>

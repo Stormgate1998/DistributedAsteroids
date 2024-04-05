@@ -1,0 +1,24 @@
+@using Microsoft.AspNetCore.SignalR.Client;
+
+@page "/"
+
+<PageTitle>Login</PageTitle>
+<div>
+  <label for="username">Username:</label>
+  <input id="username" type="text" @bind="username" placeholder="Enter a username">
+  <button>Submit</button>
+</div>
+
+@code {
+  private string? username { get; set; }
+  private HubConnection? hubConnection;
+
+  protected override async Task OnInitializedAsync()
+  {
+    hubConnection = new HubConnectionBuilder()
+    .WithUrl("http://je-asteroids-signalr/asteroidsHub")
+    .Build();
+
+    await hubConnection.StartAsync();
+  }
+}
