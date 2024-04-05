@@ -1,4 +1,4 @@
-public namespace Asteroids.Shared;
+namespace Asteroids.Shared.GameObjects;
 
 public class Ship
 {
@@ -12,8 +12,9 @@ public class Ship
     public bool TurningRight;
     public bool TurningLeft;
 
-    public Ship()
+    public Ship(string userName)
     {
+        Username = userName;
         MovingForward = false;
         TurningLeft = false;
         TurningRight = false;

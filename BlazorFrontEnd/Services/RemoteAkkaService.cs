@@ -9,7 +9,7 @@ public class RemoteAkkaService : IHostedService
     public RemoteAkkaService()
     {
         _actorSystem = ActorSystem.Create("BlazorActorSystem");
-        _router = _actorSystem.ActorOf<SupervisorActor>();
+        _router = _actorSystem.ActorOf<LobbySupervisorActor>();
     }
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -78,9 +78,6 @@ on keypress,
 send moveleft,right, forward, backward, fire as
 
 
-
-
-*/
 
 
 */

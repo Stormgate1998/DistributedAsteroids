@@ -1,11 +1,12 @@
 using Akka.Actor;
 using Asteroids.Shared.Actors;
+namespace Asteroids.Shared.Actors;
 
-public class SupervisorActor : ReceiveActor
+public class LobbySupervisorActor : ReceiveActor
 {
     private readonly Dictionary<string, IActorRef> lobbies = [];
 
-    public SupervisorActor()
+    public LobbySupervisorActor()
     {
         Receive<CreateLobby>(message =>
         {
@@ -20,6 +21,15 @@ public class SupervisorActor : ReceiveActor
             {
                 Sender.Tell(new CreateLobbyResponse($"Lobby '{message.LobbyName}' already exists."));
             }
+        });
+
+        Receive<LobbyDeath>(message =>
+        {
+            if (lobbies.TryGetValue(message.LobbyName, out var lobby))
+            {
+                lobby.Forward(message);
+            }
+
         });
 
         Receive<GetLobbies>(message =>
