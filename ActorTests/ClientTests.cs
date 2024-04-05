@@ -2,13 +2,14 @@ using Akka.Actor;
 using FluentAssertions;
 using Akka.TestKit.Xunit2;
 using Asteroids.Shared.Actors;
+using FluentAssertions.Equivalency;
 
 namespace ActorTests;
 
 public class ClientTests : TestKit
 {
   [Fact]
-  public void CanCreateClientActor()
+  public void ClientSupervisorCanCreateClient()
   {
     var probe = CreateTestProbe();
     var clientSupervisor = Sys.ActorOf<ClientSupervisorActor>();
@@ -19,7 +20,7 @@ public class ClientTests : TestKit
   }
 
   [Fact]
-  public void CantCreateDuplicateClientActor()
+  public void ClientSupervisorCanNotCreateDuplicateClient()
   {
     var probe = CreateTestProbe();
     var clientSupervisor = Sys.ActorOf<ClientSupervisorActor>();
@@ -32,14 +33,13 @@ public class ClientTests : TestKit
   }
 
   [Fact]
-  public void ClientActorCanCreateLobby()
+  public void ClientCanCreateLobby()
   {
     var probe = CreateTestProbe();
     var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
+    var client = Sys.ActorOf(Props.Create<ClientActor>("tony"), "tony");
 
-    var clientActor = Sys.ActorOf(Props.Create<ClientActor>("tony"), "tony");
-
-    clientActor.Tell(new CreateLobby(""), probe.Ref);
+    client.Tell(new CreateLobby(""), probe.Ref);
     probe.ExpectMsg<CreateLobbyResponse>();
 
     lobbySupervisor.Tell(new GetLobbies(), probe.Ref);
@@ -47,6 +47,20 @@ public class ClientTests : TestKit
 
     List<string> TestList = ["tony"];
     response.Lobbies.Should().BeEquivalentTo(TestList);
+  }
+
+  [Fact]
+  public void ClientCanJoinExisitingLobby()
+  {
+    var probe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>("lobbySupervisor");
+    var client = Sys.ActorOf(Props.Create<ClientActor>("tony"), "tony");
+
+    lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+    probe.ExpectMsg<CreateLobbyResponse>();
+
+    client.Tell(new JoinLobby("testLobby"), probe.Ref);
+    probe.ExpectMsg<JoinLobbyResponse>();
   }
 
   // [Fact]

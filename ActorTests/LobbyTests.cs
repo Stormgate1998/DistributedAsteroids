@@ -8,7 +8,7 @@ namespace ActorTests;
 public class LobbyTests : TestKit
 {
     [Fact]
-    public void TestCanCreateLobby()
+    public void LobbySupervisorCanCreateLobby()
     {
         var probe = CreateTestProbe();
         var supervisor = Sys.ActorOf<LobbySupervisorActor>();
@@ -17,6 +17,28 @@ public class LobbyTests : TestKit
         var response = probe.ExpectMsg<CreateLobbyResponse>();
 
         response.Message.Should().Be("Lobby 'testLobby' created.");
+    }
+
+    [Fact]
+    public void LobbySupervisorCanGetLobbyList()
+    {
+        var probe = CreateTestProbe();
+
+        var supervisor = Sys.ActorOf<LobbySupervisorActor>();
+        supervisor.Tell(new CreateLobby("testLobby1"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        supervisor.Tell(new CreateLobby("testLobby2"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        supervisor.Tell(new CreateLobby("testLobby3"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        supervisor.Tell(new GetLobbies(), probe.Ref);
+        var response = probe.ExpectMsg<GetLobbiesResponse>();
+
+        List<string> TestList = ["testLobby1", "testLobby2", "testLobby3"];
+        response.Lobbies.Should().BeEquivalentTo(TestList);
     }
 
     [Fact]
@@ -54,28 +76,6 @@ public class LobbyTests : TestKit
         var response = probe.ExpectMsg<GetLobbiesResponse>();
 
         response.Lobbies.Should().BeEquivalentTo(["testLobby"]);
-    }
-
-    [Fact]
-    public void LobbySupervisorCanGetLobbyList()
-    {
-        var probe = CreateTestProbe();
-
-        var supervisor = Sys.ActorOf<LobbySupervisorActor>();
-        supervisor.Tell(new CreateLobby("testLobby1"), probe.Ref);
-        probe.ExpectMsg<CreateLobbyResponse>();
-
-        supervisor.Tell(new CreateLobby("testLobby2"), probe.Ref);
-        probe.ExpectMsg<CreateLobbyResponse>();
-
-        supervisor.Tell(new CreateLobby("testLobby3"), probe.Ref);
-        probe.ExpectMsg<CreateLobbyResponse>();
-
-        supervisor.Tell(new GetLobbies(), probe.Ref);
-        var response = probe.ExpectMsg<GetLobbiesResponse>();
-
-        List<string> TestList = ["testLobby1", "testLobby2", "testLobby3"];
-        response.Lobbies.Should().BeEquivalentTo(TestList);
     }
 
     // [Fact]

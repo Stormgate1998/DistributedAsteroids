@@ -49,6 +49,11 @@ public class LobbySupervisorActor : ReceiveActor
                 Sender.Tell($"Lobby '{lobbyName}' not found.");
             }
         });
+
+        Receive<JoinLobby>(message =>
+        {
+
+        });
     }
 
     private void OnLobbyDeath(string lobbyName)
