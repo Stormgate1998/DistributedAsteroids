@@ -61,7 +61,7 @@ public class ClientTests : TestKit
     lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
     probe.ExpectMsg<CreateLobbyResponse>();
 
-    client.Tell(new JoinLobby("testLobby"), probe.Ref);
+    client.Tell(new JoinLobby("testLobby", "tony"), probe.Ref);
     probe.ExpectMsg<JoinLobbyResponse>();
   }
 
@@ -73,7 +73,7 @@ public class ClientTests : TestKit
     var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>("lobbySupervisor");
     var client = Sys.ActorOf(Props.Create<ClientActor>("tony", lobbySupervisor), "tony");
 
-    client.Tell(new JoinLobby("testLobby"), probe.Ref);
+    client.Tell(new JoinLobby("testLobby", "tony"), probe.Ref);
     var response = probe.ExpectMsg<JoinLobbyResponse>();
     response.Message.Should().Be("Could not find lobby: testLobby.");
   }

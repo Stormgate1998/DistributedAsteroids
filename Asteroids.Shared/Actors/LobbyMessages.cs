@@ -8,10 +8,14 @@ public record CreateLobbyResponse(string Message, IActorRef? Actor = null);
 public record GetLobbies();
 public record GetLobbiesResponse(List<string> Lobbies);
 
-public record JoinLobby(string LobbyName, string? Username = null);
+public record JoinLobby(string LobbyName, string Username);
 public record JoinLobbyResponse(string? Message = null);
 
 
 public record LobbyError(string Message);
 public record LobbyDeath(string LobbyName);
 public record ShipUpdate(Ship Updated);
+
+
+public record GetState(string LobbyName);
+public record CurrentGameState(GameStateObject Game);
