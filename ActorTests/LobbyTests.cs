@@ -20,7 +20,44 @@ public class LobbyTests : TestKit
     }
 
     [Fact]
-    public void TestCanGetLobbyList()
+    public void LobbySupervisorCanCreateMultipleLobbies()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby1"), probe.Ref);
+        var lobby1 = probe.ExpectMsg<CreateLobbyResponse>();
+        
+        lobbySupervisor.Tell(new CreateLobby("testLobby2"), probe.Ref);
+        var lobby2 = probe.ExpectMsg<CreateLobbyResponse>();
+
+        lobbySupervisor.Tell(new GetLobbies(), probe.Ref);
+        var response = probe.ExpectMsg<GetLobbiesResponse>();
+
+        lobby1.Should().NotBe(lobby2);
+        response.Lobbies.Should().BeEquivalentTo(["testLobby1", "testLobby2"]);
+    }
+
+    [Fact]
+    public void LobbySupervisorCanNotCreateExisitingLobby()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectNoMsg();
+
+        lobbySupervisor.Tell(new GetLobbies(), probe.Ref);
+        var response = probe.ExpectMsg<GetLobbiesResponse>();
+
+        response.Lobbies.Should().BeEquivalentTo(["testLobby"]);
+    }
+
+    [Fact]
+    public void LobbySupervisorCanGetLobbyList()
     {
         var probe = CreateTestProbe();
 

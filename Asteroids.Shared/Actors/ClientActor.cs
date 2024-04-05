@@ -1,6 +1,5 @@
 using Akka.Actor;
 using Asteroids.Shared.Actors;
-using System.Collections.Generic;
 
 public class ClientActor : ReceiveActor
 {
@@ -18,8 +17,7 @@ public class ClientActor : ReceiveActor
         {
             IActorRef lobbySupervisor = Context.ActorSelection("/user/lobbySupervisor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
 
-            lobbySupervisor.Tell(new CreateLobby(Username));
-
+            lobbySupervisor.Forward(new CreateLobby(Username));
         });
 
         Receive<CreateLobbyResponse>(response =>

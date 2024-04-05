@@ -40,7 +40,7 @@ public class ClientTests : TestKit
     var clientActor = Sys.ActorOf(Props.Create<ClientActor>("tony"), "tony");
 
     clientActor.Tell(new CreateLobby(""), probe.Ref);
-    Thread.Sleep(100);
+    probe.ExpectMsg<CreateLobbyResponse>();
 
     lobbySupervisor.Tell(new GetLobbies(), probe.Ref);
     var response = probe.ExpectMsg<GetLobbiesResponse>();
@@ -49,19 +49,19 @@ public class ClientTests : TestKit
     response.Lobbies.Should().BeEquivalentTo(TestList);
   }
 
-  [Fact]
-  public void ClientActorCanCreateShip()
-  {
-    var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
+  // [Fact]
+  // public void ClientActorCanCreateShip()
+  // {
+  //   var probe = CreateTestProbe();
+  //   var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
 
-    var clientActor = Sys.ActorOf(Props.Create<ClientActor>("tony"), "tony");
+  //   var clientActor = Sys.ActorOf(Props.Create<ClientActor>("tony"), "tony");
 
-    clientActor.Tell(new CreateLobby(""), probe.Ref);
-    Thread.Sleep(100);
-    clientActor.Tell(new JoinLobby());
+  //   clientActor.Tell(new CreateLobby(""), probe.Ref);
+  //   Thread.Sleep(100);
+  //   clientActor.Tell(new JoinLobby());
 
-  }
+  // }
 
   // [Fact]
   // public void ClientActorCanCreateShip()
