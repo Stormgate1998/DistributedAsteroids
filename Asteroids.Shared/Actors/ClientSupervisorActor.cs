@@ -27,6 +27,15 @@ public class ClientSupervisorActor : ReceiveActor
       }
     });
 
+    Receive<CreateLobby>(message =>
+    {
+      if (clients.TryGetValue(message.LobbyName, out var user))
+      {
+        user.Forward(message);
+      }
+    });
+
+
     Receive<JoinLobby>(message =>
     {
       if (clients.TryGetValue(message.Username, out var user))
@@ -34,7 +43,15 @@ public class ClientSupervisorActor : ReceiveActor
         user.Forward(message);
       }
     });
-    
+
+    Receive<StartGame>(message =>
+    {
+      if (clients.TryGetValue(message.Username, out var user))
+      {
+        user.Forward(message);
+      }
+    });
+
   }
 
 

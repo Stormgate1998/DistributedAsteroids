@@ -17,9 +17,7 @@ public class ClientActor : ReceiveActor
 
         Receive<CreateLobby>(createLobby =>
         {
-            IActorRef lobbySupervisor = Context.ActorSelection("/user/lobbySupervisor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
-
-            lobbySupervisor.Forward(new CreateLobby(Username));
+            LobbySupervisor.Forward(new CreateLobby(Username));
         });
 
         Receive<CreateLobbyResponse>(response =>
@@ -34,6 +32,15 @@ public class ClientActor : ReceiveActor
         Receive<JoinLobby>(message =>
         {
             LobbySupervisor.Forward(message);
+        });
+
+        Receive<StartGame>(message =>
+        {
+            if (username == message.Username)
+            {
+                LobbySupervisor.Forward(message);
+
+            }
         });
 
         // Receive<UpdateShip>(updateShip =>

@@ -3,6 +3,7 @@ using FluentAssertions;
 using Akka.TestKit.Xunit2;
 using Asteroids.Shared.Actors;
 using FluentAssertions.Equivalency;
+using Asteroids.Shared.GameObjects;
 
 namespace ActorTests;
 
@@ -94,6 +95,61 @@ public class ClientTests : TestKit
 
     clientSupervisor.Tell(new JoinLobby("testLobby", "tony"), probe.Ref);
     probe.ExpectMsg<JoinLobbyResponse>();
+  }
+
+  [Fact]
+  public void JoiningLobbyCreatesShip()
+  {
+    var probe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
+    var clientSupervisor = Sys.ActorOf<ClientSupervisorActor>();
+
+    clientSupervisor.Tell(new CreateClientActor("tony"), probe.Ref);
+    probe.ExpectMsg<CreateClientActorResponse>();
+
+    clientSupervisor.Tell(new CreateLobby("tony"), probe.Ref);
+    probe.ExpectMsg<CreateLobbyResponse>();
+
+    clientSupervisor.Tell(new JoinLobby("tony", "tony"), probe.Ref);
+    probe.ExpectMsg<JoinLobbyResponse>();
+
+    lobbySupervisor.Tell(new GetState("tony"), probe.Ref);
+    var response = probe.ExpectMsg<GameStateSnapshot>();
+    Ship ship = new("tony")
+    {
+      Direction = 45,
+      Xpos = 50,
+      Ypos = 50,
+      Health = 50,
+      Score = 0,
+    };
+    List<Ship> ships = [ship];
+    response.Game.ships.Should().BeEquivalentTo(ships);
+
+  }
+
+  [Fact]
+  public void CreatingClientCanStartGame()
+  {
+    var probe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
+    var clientSupervisor = Sys.ActorOf<ClientSupervisorActor>();
+
+    clientSupervisor.Tell(new CreateClientActor("tony"), probe.Ref);
+    probe.ExpectMsg<CreateClientActorResponse>();
+
+    clientSupervisor.Tell(new CreateLobby("tony"), probe.Ref);
+    probe.ExpectMsg<CreateLobbyResponse>();
+
+    clientSupervisor.Tell(new JoinLobby("tony", "tony"), probe.Ref);
+    probe.ExpectMsg<JoinLobbyResponse>();
+
+    clientSupervisor.Tell(new StartGame("tony"), probe.Ref);
+
+    var response = probe.ExpectMsg<GameStateSnapshot>();
+
+    response.Game.state.Should().Be(GameState.PLAYING);
+
   }
 
   // [Fact]

@@ -60,6 +60,24 @@ public class LobbySupervisorActor : ReceiveActor
                 Sender.Tell(new JoinLobbyResponse($"Could not find lobby: {message.LobbyName}."));
             }
         });
+
+        Receive<GetState>(message =>
+        {
+            if (lobbies.TryGetValue(message.LobbyName, out var lobby))
+            {
+                lobby.Forward(message);
+            }
+
+        });
+
+        Receive<StartGame>(message =>
+        {
+            if (lobbies.TryGetValue(message.Username, out var lobby))
+            {
+                lobby.Forward(message);
+            }
+
+        });
     }
 
     private void OnLobbyDeath(string lobbyName)

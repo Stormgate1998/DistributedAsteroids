@@ -5,10 +5,12 @@ namespace Asteroids.Shared.Actors;
 public class LobbyActor : ReceiveActor
 {
     private readonly Action<string> onDeathCallback;
+    private string LobbyName;
     private GameStateObject gameState;
 
     public LobbyActor(string lobbyName, Action<string> onDeathCallback)
     {
+        LobbyName = lobbyName;
         this.onDeathCallback = onDeathCallback;
 
         Receive<LobbyDeath>(death =>
@@ -21,27 +23,32 @@ public class LobbyActor : ReceiveActor
         Receive<JoinLobby>(message =>
         {
             string userName = message.Username;
-            bool noMatch = !gameState.ships.Any(ship => ship.Username == userName);
-            if (noMatch)
-            {
-                Ship ship = new(message.Username)
-                {
-                    Direction = 45,
-                    Xpos = 50,
-                    Ypos = 50,
-                    Health = 50,
-                    Score = 0,
 
-                };
-                gameState.ships.Add(ship);
-                Sender.Tell(new JoinLobbyResponse(), Self);
-            }
-            Sender.Tell(new JoinLobbyResponse("Username already registered for this lobby"));
+            Ship ship = new(message.Username)
+            {
+                Direction = 45,
+                Xpos = 50,
+                Ypos = 50,
+                Health = 50,
+                Score = 0,
+
+            };
+            gameState.ships.Add(ship);
+            Sender.Tell(new JoinLobbyResponse(), Self);
         });
 
         Receive<GetState>(message =>
         {
-            Sender.Tell(new CurrentGameState(gameState));
+            Sender.Tell(new GameStateSnapshot(gameState));
+        });
+
+        Receive<StartGame>(message =>
+        {
+            if (message.Username == LobbyName)
+            {
+                gameState.state = GameState.PLAYING;
+                Sender.Tell(new GameStateSnapshot(gameState));
+            }
         });
 
     }
@@ -49,7 +56,8 @@ public class LobbyActor : ReceiveActor
     {
         gameState = new GameStateObject
         {
-            state = GameState.JOINING
+            state = GameState.JOINING,
+            ships = []
         };
     }
 

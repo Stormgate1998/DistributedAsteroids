@@ -18,4 +18,6 @@ public record ShipUpdate(Ship Updated);
 
 
 public record GetState(string LobbyName);
-public record CurrentGameState(GameStateObject Game);
+public record GameStateSnapshot(GameStateObject Game);
+
+public record StartGame(string Username);
