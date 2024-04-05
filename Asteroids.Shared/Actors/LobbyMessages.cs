@@ -11,6 +11,7 @@ public record GetLobbiesResponse(List<string> Lobbies);
 public record JoinLobby(string LobbyName);
 public record JoinLobbyResponse(string? Message = null);
 
+
 public record LobbyError(string Message);
 public record LobbyDeath(string LobbyName);
 public record ShipUpdate(Ship Updated);
