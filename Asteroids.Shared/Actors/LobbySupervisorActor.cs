@@ -41,7 +41,6 @@ public class LobbySupervisorActor : ReceiveActor
             var (lobbyName, obj) = tuple;
             if (lobbies.TryGetValue(lobbyName, out var lobby))
             {
-                var originalSender = Sender;
                 lobby.Forward(obj);
             }
             else
@@ -52,7 +51,14 @@ public class LobbySupervisorActor : ReceiveActor
 
         Receive<JoinLobby>(message =>
         {
-
+            if (lobbies.TryGetValue(message.LobbyName, out var lobby))
+            {
+                lobby.Forward(message);
+            }
+            else
+            {
+                Sender.Tell(new JoinLobbyResponse($"Could not find lobby: {message.LobbyName}."));
+            }
         });
     }
 

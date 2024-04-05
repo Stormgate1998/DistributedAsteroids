@@ -4,13 +4,15 @@ using Asteroids.Shared.Actors;
 public class ClientActor : ReceiveActor
 {
     public string Username { get; private set; }
-    public string HubConnectionId { get; private set; }
+    // public string HubConnectionId { get; private set; }
     public IActorRef? CurrentLobby { get; private set; }
+    private readonly IActorRef LobbySupervisor;
 
-    public ClientActor(string username)
+    public ClientActor(string username, IActorRef lobbySupervisor)
     {
         Username = username;
         CurrentLobby = null;
+        LobbySupervisor = lobbySupervisor;
         // HubConnectionId = hubConnectionId;
 
         Receive<CreateLobby>(createLobby =>
@@ -27,6 +29,11 @@ public class ClientActor : ReceiveActor
             {
                 CurrentLobby = result;
             }
+        });
+
+        Receive<JoinLobby>(message =>
+        {
+            LobbySupervisor.Forward(message);
         });
 
         // Receive<UpdateShip>(updateShip =>

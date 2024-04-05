@@ -17,6 +17,12 @@ public class LobbyActor : ReceiveActor
             Context.Stop(self);
 
         });
+
+        Receive<JoinLobby>(message =>
+        {
+            Sender.Tell(new JoinLobbyResponse(), Self);
+        });
+
         // Receive<EnterLobby>(entry =>
         // {
         //     string userName = entry.UserShip.Username;
