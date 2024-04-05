@@ -26,13 +26,21 @@ public class ClientSupervisorActor : ReceiveActor
 
       }
     });
+
+    Receive<JoinLobby>(message =>
+    {
+      if (clients.TryGetValue(message.Username, out var user))
+      {
+        user.Forward(message);
+      }
+    });
   }
 
-  
-    protected override void PreStart()
-    {
-      IActorRef lobbySupervisor = Context.ActorSelection("/user/lobbySupervisor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
-      LobbySupervisor = lobbySupervisor;
-    }
+
+  protected override void PreStart()
+  {
+    IActorRef lobbySupervisor = Context.ActorSelection("/user/lobbySupervisor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+    LobbySupervisor = lobbySupervisor;
+  }
 
 }

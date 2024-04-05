@@ -24,7 +24,7 @@ public class ClientActor : ReceiveActor
 
         Receive<CreateLobbyResponse>(response =>
         {
-            IActorRef result = response.Actor;
+            IActorRef? result = response.Actor;
             if (result != null)
             {
                 CurrentLobby = result;

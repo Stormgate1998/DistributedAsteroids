@@ -24,7 +24,7 @@ public class ClientTests : TestKit
   public void ClientSupervisorCanNotCreateDuplicateClient()
   {
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
+    _ = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
     var clientSupervisor = Sys.ActorOf<ClientSupervisorActor>();
 
     clientSupervisor.Tell(new CreateClientActor("tony"), probe.Ref);
@@ -71,11 +71,29 @@ public class ClientTests : TestKit
   {
     var probe = CreateTestProbe();
     var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>("lobbySupervisor");
-    var client = Sys.ActorOf(Props.Create<ClientActor>("tony",lobbySupervisor), "tony");
+    var client = Sys.ActorOf(Props.Create<ClientActor>("tony", lobbySupervisor), "tony");
 
     client.Tell(new JoinLobby("testLobby"), probe.Ref);
     var response = probe.ExpectMsg<JoinLobbyResponse>();
     response.Message.Should().Be("Could not find lobby: testLobby.");
+  }
+
+
+  [Fact]
+  public void ClientSupervisorCanJoinLobby()
+  {
+    var probe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
+    var clientSupervisor = Sys.ActorOf<ClientSupervisorActor>();
+
+    clientSupervisor.Tell(new CreateClientActor("tony"), probe.Ref);
+    probe.ExpectMsg<CreateClientActorResponse>();
+
+    lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+    probe.ExpectMsg<CreateLobbyResponse>();
+
+    clientSupervisor.Tell(new JoinLobby("testLobby", "tony"), probe.Ref);
+    probe.ExpectMsg<JoinLobbyResponse>();
   }
 
   // [Fact]

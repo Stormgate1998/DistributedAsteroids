@@ -8,7 +8,7 @@ public record CreateLobbyResponse(string Message, IActorRef? Actor = null);
 public record GetLobbies();
 public record GetLobbiesResponse(List<string> Lobbies);
 
-public record JoinLobby(string LobbyName);
+public record JoinLobby(string LobbyName, string? Username = null);
 public record JoinLobbyResponse(string? Message = null);
 
 
