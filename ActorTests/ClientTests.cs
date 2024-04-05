@@ -67,15 +67,15 @@ public class ClientTests : TestKit
 
 
   [Fact]
-  public void ClientCantJoinNonExisitingLobby()
+  public void ClientCannotJoinNonExisitingLobby()
   {
     var probe = CreateTestProbe();
     var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>("lobbySupervisor");
-    var client = Sys.ActorOf(Props.Create<ClientActor>("tony"), "tony");
+    var client = Sys.ActorOf(Props.Create<ClientActor>("tony",lobbySupervisor), "tony");
 
     client.Tell(new JoinLobby("testLobby"), probe.Ref);
     var response = probe.ExpectMsg<JoinLobbyResponse>();
-    response.Message.Should().Be("Could not find lobby testLobby.");
+    response.Message.Should().Be("Could not find lobby: testLobby.");
   }
 
   // [Fact]
