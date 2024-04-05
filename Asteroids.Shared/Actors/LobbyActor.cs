@@ -1,31 +1,36 @@
 using Akka.Actor;
-
+using Asteroids.Shared.GameObjects;
 namespace Asteroids.Shared.Actors;
 
 public class LobbyActor : ReceiveActor
 {
     private readonly Action<string> onDeathCallback;
+    private List<Ship> ships = new();
 
     public LobbyActor(string lobbyName, Action<string> onDeathCallback)
     {
         this.onDeathCallback = onDeathCallback;
 
-        Receive<string>(message =>
+        Receive<LobbyDeath>(death =>
         {
             var self = Self;
-            if (message == "kill")
-            {
-                Context.Stop(self);
-            }
-            else if (message == "returnName")
-            {
-                Sender.Tell($"Lobby name: {lobbyName}, Path: {self.Path}");
-            }
-        });
+            Context.Stop(self);
 
-        Receive<object>(obj =>
+        });
+        Receive<EnterLobby>(entry =>
         {
-            Sender.Tell("Not supported");
+            string userName = entry.UserShip.Username;
+            bool noMatch = !ships.Any(ship => ship.Username == userName);
+            if (noMatch)
+            {
+                Ship user = entry.UserShip;
+                user.Direction = 45;
+                user.Xpos = 50;
+                user.Ypos = 50;
+                user.Health = 50;
+                user.Score = 0;
+                ships.Add(user);
+            }
         });
 
     }

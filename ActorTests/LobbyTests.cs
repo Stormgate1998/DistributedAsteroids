@@ -11,7 +11,7 @@ public class LobbyTests : TestKit
     public void TestCanCreateLobby()
     {
         var probe = CreateTestProbe();
-        var supervisor = Sys.ActorOf<SupervisorActor>();
+        var supervisor = Sys.ActorOf<LobbySupervisorActor>();
 
         supervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         var response = probe.ExpectMsg<CreateLobbyResponse>();
@@ -24,7 +24,7 @@ public class LobbyTests : TestKit
     {
         var probe = CreateTestProbe();
 
-        var supervisor = Sys.ActorOf<SupervisorActor>();
+        var supervisor = Sys.ActorOf<LobbySupervisorActor>();
         supervisor.Tell(new CreateLobby("testLobby1"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
 

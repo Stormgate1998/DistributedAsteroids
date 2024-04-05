@@ -14,13 +14,11 @@
     <p>@item</p>
 }
 <div>
-    @* <input type="text" @bind="key" placeholder="Enter the key"> *@
     <input type="text" @bind="lobbytodie" placeholder="Enter the lobby to be killed">
 
     <button @onclick="KillLobby">Kill Lobby</button>
 </div>
 <div>
-    @* <input type="text" @bind="key" placeholder="Enter the key"> *@
     <input type="text" @bind="lobbypath" placeholder="Enter the desired lobby">
 
     <button @onclick="GetLobbyName">Get Lobby Path</button>
@@ -29,7 +27,7 @@
 
 
 @code {
-    private string key;
+    
     private string message;
     private string response;
     private string lobbytodie;
