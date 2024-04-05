@@ -9,7 +9,8 @@ public record GetLobbies();
 public record GetLobbiesResponse(List<string> Lobbies);
 
 public record JoinLobby(string LobbyName);
-public record JoinLobbyResponse();
+public record JoinLobbyResponse(string? Message);
+
 
 public record LobbyError(string Message);
 public record LobbyDeath(string LobbyName);
