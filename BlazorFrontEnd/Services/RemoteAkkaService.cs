@@ -41,9 +41,9 @@ public class RemoteAkkaService : IHostedService
 
 
 
-    public async Task<string> CreateClient(string username)
+    public async Task<string> CreateClient(string username, string hubConnection)
     {
-        var response = await clientSupervisor.Ask<CreateClientActorResponse>(new CreateClientActor(username));
+        var response = await clientSupervisor.Ask<CreateClientActorResponse>(new CreateClientActor(username, hubConnection));
         return response.Message;
     }
 

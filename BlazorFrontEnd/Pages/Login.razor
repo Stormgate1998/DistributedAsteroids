@@ -16,15 +16,24 @@
 @code {
   private string? username { get; set; }
   private string errorMessage { get; set; }
+  private HubConnection hubConnection;
 
   protected override async Task OnInitializedAsync()
   {
+    hubConnection = new HubConnectionBuilder()
+      .WithUrl("http://je-asteroids-signalr/asteroidsHub")
+      .Build();
   }
+
   private async Task LogIn(){
-    string result = await AkkaService.CreateClient(username);
-    if(result == username){
+    string result = await AkkaService.CreateClient(username, hubConnection.ConnectionId);
+
+    if (result == username)
+    {
       NavigationManager.NavigateTo($"/home/{username}");
-    }else{
+    }
+    else
+    {
       errorMessage = "This username is already registered";
     }
   }
