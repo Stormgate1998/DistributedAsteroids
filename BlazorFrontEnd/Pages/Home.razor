@@ -1,0 +1,50 @@
+﻿@page "/home/{username}"
+@inject RemoteAkkaService AkkaService
+@inject NavigationManager NavigationManager
+@* @rendermode InteractiveServer *@
+<h1>Welcome @Username</h1>
+
+<div>
+    @* <input type="text" @bind="key" placeholder="Enter the key"> *@
+    <button @onclick="CreateLobby">CreateLobby</button>
+    <button @onclick="GetList">Get Lobby List</button>
+</div>
+<p>@response</p>
+@foreach(var item in list)
+{
+    <div>
+        <button @onclick="() => JoinLobby(item)">Join @item</button>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public string? Username {get;set;}
+
+    private string response { get; set; }
+
+    private List<string> list = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetList();
+    }
+    private async Task CreateLobby()
+    {
+        response = await AkkaService.CreateLobby(Username);
+        await GetList();
+    }
+
+    private async Task GetList(){
+        list = (await AkkaService.GetLobbies()).ToList();
+    }
+
+    private async Task JoinLobby(string item){
+        bool result = await AkkaService.JoinLobby(Username, item);
+        if(true){
+            NavigationManager.NavigateTo($"/game/{username}/{item}");
+        }
+    }
+
+}

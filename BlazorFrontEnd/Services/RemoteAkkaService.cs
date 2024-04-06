@@ -1,16 +1,19 @@
 using Akka.Actor;
 using Akka.Routing;
 using Asteroids.Shared.Actors;
+using Asteroids.Shared.GameObjects;
 
 public class RemoteAkkaService : IHostedService
 {
     private ActorSystem _actorSystem;
-    private IActorRef _router;
+    private IActorRef lobbySupervisor;
+    private IActorRef clientSupervisor;
 
     public RemoteAkkaService()
     {
         _actorSystem = ActorSystem.Create("BlazorActorSystem");
-        _router = _actorSystem.ActorOf<LobbySupervisorActor>();
+        lobbySupervisor = _actorSystem.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
+        clientSupervisor = _actorSystem.ActorOf(Props.Create<ClientSupervisorActor>(), "clientSupervisor");
     }
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -36,26 +39,34 @@ public class RemoteAkkaService : IHostedService
         return Task.CompletedTask;
     }
 
+
+
+    public async Task<string> CreateClient(string username)
+    {
+        var response = await clientSupervisor.Ask<CreateClientActorResponse>(new CreateClientActor(username));
+        return response.Message;
+    }
+
     public async Task<string> CreateLobby(string lobbyName)
     {
-        var response = await _router.Ask<string>((lobbyName, "CreateLobby"));
-        return response;
+        var response = await clientSupervisor.Ask<CreateLobbyResponse>(new CreateLobby(lobbyName));
+        return response.Message;
+    }
+    public async Task<bool> JoinLobby(string username, string lobbyName)
+    {
+        var response = await clientSupervisor.Ask<JoinLobbyResponse>(new JoinLobby(username, lobbyName));
+        return response != null;
+    }
+
+    public async Task<GameStateObject> StartGame(string username)
+    {
+        var response = await clientSupervisor.Ask<GameStateSnapshot>(new StartGame(username));
+        return response.Game;
     }
 
     public async Task<List<string>> GetLobbies()
     {
-        var response = await _router.Ask<List<string>>("getLobbies");
-        return response;
+        var response = await lobbySupervisor.Ask<GetLobbiesResponse>(new GetLobbies());
+        return response.Lobbies;
     }
-    public async Task<string?> CommandToLobby(string lobbyName, object toLobby)
-    {
-        var response = await _router.Ask<string>((lobbyName, toLobby));
-        return response;
-    }
-    // public async Task<string> SendMessage(string key, string message)
-    // {
-    //     // Send the message to the router with the given key
-    //     var response = await _router.Ask<string>(new ConsistentHashableEnvelope(message, key));
-    //     return response;
-    // }
 }
