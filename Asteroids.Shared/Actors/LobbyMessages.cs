@@ -5,7 +5,7 @@ namespace Asteroids.Shared.Actors;
 public record CreateLobby(string LobbyName);
 public record CreateLobbyResponse(string Message, IActorRef? Actor = null);
 
-public record GetLobbies();
+public record GetLobbies(string? Username = null);
 public record GetLobbiesResponse(List<string> Lobbies);
 
 public record JoinLobby(string LobbyName, string Username);

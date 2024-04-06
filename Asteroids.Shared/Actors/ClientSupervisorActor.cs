@@ -53,6 +53,14 @@ public class ClientSupervisorActor : ReceiveActor
         user.Forward(message);
       }
     });
+    Receive<GetLobbies>(message =>
+    {
+      if (clients.TryGetValue(message.Username, out var user))
+      {
+        user.Forward(message);
+      }
+
+    });
 
   }
 

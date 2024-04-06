@@ -48,9 +48,15 @@ public class ClientActor : ReceiveActor
         {
             if (CurrentLobby != null)
             {
-                CurrentLobby.Forward(message);
+                CurrentLobby.Tell(message);
             }
         });
+
+        Receive<GetLobbies>(message =>
+        {
+            LobbySupervisor.Tell(message);
+        });
+
 
         // Receive<UpdateShip>(updateShip =>
         // {

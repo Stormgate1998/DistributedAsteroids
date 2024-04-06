@@ -1,7 +1,8 @@
 ﻿@page "/home/{username}"
+@using Microsoft.AspNetCore.SignalR.Client
 @inject RemoteAkkaService AkkaService
 @inject NavigationManager NavigationManager
-@inject HubConnection hubConnection;
+@inject HubConnection hubConnection
 @* @rendermode InteractiveServer *@
 <h1>Welcome @Username</h1>
 
