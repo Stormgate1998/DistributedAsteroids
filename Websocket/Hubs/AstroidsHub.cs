@@ -4,8 +4,10 @@ namespace Websocket.Hubs;
 
 public class AsteroidsHub : Hub
 {
-  public async Task SendMessage(string user, string message)
+  public async Task SendLobbyList(List<string> message, string connectionId)
   {
-    await Clients.All.SendAsync("ReceiveMessage", user, message);
+    var client = Clients.Client(connectionId);
+
+    await client.SendAsync("<method-name>", message);
   }
 }

@@ -1,19 +1,20 @@
 using Akka.Actor;
 using Asteroids.Shared.Actors;
+using Asteroids.Shared.Services;
 
 public class ClientActor : ReceiveActor
 {
     public string Username { get; private set; }
-    // public string HubConnectionId { get; private set; }
     public IActorRef? CurrentLobby { get; private set; }
     private readonly IActorRef LobbySupervisor;
+    private IHubService _hubService;
 
-    public ClientActor(string username, IActorRef lobbySupervisor)
+    public ClientActor(string username, IActorRef lobbySupervisor, IHubService hubService)
     {
         Username = username;
         CurrentLobby = null;
         LobbySupervisor = lobbySupervisor;
-        // HubConnectionId = hubConnectionId;
+        _hubService = hubService;
 
         Receive<CreateLobby>(createLobby =>
         {
@@ -52,6 +53,11 @@ public class ClientActor : ReceiveActor
         // {
 
         // });
+    }
+
+    protected override void PreStart()
+    {
+        _hubService.StartAsync();
     }
 }
 

@@ -1,4 +1,5 @@
 using Akka.Actor;
+using Asteroids.Shared.Services;
 
 namespace Asteroids.Shared.Actors;
 
@@ -14,7 +15,8 @@ public class ClientSupervisorActor : ReceiveActor
     {
       if (!clients.ContainsKey(message.Username))
       {
-        IActorRef newClient = Context.ActorOf(Props.Create(() => new ClientActor(message.Username, LobbySupervisor)));
+        HubService service = new(message.ConnectionId);
+        IActorRef newClient = Context.ActorOf(Props.Create(() => new ClientActor(message.Username, LobbySupervisor, service)));
         clients.Add(message.Username, newClient);
 
         Sender.Tell(new CreateClientActorResponse(message.Username));

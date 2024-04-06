@@ -11,14 +11,4 @@
 
 @code {
   private string? username { get; set; }
-  private HubConnection? hubConnection;
-
-  protected override async Task OnInitializedAsync()
-  {
-    hubConnection = new HubConnectionBuilder()
-    .WithUrl("http://je-asteroids-signalr/asteroidsHub")
-    .Build();
-
-    await hubConnection.StartAsync();
-  }
 }
