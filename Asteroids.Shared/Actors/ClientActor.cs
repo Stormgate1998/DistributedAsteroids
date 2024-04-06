@@ -57,6 +57,12 @@ public class ClientActor : ReceiveActor
             LobbySupervisor.Tell(message);
         });
 
+        Receive<GetLobbiesResponse>(async message =>
+        {
+            Console.WriteLine("Sending list of lobbies to service.");
+            await _hubService.SendLobbyList(message.Lobbies);
+        });
+
 
         // Receive<UpdateShip>(updateShip =>
         // {
@@ -69,9 +75,9 @@ public class ClientActor : ReceiveActor
         // });
     }
 
-    protected override void PreStart()
-    {
-        _hubService.StartAsync();
-    }
+    // protected override void PreStart()
+    // {
+    //     _hubService.StartAsync();
+    // }
 }
 

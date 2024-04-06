@@ -1,7 +1,9 @@
 @using Microsoft.AspNetCore.SignalR.Client;
+@using BlazorFrontEnd.Services;
 @inject RemoteAkkaService AkkaService
 @inject NavigationManager NavigationManager
-@inject HubConnection hubConnection
+@inject SignalRService hubService
+@* @inject HubConnection hubConnection *@
 @page "/"
 
 <PageTitle>Login</PageTitle>
@@ -24,7 +26,7 @@
   }
 
   private async Task LogIn(){
-    string result = await AkkaService.CreateClient(username, hubConnection.ConnectionId);
+    string result = await AkkaService.CreateClient(username, hubService.HubConnection.ConnectionId);
 
     if (result == username)
     {
@@ -35,7 +37,4 @@
       errorMessage = "This username is already registered";
     }
   }
-
-
-  
 }

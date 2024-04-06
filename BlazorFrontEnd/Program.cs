@@ -1,4 +1,5 @@
-using Microsoft.AspNetCore.SignalR.Client;
+using Asteroids.Shared.Services;
+using BlazorFrontEnd.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,14 +7,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<RemoteAkkaService>();
-builder.Services.AddSingleton<HubConnection>(sp =>
-{
-    var hubConnection = new HubConnectionBuilder()
-        .WithUrl("http://je-asteroids-signalr/asteroidsHub")
-        .Build();
-    hubConnection.StartAsync();
-    return hubConnection;
-});
+builder.Services.AddSingleton<SignalRService>();
+// builder.Services.AddSingleton<HubConnection>(sp =>
+// {
+//     var hubConnection = new HubConnectionBuilder()
+//         .WithUrl("http://je-asteroids-signalr/asteroidsHub")
+//         .Build();
+//     hubConnection.StartAsync();
+//     return hubConnection;
+// });
 
 var app = builder.Build();
 

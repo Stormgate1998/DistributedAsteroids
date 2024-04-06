@@ -1,8 +1,10 @@
 ﻿@page "/home/{username}"
 @using Microsoft.AspNetCore.SignalR.Client
+@using BlazorFrontEnd.Services
 @inject RemoteAkkaService AkkaService
 @inject NavigationManager NavigationManager
-@inject HubConnection hubConnection
+@* @inject HubConnection hubConnection *@
+@inject SignalRService hubService
 @* @rendermode InteractiveServer *@
 <h1>Welcome @Username</h1>
 
@@ -31,7 +33,9 @@
     protected override async Task OnInitializedAsync()
     {
         await GetList();
+        hubService.ReceiveLobbiesList(ReceiveLobbiesList);
     }
+
     private async Task CreateLobby()
     {
         response = await AkkaService.CreateLobby(Username);
@@ -39,7 +43,12 @@
     }
 
     private async Task GetList(){
-        list = (await AkkaService.GetLobbies()).ToList();
+        _ = (await AkkaService.GetLobbies()).ToList();
+    }
+
+    private async void ReceiveLobbiesList(List<string> lobbies)
+    {
+        list = lobbies;
     }
 
     private async Task JoinLobby(string item){
