@@ -43,6 +43,14 @@ public class ClientActor : ReceiveActor
             }
         });
 
+        Receive<GetState>(message =>
+        {
+            if (CurrentLobby != null)
+            {
+                CurrentLobby.Forward(message);
+            }
+        });
+
         // Receive<UpdateShip>(updateShip =>
         // {
         //     // Logic to update ship

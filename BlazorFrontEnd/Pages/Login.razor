@@ -1,24 +1,34 @@
 @using Microsoft.AspNetCore.SignalR.Client;
-
+@inject RemoteAkkaService AkkaService
+@inject NavigationManager NavigationManager
 @page "/"
 
 <PageTitle>Login</PageTitle>
+
 <div>
   <label for="username">Username:</label>
   <input id="username" type="text" @bind="username" placeholder="Enter a username">
-  <button>Submit</button>
+  <button @onclick="LogIn">Submit</button>
+
+  <p class="text-error">@errorMessage</p>
 </div>
 
 @code {
   private string? username { get; set; }
-  private HubConnection? hubConnection;
+  private string errorMessage { get; set; }
 
   protected override async Task OnInitializedAsync()
   {
-    hubConnection = new HubConnectionBuilder()
-    .WithUrl("http://je-asteroids-signalr/asteroidsHub")
-    .Build();
-
-    await hubConnection.StartAsync();
   }
+  private async Task LogIn(){
+    string result = await AkkaService.CreateClient(username);
+    if(result == username){
+      NavigationManager.NavigateTo($"/home/{username}");
+    }else{
+      errorMessage = "This username is already registered";
+    }
+  }
+
+
+  
 }
