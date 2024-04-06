@@ -1,5 +1,6 @@
 ﻿@page "/game/{username}/{lobbyname}"
 @inject RemoteAkkaService AkkaService
+@inject HubConnection hubConnection;
 @* @rendermode InteractiveServer *@
 <h1>Welcome @Username</h1>
 

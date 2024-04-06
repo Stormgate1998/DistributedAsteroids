@@ -1,6 +1,7 @@
 ﻿@page "/home/{username}"
 @inject RemoteAkkaService AkkaService
 @inject NavigationManager NavigationManager
+@inject HubConnection hubConnection;
 @* @rendermode InteractiveServer *@
 <h1>Welcome @Username</h1>
 

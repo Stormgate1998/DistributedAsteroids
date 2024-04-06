@@ -1,9 +1,20 @@
+using Microsoft.AspNetCore.SignalR.Client;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<RemoteAkkaService>();
+builder.Services.AddSingleton<HubConnection>(sp =>
+{
+    var hubConnection = new HubConnectionBuilder()
+        .WithUrl("http://je-asteroids-signalr/asteroidsHub")
+        .Build();
+    hubConnection.StartAsync();
+    return hubConnection;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -1,6 +1,7 @@
 @using Microsoft.AspNetCore.SignalR.Client;
 @inject RemoteAkkaService AkkaService
 @inject NavigationManager NavigationManager
+@inject HubConnection hubConnection;
 @page "/"
 
 <PageTitle>Login</PageTitle>
@@ -16,13 +17,10 @@
 @code {
   private string? username { get; set; }
   private string errorMessage { get; set; }
-  private HubConnection hubConnection;
 
   protected override async Task OnInitializedAsync()
   {
-    hubConnection = new HubConnectionBuilder()
-      .WithUrl("http://je-asteroids-signalr/asteroidsHub")
-      .Build();
+    
   }
 
   private async Task LogIn(){
