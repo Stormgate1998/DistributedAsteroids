@@ -27,7 +27,7 @@ public class RemoteAkkaService : IHostedService
         
         _actorSystem = ActorSystem.Create("BlazorActorSystem", mergeSystemSetup);
         lobbySupervisor = _actorSystem.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
-        clientSupervisor = _actorSystem.ActorOf(Props.Create<ClientSupervisorActor>(), "clientSupervisor");
+        clientSupervisor = _actorSystem.ActorOf(Props.Create<ClientSupervisorActor>(serviceProvider), "clientSupervisor");
 
         // var config = ConfigurationFactory.ParseString
         //     (@"

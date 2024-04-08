@@ -3,7 +3,7 @@
 ## Week 1 - April 6th
 - [X] Set up 1 Akka.NET node
 - [X] Set up Blazor frontend
-- [ ] Set up websocket hub
+- [X] Set up websocket hub
 - [X] Set up Nginx
 - [ ] Set up Raft cluster
 - [X] Set up telemetry services
@@ -13,15 +13,21 @@
   - Zipkin
   - Otel-collector
 - [ ] Set up deploy pipeline
-- [ ] Implement multiple lobbies via actors
+- [X] Implement multiple lobbies via actors
+- ~~[ ] Implement timing logic for starting a lobby~~
+- ~~[ ] Create ship model~~
+- ~~[ ] Display entity position on front-end~~
+- ~~[ ] Implement ship controls on front-end~~
+- ~~[ ] Entity speed logic~~
+- ~~[ ] Create entity movement logic~~
+ 
+## Week 2 - April 13th
 - [ ] Implement timing logic for starting a lobby
 - [ ] Create ship model
 - [ ] Display entity position on front-end
 - [ ] Implement ship controls on front-end
 - [ ] Entity speed logic
 - [ ] Create entity movement logic
- 
-## Week 2 - April 13th
 - [ ] Create bullet model
 - [ ] Create asteroid model
 - [ ] Entity size logic
