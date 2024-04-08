@@ -33,7 +33,7 @@ public class ClientTests : TestKit
 
     var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(provider)), "clientSupervisor");
     clientSupervisor.Tell(new CreateClientActor("tony", "connectionId"), probe.Ref);
-    
+
     await Task.Delay(100);
     await signalRMock.Received().SendClientState(Arg.Any<string>(), Arg.Is<ClientState>(s => s == ClientState.NoLobby));
     // var item = probe.ExpectMsg<CreateClientActorResponse>();
@@ -177,36 +177,7 @@ public class ClientTests : TestKit
 
   // }
 
-  // [Fact]
-  // public void ClientActorCanCreateShip()
-  // {
-  //   var probe = CreateTestProbe();
-  //   var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
-
-  //   var clientActor = Sys.ActorOf(Props.Create<ClientActor>("tony"), "tony");
-
-  //   clientActor.Tell(new CreateLobby(""), probe.Ref);
-  //   Thread.Sleep(100);
-  //   clientActor.Tell(new JoinLobby());
-
-  // }
-
-  // [Fact]
-  // public void ClientActorCanCreateShip()
-  // {
-  //   var probe = CreateTestProbe();
-  //   var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
-
-  //   var clientActor = Sys.ActorOf(Props.Create<ClientActor>("tony"), "tony");
-
-  //   clientActor.Tell(new CreateLobby(""), probe.Ref);
-  //   Thread.Sleep(100);
-  //   clientActor.Tell(new JoinLobby());
-
-  //  Ship updatedShip = new Ship(whatever);
-  //  clientActor.Tell(new ShipUpdate(updatedShip))
-
-  // }
+  //test 2 players join works
 
 
 }
