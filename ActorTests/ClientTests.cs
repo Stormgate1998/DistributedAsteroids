@@ -121,7 +121,7 @@ public class ClientTests : TestKit
     clientSupervisor.Tell(new JoinLobby("tony", "tony"), probe.Ref);
     probe.ExpectMsg<JoinLobbyResponse>();
 
-    lobbySupervisor.Tell(new GetState("tony"), probe.Ref);
+    lobbySupervisor.Tell(new GetState("tony", "tony"), probe.Ref);
     var response = probe.ExpectMsg<GameStateSnapshot>();
     Ship ship = new("tony")
     {

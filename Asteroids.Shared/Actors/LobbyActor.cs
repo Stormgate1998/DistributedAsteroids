@@ -64,6 +64,7 @@ public class LobbyActor : ReceiveActor
     protected override void PostStop()
     {
         base.PostStop();
-        onDeathCallback?.Invoke(Self.Path.Name);
+        var self = Self;
+        onDeathCallback?.Invoke(self.Path.Name);
     }
 }

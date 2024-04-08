@@ -51,7 +51,8 @@ public class MyActor : ReceiveActor
         Receive<string>(message =>
         {
             i += 1;
-            Sender.Tell($"Received message: {message} {i} {Self.Path.ToString()}");
+            var self = Self;
+            Sender.Tell($"Received message: {message} {i} {self.Path.ToString()}");
         });
     }
 }

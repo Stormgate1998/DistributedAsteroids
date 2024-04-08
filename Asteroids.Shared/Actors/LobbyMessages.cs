@@ -17,7 +17,7 @@ public record LobbyDeath(string LobbyName);
 public record ShipUpdate(Ship Updated);
 
 
-public record GetState(string LobbyName);
+public record GetState(string LobbyName, string Username);
 public record GameStateSnapshot(GameStateObject Game);
 
 public record StartGame(string Username);

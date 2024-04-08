@@ -11,7 +11,7 @@ public class HubService : IHubService
   {
     _receiverConnectionId = connectionId;
     _connectionId = new HubConnectionBuilder()
-      .WithUrl("http://je-asteroids-signalr/asteroidsHub")
+      .WithUrl("http://je-asteroids-signalr:8080/asteroidsHub")
       .Build();
 
     Console.WriteLine("Starting connection to websocket");

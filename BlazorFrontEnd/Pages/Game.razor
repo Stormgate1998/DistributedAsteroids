@@ -1,16 +1,15 @@
 ﻿@page "/game/{username}/{lobbyname}"
 @using Microsoft.AspNetCore.SignalR.Client
+@using Asteroids.Shared.GameObjects
 @inject RemoteAkkaService AkkaService
 @* @inject HubConnection hubConnection *@
-@* @rendermode InteractiveServer *@
 <h1>Welcome @Username</h1>
 
-<div>
-    
-</div>
+<div>List of Joined</div>
 
-@foreach(var item in list)
+@foreach(var item in gameObject.ships)
 {
+    @item.Username
 }
 
 
@@ -23,8 +22,11 @@
 
     private List<string> list = new();
 
+    private GameStateObject gameObject = new();
+
     protected override async Task OnInitializedAsync()
     {
+        gameObject = await AkkaService.GetState(Lobbyname, Username);
     }
 
 }

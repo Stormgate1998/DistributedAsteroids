@@ -5,17 +5,24 @@ namespace BlazorFrontEnd.Services;
 public class SignalRService
 {
   public readonly HubConnection HubConnection;
+  public List<Action<List<string>>> LobbyActionList = [];
 
   public SignalRService()
   {
     HubConnection = new HubConnectionBuilder()
-      .WithUrl("http://je-asteroids-signalr/asteroidsHub")
+      .WithUrl("http://je-asteroids-signalr:8080/asteroidsHub")
       .Build();
 
-    // _hubConnection.On<List<string>>("ReceiveLobbiesList", (lobbies) =>
-    // {
 
-    // });
+    HubConnection.On<List<string>>("ReceiveLobbiesList", (lobbies) =>
+    {
+      foreach (var action in LobbyActionList)
+      {
+        action(lobbies);
+      }
+
+    });
+
 
     HubConnection.StartAsync();
   }
@@ -25,12 +32,9 @@ public class SignalRService
     return lobbies;
   }
 
-  public async Task ReceiveLobbiesList(Action<List<string>> lobbyListFunction){
-    HubConnection.On<List<string>>("ReceiveLobbiesList", (lobbies) =>
-    {
-      lobbyListFunction(lobbies);
-    
+  public async Task ReceiveLobbiesList(Action<List<string>> lobbyListFunction)
+  {
+    LobbyActionList.Add(lobbyListFunction);
 
-    });
   }
 }

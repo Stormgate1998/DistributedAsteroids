@@ -17,6 +17,7 @@ public class RemoteAkkaService : IHostedService
     }
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+
         // var config = ConfigurationFactory.ParseString
         //     (@"
         //     akka {
@@ -55,6 +56,7 @@ public class RemoteAkkaService : IHostedService
     public async Task<bool> JoinLobby(string username, string lobbyName)
     {
         var response = await clientSupervisor.Ask<JoinLobbyResponse>(new JoinLobby(username, lobbyName));
+        Console.WriteLine(response.Message);
         return response != null;
     }
 
@@ -68,5 +70,10 @@ public class RemoteAkkaService : IHostedService
     {
         var response = await lobbySupervisor.Ask<GetLobbiesResponse>(new GetLobbies());
         return response.Lobbies;
+    }
+    public async Task<GameStateObject> GetState(string lobby, string username)
+    {
+        var response = await clientSupervisor.Ask<GameStateSnapshot>(new GetState(lobby, username));
+        return response.Game;
     }
 }

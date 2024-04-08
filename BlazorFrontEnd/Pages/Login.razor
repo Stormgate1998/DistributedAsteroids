@@ -26,6 +26,7 @@
   }
 
   private async Task LogIn(){
+    Console.WriteLine(hubService.HubConnection.ConnectionId);
     string result = await AkkaService.CreateClient(username, hubService.HubConnection.ConnectionId);
 
     if (result == username)

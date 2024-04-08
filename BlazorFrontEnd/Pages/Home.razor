@@ -43,7 +43,7 @@
     }
 
     private async Task GetList(){
-        _ = (await AkkaService.GetLobbies()).ToList();
+        list = (await AkkaService.GetLobbies()).ToList();
     }
 
     private async void ReceiveLobbiesList(List<string> lobbies)

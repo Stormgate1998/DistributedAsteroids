@@ -62,6 +62,14 @@ public class ClientSupervisorActor : ReceiveActor
 
     });
 
+    Receive<GetState>(message =>
+    {
+      if (clients.TryGetValue(message.Username, out var user))
+      {
+        user.Forward(message);
+      }
+    });
+
   }
 
 
