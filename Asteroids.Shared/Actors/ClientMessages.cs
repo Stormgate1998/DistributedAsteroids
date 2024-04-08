@@ -1,5 +1,9 @@
+using Asteroids.Shared.Services;
+
 namespace Asteroids.Shared.Actors;
 
 // public record EnterLobby(Ship UserShip);
 public record CreateClientActor(string Username, string ConnectionId);
-public record CreateClientActorResponse(string Message);
+// public record CreateClientActorResponse(string Message);
+public record SendClientStateToHub(string Message, ClientState state);
+public record ClientError(string Message);

@@ -10,4 +10,8 @@
     <PackageReference Include="microsoft.aspnet.signalr" Version="2.4.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Asteroids.Shared\Asteroids.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

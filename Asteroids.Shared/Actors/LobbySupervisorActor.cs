@@ -17,6 +17,10 @@ public class LobbySupervisorActor : ReceiveActor
                 lobbies.Add(message.LobbyName, newLobby);
                 Sender.Tell(new CreateLobbyResponse($"Lobby '{message.LobbyName}' created.", Self));
             }
+            else
+            {
+                Console.WriteLine("Lobby already exists. Skipping creation.");
+            }
         });
 
         Receive<LobbyDeath>(message =>

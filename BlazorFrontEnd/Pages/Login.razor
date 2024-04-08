@@ -25,17 +25,15 @@
     
   }
 
-  private async Task LogIn(){
-    Console.WriteLine(hubService.HubConnection.ConnectionId);
-    string result = await AkkaService.CreateClient(username, hubService.HubConnection.ConnectionId);
+  private async Task LogIn()
+  {
+    if (username == null || username == "")
+    {
+      throw new NullReferenceException("Cannot log in. Username required.");
+    }
 
-    if (result == username)
-    {
-      NavigationManager.NavigateTo($"/home/{username}");
-    }
-    else
-    {
-      errorMessage = "This username is already registered";
-    }
+    AkkaService.CreateClient(username, await hubService.GetConnectionId());
+
+    NavigationManager.NavigateTo($"/home/{username}");
   }
 }

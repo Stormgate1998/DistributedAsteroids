@@ -1,11 +1,13 @@
+using Asteroids.Shared.Services;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace BlazorFrontEnd.Services;
 
 public class SignalRService
 {
-  public readonly HubConnection HubConnection;
-  public List<Action<List<string>>> LobbyActionList = [];
+  public event Action<List<string>>? NewLobbyList;
+  public event Action<ClientState>? NewClientState;
+  private readonly HubConnection HubConnection;
 
   public SignalRService()
   {
@@ -16,25 +18,42 @@ public class SignalRService
 
     HubConnection.On<List<string>>("ReceiveLobbiesList", (lobbies) =>
     {
-      foreach (var action in LobbyActionList)
-      {
-        action(lobbies);
-      }
-
+      Console.WriteLine("Received lobby list for blazor.");
+      NewLobbyList?.Invoke(lobbies);
     });
 
-
-    HubConnection.StartAsync();
+    HubConnection.On<ClientState>("ReceiveClientState", (state) =>
+    {
+      Console.WriteLine("Received client state for blazor.");
+      NewClientState?.Invoke(state);
+    });
   }
 
-  public List<string> HandleLobbiesListRequest(List<string> lobbies)
+  public async Task EnsureStartedAsync()
   {
-    return lobbies;
+    if (HubConnection.State != HubConnectionState.Disconnected)
+    {
+      return;
+    }
+
+    Console.WriteLine("Establishing connection to websocket hub.");
+    await HubConnection.StartAsync().ContinueWith(task =>
+    {
+      if (task.IsFaulted)
+      {
+        Console.WriteLine($"Error connecting to SignalR hub: {task.Exception.GetBaseException().Message}");
+      }
+      else
+      {
+        Console.WriteLine("SignalR connection established");
+      }
+    });
   }
 
-  public async Task ReceiveLobbiesList(Action<List<string>> lobbyListFunction)
+  public async Task<string> GetConnectionId()
   {
-    LobbyActionList.Add(lobbyListFunction);
+    await EnsureStartedAsync();
 
+    return HubConnection.ConnectionId ?? throw new NullReferenceException("Could not get connection ID. It is null.");
   }
 }

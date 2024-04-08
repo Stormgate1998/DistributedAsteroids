@@ -1,4 +1,5 @@
 using Akka.Actor;
+using Akka.DependencyInjection;
 using Akka.Routing;
 using Asteroids.Shared.Actors;
 using Asteroids.Shared.GameObjects;
@@ -8,15 +9,25 @@ public class RemoteAkkaService : IHostedService
     private ActorSystem _actorSystem;
     private IActorRef lobbySupervisor;
     private IActorRef clientSupervisor;
+    private readonly IServiceProvider serviceProvider;
+    private readonly IConfiguration configuration;
 
-    public RemoteAkkaService()
+    public RemoteAkkaService(IServiceProvider serviceProvider, IConfiguration configuration)
     {
-        _actorSystem = ActorSystem.Create("BlazorActorSystem");
-        lobbySupervisor = _actorSystem.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
-        clientSupervisor = _actorSystem.ActorOf(Props.Create<ClientSupervisorActor>(), "clientSupervisor");
+        this.serviceProvider = serviceProvider;
+        this.configuration = configuration;
     }
+
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        var dependencyInjectionSetup = DependencyResolverSetup.Create(serviceProvider);
+
+        var bootstrap = BootstrapSetup.Create();
+        var mergeSystemSetup = bootstrap.And(dependencyInjectionSetup);
+        
+        _actorSystem = ActorSystem.Create("BlazorActorSystem", mergeSystemSetup);
+        lobbySupervisor = _actorSystem.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
+        clientSupervisor = _actorSystem.ActorOf(Props.Create<ClientSupervisorActor>(), "clientSupervisor");
 
         // var config = ConfigurationFactory.ParseString
         //     (@"
@@ -42,14 +53,19 @@ public class RemoteAkkaService : IHostedService
 
 
 
-    public async Task<string> CreateClient(string username, string hubConnection)
+    // public async Task<string> CreateClient(string username, string hubConnection)
+    // {
+    //     var response = await clientSupervisor.Ask<CreateClientActorResponse>(new CreateClientActor(username, hubConnection));
+    //     return response.Message;
+    // }
+    public void CreateClient(string username, string hubConnection)
     {
-        var response = await clientSupervisor.Ask<CreateClientActorResponse>(new CreateClientActor(username, hubConnection));
-        return response.Message;
+        clientSupervisor.Tell(new CreateClientActor(username, hubConnection));
     }
 
     public async Task<string> CreateLobby(string lobbyName)
     {
+        Console.WriteLine("Requesting lobby from Akka service.");
         var response = await clientSupervisor.Ask<CreateLobbyResponse>(new CreateLobby(lobbyName));
         return response.Message;
     }
@@ -66,9 +82,9 @@ public class RemoteAkkaService : IHostedService
         return response.Game;
     }
 
-    public async Task<List<string>> GetLobbies()
+    public async Task<List<string>> GetLobbies(string username)
     {
-        var response = await lobbySupervisor.Ask<GetLobbiesResponse>(new GetLobbies());
+        var response = await clientSupervisor.Ask<GetLobbiesResponse>(new GetLobbies(username));
         return response.Lobbies;
     }
     public async Task<GameStateObject> GetState(string lobby, string username)

@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Akka.Actor;
 using Asteroids.Shared.Services;
 
@@ -8,24 +9,27 @@ public class ClientSupervisorActor : ReceiveActor
   private readonly Dictionary<string, IActorRef> clients = [];
   private IActorRef LobbySupervisor;
 
-  public ClientSupervisorActor()
+  public ClientSupervisorActor(IServiceProvider serviceProvider)
   {
-
     Receive<CreateClientActor>(message =>
     {
       if (!clients.ContainsKey(message.Username))
       {
-        HubService service = new(message.ConnectionId);
-        IActorRef newClient = Context.ActorOf(Props.Create(() => new ClientActor(message.Username, LobbySupervisor, service)));
+        if (message.ConnectionId == null)
+        {
+          throw new NullReferenceException("Cannot create client actor. SignalR connection ID is null.");
+        }
+
+        IActorRef newClient = Context.ActorOf(Props.Create(() => new ClientActor(message.Username, message.ConnectionId, LobbySupervisor, serviceProvider)));
         clients.Add(message.Username, newClient);
 
-        Sender.Tell(new CreateClientActorResponse(message.Username));
-
+        // Sender.Tell(new CreateClientActorResponse(message.Username));
+        // newClient.Tell(new CreateClientActorResponse(message.Username)); // Send client state as well
+        newClient.Tell(new SendClientStateToHub(message.Username, ClientState.NoLobby));
       }
       else
       {
-        Sender.Tell(new CreateClientActorResponse($"Client {message.Username} already created"));
-
+        // Sender.Tell(new CreateClientActorResponse($"Client {message.Username} already created"));
       }
     });
 
@@ -34,6 +38,10 @@ public class ClientSupervisorActor : ReceiveActor
       if (clients.TryGetValue(message.LobbyName, out var user))
       {
         user.Forward(message);
+      }
+      else
+      {
+        throw new Exception($"Cannot create lobby {message.LobbyName}. Client does not exist.");
       }
     });
 

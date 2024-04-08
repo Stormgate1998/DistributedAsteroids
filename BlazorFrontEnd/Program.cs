@@ -6,7 +6,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddSingleton<IHubService, HubService>();
 builder.Services.AddSingleton<RemoteAkkaService>();
+builder.Services.AddHostedService(sp =>
+  sp.GetRequiredService<RemoteAkkaService>()
+);
 builder.Services.AddSingleton<SignalRService>();
 // builder.Services.AddSingleton<HubConnection>(sp =>
 // {

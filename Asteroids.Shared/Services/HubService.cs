@@ -5,17 +5,23 @@ namespace Asteroids.Shared.Services;
 public class HubService : IHubService
 {
   private readonly HubConnection _connectionId;
-  private readonly string _receiverConnectionId;
+  // private readonly string _receiverConnectionId;
 
-  public HubService(string connectionId)
+  public HubService()
   {
-    _receiverConnectionId = connectionId;
+    // _receiverConnectionId = connectionId;
     _connectionId = new HubConnectionBuilder()
       .WithUrl("http://je-asteroids-signalr:8080/asteroidsHub")
+      .WithAutomaticReconnect()
       .Build();
+  }
 
-    Console.WriteLine("Starting connection to websocket");
-    _connectionId.StartAsync().ContinueWith(task =>
+  public async Task EnsureHubConnection()
+  {
+    if (_connectionId.State == HubConnectionState.Disconnected)
+    {
+      Console.WriteLine("Establishing connection to websocket hub.");
+      await _connectionId.StartAsync().ContinueWith(task =>
     {
       if (task.IsFaulted)
       {
@@ -26,17 +32,24 @@ public class HubService : IHubService
         Console.WriteLine("SignalR connection established");
       }
     });
+    }
   }
+  
+  public async Task SendClientState(string connectionId, ClientState state)
+  {
+    await EnsureHubConnection();
 
-  // public async Task StartAsync()
-  // {
-  //   await _connectionId.StartAsync();
-  // }
+    Console.WriteLine("Sending client state to hub.");
+    await _connectionId.SendAsync("SendClientState", state, connectionId);
+  }
 
   public async Task StopAsync() => await _connectionId.StopAsync();
 
-  public async Task SendLobbyList(List<string> lobbyList)
+  public async Task SendLobbyList(List<string> lobbyList, string connectionId)
   {
-    await _connectionId.SendAsync("SendLobbyList", lobbyList, _receiverConnectionId);
+    await EnsureHubConnection();
+
+    Console.WriteLine("Sending list of lobbies to hub.");
+    await _connectionId.SendAsync("SendLobbyList", lobbyList, connectionId);
   }
 }

@@ -1,11 +1,16 @@
-﻿@page "/home/{username}"
-@using Microsoft.AspNetCore.SignalR.Client
+﻿@using Microsoft.AspNetCore.SignalR.Client
 @using BlazorFrontEnd.Services
+
 @inject RemoteAkkaService AkkaService
 @inject NavigationManager NavigationManager
-@* @inject HubConnection hubConnection *@
 @inject SignalRService hubService
+@* @inject HubConnection hubConnection *@
+
+@implements IDisposable
+
+@page "/home/{username}"
 @* @rendermode InteractiveServer *@
+
 <h1>Welcome @Username</h1>
 
 <div>
@@ -23,8 +28,8 @@
 
 
 @code {
-    [Parameter]
-    public string? Username {get;set;}
+    [Parameter, EditorRequired]
+    public string Username { get; set; } = default!;
 
     private string response { get; set; }
 
@@ -32,27 +37,42 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await hubService.EnsureStartedAsync();
+        hubService.NewLobbyList += ReceiveLobbiesList;
         await GetList();
-        hubService.ReceiveLobbiesList(ReceiveLobbiesList);
+    }
+
+    public void Dispose()
+    {
+        hubService.NewLobbyList -= ReceiveLobbiesList;
     }
 
     private async Task CreateLobby()
     {
+        Console.WriteLine("Create lobby button has been pressed.");
         response = await AkkaService.CreateLobby(Username);
         await GetList();
     }
 
     private async Task GetList(){
-        list = (await AkkaService.GetLobbies()).ToList();
+        if (Username == null)
+        {
+            throw new NullReferenceException("Username cannot be null.");
+        }
+
+        await AkkaService.GetLobbies(Username);
     }
 
-    private async void ReceiveLobbiesList(List<string> lobbies)
+    private void ReceiveLobbiesList(List<string> lobbies)
     {
+        Console.WriteLine("In home component.");
         list = lobbies;
+        InvokeAsync(StateHasChanged);
     }
 
     private async Task JoinLobby(string item){
         bool result = await AkkaService.JoinLobby(Username, item);
+
         if(true){
             NavigationManager.NavigateTo($"/game/{Username}/{item}");
         }

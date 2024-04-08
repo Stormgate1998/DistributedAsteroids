@@ -1,24 +1,33 @@
 using Akka.Actor;
 using Asteroids.Shared.Actors;
 using Asteroids.Shared.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 public class ClientActor : ReceiveActor
 {
     public string Username { get; private set; }
+    public string ConnectionId { get; private set; }
     public IActorRef? CurrentLobby { get; private set; }
     private readonly IActorRef LobbySupervisor;
     private IHubService _hubService;
+    private readonly IServiceScope scope;
 
-    public ClientActor(string username, IActorRef lobbySupervisor, IHubService hubService)
+    public ClientActor(
+        string username,
+        string connectionId,
+        IActorRef lobbySupervisor,
+        IServiceProvider serviceProvider)
     {
         Username = username;
+        ConnectionId = connectionId;
         CurrentLobby = null;
         LobbySupervisor = lobbySupervisor;
-        _hubService = hubService;
+        scope = serviceProvider.CreateScope();
+        _hubService = scope.ServiceProvider.GetRequiredService<IHubService>();
 
         Receive<CreateLobby>(createLobby =>
         {
-            LobbySupervisor.Forward(new CreateLobby(Username));
+            LobbySupervisor.Tell(createLobby);
         });
 
         Receive<CreateLobbyResponse>(response =>
@@ -57,12 +66,27 @@ public class ClientActor : ReceiveActor
             LobbySupervisor.Tell(message);
         });
 
-        Receive<GetLobbiesResponse>(async message =>
+        ReceiveAsync<GetLobbiesResponse>(async message =>
         {
             Console.WriteLine("Sending list of lobbies to service.");
-            await _hubService.SendLobbyList(message.Lobbies);
+            await _hubService.SendLobbyList(message.Lobbies, ConnectionId);
         });
 
+        // Make this function generic. Upon receiving new client state, forward to hub
+        Receive<SendClientStateToHub>(message =>
+        {
+            _hubService.SendClientState(ConnectionId, message.state)
+                .PipeTo(
+                    Self,
+                    failure: ex => new ClientError(ex.Message)
+                );
+        });
+
+        Receive<ClientError>(error =>
+        {
+            Console.WriteLine("Got client related error.");
+            Console.WriteLine(error.Message);
+        });
 
         // Receive<UpdateShip>(updateShip =>
         // {

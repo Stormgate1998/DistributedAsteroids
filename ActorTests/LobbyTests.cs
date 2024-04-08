@@ -34,7 +34,7 @@ public class LobbyTests : TestKit
         supervisor.Tell(new CreateLobby("testLobby3"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
 
-        supervisor.Tell(new GetLobbies(), probe.Ref);
+        supervisor.Tell(new GetLobbies("TestUser"), probe.Ref);
         var response = probe.ExpectMsg<GetLobbiesResponse>();
 
         List<string> TestList = ["testLobby1", "testLobby2", "testLobby3"];
@@ -53,7 +53,7 @@ public class LobbyTests : TestKit
         lobbySupervisor.Tell(new CreateLobby("testLobby2"), probe.Ref);
         var lobby2 = probe.ExpectMsg<CreateLobbyResponse>();
 
-        lobbySupervisor.Tell(new GetLobbies(), probe.Ref);
+        lobbySupervisor.Tell(new GetLobbies("TestUser"), probe.Ref);
         var response = probe.ExpectMsg<GetLobbiesResponse>();
 
         lobby1.Should().NotBe(lobby2);
@@ -72,7 +72,7 @@ public class LobbyTests : TestKit
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectNoMsg();
 
-        lobbySupervisor.Tell(new GetLobbies(), probe.Ref);
+        lobbySupervisor.Tell(new GetLobbies("TestUser"), probe.Ref);
         var response = probe.ExpectMsg<GetLobbiesResponse>();
 
         response.Lobbies.Should().BeEquivalentTo(["testLobby"]);
