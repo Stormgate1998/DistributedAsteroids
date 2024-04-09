@@ -60,25 +60,26 @@ public class ClientTests : TestKit
     await Task.Delay(100);
     await signalRMock.DidNotReceive().SendClientState(Arg.Any<string>(), Arg.Is<ClientState>(s => s == ClientState.NoLobby));
   }
+  //5, 6 me
+  [Fact]
+  public async void ClientCanCreateLobby()
+  {
+    var (provider, signalRMock) = getServiceProvider();
 
-  // [Fact]
-  // public void ClientCanCreateLobby()
-  // {
-  //   var serviceMock = new Mock<IHubService>();
+    var probe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
+    var client = Sys.ActorOf(Props.Create<ClientActor>("tony", "fake id", lobbySupervisor, provider), "tony");
 
-  //   var probe = CreateTestProbe();
-  //   var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
-  //   var client = Sys.ActorOf(Props.Create<ClientActor>("tony", lobbySupervisor, serviceMock.Object), "tony");
+    client.Tell(new CreateLobby("tony"));
+    await Task.Delay(100);
 
-  //   client.Tell(new CreateLobby(""), probe.Ref);
-  //   probe.ExpectMsg<CreateLobbyResponse>();
 
-  //   lobbySupervisor.Tell(new GetLobbies("TestUser"), probe.Ref);
-  //   var response = probe.ExpectMsg<GetLobbiesResponse>();
+    lobbySupervisor.Tell(new GetLobbies("intentionally left blank"), probe.Ref);
+    var response = probe.ExpectMsg<GetLobbiesResponse>();
 
-  //   List<string> TestList = ["tony"];
-  //   response.Lobbies.Should().BeEquivalentTo(TestList);
-  // }
+    List<string> TestList = ["tony"];
+    response.Lobbies.Should().BeEquivalentTo(TestList);
+  }
 
   // [Fact]
   // public void ClientCanJoinExisitingLobby()
