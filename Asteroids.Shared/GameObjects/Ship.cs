@@ -12,9 +12,8 @@ public class Ship
     public bool TurningRight;
     public bool TurningLeft;
 
-    public Ship(string userName)
+    public Ship()
     {
-        Username = userName;
         MovingForward = false;
         TurningLeft = false;
         TurningRight = false;

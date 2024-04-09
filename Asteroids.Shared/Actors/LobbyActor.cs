@@ -24,14 +24,14 @@ public class LobbyActor : ReceiveActor
         {
             string userName = message.Username;
 
-            Ship ship = new(message.Username)
+            Ship ship = new()
             {
+                Username = userName,
                 Direction = 45,
                 Xpos = 50,
                 Ypos = 50,
                 Health = 50,
                 Score = 0,
-
             };
             gameState.ships.Add(ship);
             var self = Self;
