@@ -36,23 +36,30 @@ public class ClientTests : TestKit
 
     await Task.Delay(100);
     await signalRMock.Received().SendClientState(Arg.Any<string>(), Arg.Is<ClientState>(s => s == ClientState.NoLobby));
-    // var item = probe.ExpectMsg<CreateClientActorResponse>();
-    // item.Message.Should().Be("tony");
   }
 
-  // [Fact]
-  // public void ClientSupervisorCanNotCreateDuplicateClient()
-  // {
-  //   var probe = CreateTestProbe();
-  //   _ = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
-  //   var clientSupervisor = Sys.ActorOf<ClientSupervisorActor>();
+  [Fact]
+  public async void ClientSupervisorCanNotCreateDuplicateClient()
+  {
+    var probe = CreateTestProbe();
+    var (provider, signalRMock) = getServiceProvider();
 
-  //   clientSupervisor.Tell(new CreateClientActor("tony", ""), probe.Ref);
-  //   probe.ExpectMsg<CreateClientActorResponse>();
-  //   clientSupervisor.Tell(new CreateClientActor("tony", ""), probe.Ref);
-  //   var item = probe.ExpectMsg<CreateClientActorResponse>();
-  //   item.Message.Should().Be("Client tony already created");
-  // }
+    _ = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
+    var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(provider)), "clientSupervisor");
+
+    clientSupervisor.Tell(new CreateClientActor("tony", "connectionId"), probe.Ref);
+    // probe.ExpectMsg<CreateClientActorResponse>();
+
+    await Task.Delay(100);
+    await signalRMock.Received(1).SendClientState(Arg.Any<string>(), Arg.Is<ClientState>(s => s == ClientState.NoLobby));
+
+    signalRMock.ClearReceivedCalls();
+
+    clientSupervisor.Tell(new CreateClientActor("tony", "connectionId"), probe.Ref);
+
+    await Task.Delay(100);
+    await signalRMock.DidNotReceive().SendClientState(Arg.Any<string>(), Arg.Is<ClientState>(s => s == ClientState.NoLobby));
+  }
 
   // [Fact]
   // public void ClientCanCreateLobby()
