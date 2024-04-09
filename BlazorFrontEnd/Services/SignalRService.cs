@@ -1,5 +1,6 @@
 using Asteroids.Shared.Services;
 using Microsoft.AspNetCore.SignalR.Client;
+using Asteroids.Shared.GameObjects;
 
 namespace BlazorFrontEnd.Services;
 
@@ -7,6 +8,7 @@ public class SignalRService
 {
   public event Action<List<string>>? NewLobbyList;
   public event Action<ClientState>? NewClientState;
+  public event Action<GameStateObject>? NewGameState;
   private readonly HubConnection HubConnection;
 
   public SignalRService()
@@ -26,6 +28,12 @@ public class SignalRService
     {
       Console.WriteLine("Received client state for blazor.");
       NewClientState?.Invoke(state);
+    });
+    
+    HubConnection.On<GameStateObject>("ReceiveGameState", (state) =>
+    {
+      Console.WriteLine("Received game state for blazor.");
+      NewGameState?.Invoke(state);
     });
   }
 

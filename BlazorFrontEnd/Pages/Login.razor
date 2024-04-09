@@ -9,31 +9,38 @@
 <PageTitle>Login</PageTitle>
 
 <div>
-  <label for="username">Username:</label>
-  <input id="username" type="text" @bind="username" placeholder="Enter a username">
-  <button @onclick="LogIn">Submit</button>
-
-  <p class="text-error">@errorMessage</p>
+    <label for="username">Username:</label>
+    <input id="username" type="text" @bind="username" placeholder="Enter a username">
+    <button @onclick="LogIn">Submit</button>
+    @if (username.Contains(" "))
+    {
+        <p class="text-error">Spaces are not allowed in the username.</p>
+    }else if(string.IsNullOrWhiteSpace(username)){
+        <p class="text-error">Cannot log in. Username required.</p>
+    }
 </div>
 
 @code {
-  private string? username { get; set; }
-  private string errorMessage { get; set; }
+    private string? username = "";
 
-  protected override async Task OnInitializedAsync()
-  {
-    
-  }
-
-  private async Task LogIn()
-  {
-    if (username == null || username == "")
+    protected override async Task OnInitializedAsync()
     {
-      throw new NullReferenceException("Cannot log in. Username required.");
+
     }
 
-    AkkaService.CreateClient(username, await hubService.GetConnectionId());
+    private async Task LogIn()
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            throw new NullReferenceException("Cannot log in. Username required.");
+        }
+        else if (username.Contains(" "))
+        {
+            return;
+        }
 
-    NavigationManager.NavigateTo($"/home/{username}");
-  }
+        AkkaService.CreateClient(username, await hubService.GetConnectionId());
+
+        NavigationManager.NavigateTo($"/home/{username}");
+    }
 }

@@ -71,11 +71,9 @@
     }
 
     private async Task JoinLobby(string item){
-        bool result = await AkkaService.JoinLobby(Username, item);
+        AkkaService.JoinLobby(Username, item);
 
-        if(true){
-            NavigationManager.NavigateTo($"/game/{Username}/{item}");
-        }
+        NavigationManager.NavigateTo($"/game/{Username}/{item}");
     }
 
 }

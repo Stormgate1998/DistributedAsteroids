@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR.Client;
+using Asteroids.Shared.GameObjects;
 
 namespace Asteroids.Shared.Services;
 
@@ -34,13 +35,21 @@ public class HubService : IHubService
     });
     }
   }
-  
+
   public async Task SendClientState(string connectionId, ClientState state)
   {
     await EnsureHubConnection();
 
     Console.WriteLine("Sending client state to hub.");
     await _connectionId.SendAsync("SendClientState", state, connectionId);
+  }
+
+  public async Task SendGameSnapshot(string connectionId, GameStateObject game)
+  {
+    await EnsureHubConnection();
+    Console.WriteLine("sending current game state");
+    await _connectionId.SendAsync("SendGameState", game, connectionId);
+
   }
 
   public async Task StopAsync() => await _connectionId.StopAsync();

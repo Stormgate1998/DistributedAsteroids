@@ -17,6 +17,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - 2550:80
+    restart: unless-stopped
 
   je-asteroids-signalr:
     container_name: je-asteroids-websocket

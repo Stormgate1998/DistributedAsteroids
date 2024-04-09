@@ -34,7 +34,8 @@ public class LobbyActor : ReceiveActor
 
             };
             gameState.ships.Add(ship);
-            Sender.Tell(new JoinLobbyResponse(), Self);
+            var self = Self;
+            Sender.Tell(new JoinLobbyResponse("welcome", self));
         });
 
         Receive<GetState>(message =>

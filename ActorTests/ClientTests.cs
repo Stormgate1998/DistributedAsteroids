@@ -36,8 +36,6 @@ public class ClientTests : TestKit
 
     await Task.Delay(100);
     await signalRMock.Received().SendClientState(Arg.Any<string>(), Arg.Is<ClientState>(s => s == ClientState.NoLobby));
-    // var item = probe.ExpectMsg<CreateClientActorResponse>();
-    // item.Message.Should().Be("tony");
   }
 
   // [Fact]

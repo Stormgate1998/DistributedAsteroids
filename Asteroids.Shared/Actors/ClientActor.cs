@@ -41,7 +41,16 @@ public class ClientActor : ReceiveActor
 
         Receive<JoinLobby>(message =>
         {
-            LobbySupervisor.Forward(message);
+            LobbySupervisor.Tell(message);
+        });
+
+        Receive<JoinLobbyResponse>(response =>
+        {
+            var result = response.Actor;
+            if (result != null)
+            {
+                CurrentLobby = result;
+            }
         });
 
         Receive<StartGame>(message =>
@@ -86,6 +95,15 @@ public class ClientActor : ReceiveActor
         {
             Console.WriteLine("Got client related error.");
             Console.WriteLine(error.Message);
+        });
+
+        Receive<GameStateSnapshot>(message =>
+        {
+            _hubService.SendGameSnapshot(ConnectionId, message.Game)
+                .PipeTo(
+                    Self,
+                    failure: ex => new ClientError(ex.Message)
+                );
         });
 
         // Receive<UpdateShip>(updateShip =>

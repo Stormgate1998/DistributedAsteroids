@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Asteroids.Shared.Services;
 using Microsoft.AspNetCore.SignalR;
+using Asteroids.Shared.GameObjects;
 
 namespace Websocket.Hubs;
 
@@ -21,5 +22,13 @@ public class AsteroidsHub : Hub
     var client = Clients.Client(connectionId);
 
     await client.SendAsync("ReceiveClientState", state);
+  }
+
+  public async Task SendGameState(GameStateObject state, string connectionId)
+  {
+    Console.WriteLine("Received game state from hub");
+    var client = Clients.Client(connectionId);
+    await client.SendAsync("ReceiveGameState", state);
+
   }
 }

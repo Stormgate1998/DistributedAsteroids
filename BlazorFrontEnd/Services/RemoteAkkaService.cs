@@ -24,7 +24,7 @@ public class RemoteAkkaService : IHostedService
 
         var bootstrap = BootstrapSetup.Create();
         var mergeSystemSetup = bootstrap.And(dependencyInjectionSetup);
-        
+
         _actorSystem = ActorSystem.Create("BlazorActorSystem", mergeSystemSetup);
         lobbySupervisor = _actorSystem.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
         clientSupervisor = _actorSystem.ActorOf(Props.Create<ClientSupervisorActor>(serviceProvider), "clientSupervisor");
@@ -69,11 +69,9 @@ public class RemoteAkkaService : IHostedService
         var response = await clientSupervisor.Ask<CreateLobbyResponse>(new CreateLobby(lobbyName));
         return response.Message;
     }
-    public async Task<bool> JoinLobby(string username, string lobbyName)
+    public async Task JoinLobby(string username, string lobbyName)
     {
-        var response = await clientSupervisor.Ask<JoinLobbyResponse>(new JoinLobby(username, lobbyName));
-        Console.WriteLine(response.Message);
-        return response != null;
+        clientSupervisor.Tell(new JoinLobby(username, lobbyName));
     }
 
     public async Task<GameStateObject> StartGame(string username)

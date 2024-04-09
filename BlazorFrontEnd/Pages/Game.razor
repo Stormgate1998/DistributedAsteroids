@@ -1,11 +1,19 @@
 ﻿@page "/game/{username}/{lobbyname}"
 @using Microsoft.AspNetCore.SignalR.Client
+@using BlazorFrontEnd.Services
 @using Asteroids.Shared.GameObjects
 @inject RemoteAkkaService AkkaService
+@inject SignalRService hubService
+
 @* @inject HubConnection hubConnection *@
 <h1>Welcome @Username</h1>
 
 <div>List of Joined</div>
+@if(@gameObject.state == GameState.JOINING){
+    <div>Joining</div>
+}else{
+    <div>Playing</div>
+}
 
 @foreach(var item in gameObject.ships)
 {
@@ -23,10 +31,38 @@
     private List<string> list = new();
 
     private GameStateObject gameObject = new();
+    private System.Timers.Timer timer;
 
     protected override async Task OnInitializedAsync()
     {
-        gameObject = await AkkaService.GetState(Lobbyname, Username);
+        await hubService.EnsureStartedAsync();
+        hubService.NewGameState += ReceiveGameState;
+        AkkaService.GetState(Lobbyname,Username);
+        StartTimer();
+    }
+
+    public void Dispose()
+    {
+        hubService.NewGameState -= ReceiveGameState;
+    }
+
+
+    private void ReceiveGameState(GameStateObject game){
+        gameObject = game;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void StartTimer()
+    {
+        timer = new System.Timers.Timer(1); // 1 millisecond interval
+        timer.Elapsed += async (sender, e) =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await AkkaService.GetState(Lobbyname,Username);
+            });
+        };
+        timer.Start();
     }
 
 }
