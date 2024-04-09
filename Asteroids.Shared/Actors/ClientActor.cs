@@ -7,6 +7,7 @@ public class ClientActor : ReceiveActor
 {
     public string Username { get; private set; }
     public string ConnectionId { get; private set; }
+    public ClientState State { get; private set; }
     public IActorRef? CurrentLobby { get; private set; }
     private readonly IActorRef LobbySupervisor;
     private IHubService _hubService;
@@ -24,6 +25,11 @@ public class ClientActor : ReceiveActor
         LobbySupervisor = lobbySupervisor;
         scope = serviceProvider.CreateScope();
         _hubService = scope.ServiceProvider.GetRequiredService<IHubService>();
+
+        Receive<GetClientState>(message =>
+        {
+            Sender.Tell(new GetClientStateResponse(State));
+        });
 
         Receive<CreateLobby>(createLobby =>
         {
@@ -44,13 +50,15 @@ public class ClientActor : ReceiveActor
             LobbySupervisor.Tell(message);
         });
 
-        Receive<JoinLobbyResponse>(response =>
+        Receive<JoinLobbyResponse>(message =>
         {
-            var result = response.Actor;
-            if (result != null)
-            {
-                CurrentLobby = result;
-            }
+            // var result = response.Actor;
+            // if (result != null)
+            // {
+                // CurrentLobby = result;
+            // }
+            CurrentLobby = message.Actor;
+            State = ClientState.InLobby;
         });
 
         Receive<StartGame>(message =>
@@ -78,7 +86,11 @@ public class ClientActor : ReceiveActor
         ReceiveAsync<GetLobbiesResponse>(async message =>
         {
             Console.WriteLine("Sending list of lobbies to service.");
-            await _hubService.SendLobbyList(message.Lobbies, ConnectionId);
+            await _hubService.SendLobbyList(message.Lobbies, ConnectionId)
+                .PipeTo(
+                    Self,
+                    failure: ex => new ClientError(ex.Message)
+                );
         });
 
         // Make this function generic. Upon receiving new client state, forward to hub

@@ -48,9 +48,8 @@ public class ClientTests : TestKit
     var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(provider)), "clientSupervisor");
 
     clientSupervisor.Tell(new CreateClientActor("tony", "connectionId"), probe.Ref);
-    // probe.ExpectMsg<CreateClientActorResponse>();
-
     await Task.Delay(100);
+
     await signalRMock.Received(1).SendClientState(Arg.Any<string>(), Arg.Is<ClientState>(s => s == ClientState.NoLobby));
 
     signalRMock.ClearReceivedCalls();
@@ -81,46 +80,53 @@ public class ClientTests : TestKit
     response.Lobbies.Should().BeEquivalentTo(TestList);
   }
 
-  // [Fact]
-  // public void ClientCanJoinExisitingLobby()
-  // {
-  //   var serviceMock = new Mock<IHubService>();
+  [Fact]
+  public async void ClientCanJoinExisitingLobby()
+  {
+    var probe = CreateTestProbe();
+    var (provider, signalRMock) = getServiceProvider();
 
-  //   var probe = CreateTestProbe();
-  //   var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>("lobbySupervisor");
-  //   var client = Sys.ActorOf(Props.Create<ClientActor>("tony", lobbySupervisor, serviceMock.Object), "tony");
+    var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>("lobbySupervisor");
+    var client = Sys.ActorOf(Props.Create<ClientActor>("tony", "connectionId", lobbySupervisor, provider), "tony");
 
-  //   lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
-  //   probe.ExpectMsg<CreateLobbyResponse>();
+    lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+    probe.ExpectMsg<CreateLobbyResponse>();
 
-  //   client.Tell(new JoinLobby("testLobby", "tony"), probe.Ref);
-  //   probe.ExpectMsg<JoinLobbyResponse>();
-  // }
+    client.Tell(new JoinLobby("testLobby", "tony"), probe.Ref);
+    await Task.Delay(100);
+
+    client.Tell(new GetClientState(), probe.Ref);
+    probe.ExpectMsg<GetClientStateResponse>(response => response.State == ClientState.InLobby);
+  }
 
 
-  // [Fact]
-  // public void ClientCannotJoinNonExisitingLobby()
-  // {
-  //   var serviceMock = new Mock<IHubService>();
+  [Fact]
+  public async void ClientCannotJoinNonExisitingLobby()
+  {
+    var probe = CreateTestProbe();
+    var (provider, signalRMock) = getServiceProvider();
 
-  //   var probe = CreateTestProbe();
-  //   var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>("lobbySupervisor");
-  //   var client = Sys.ActorOf(Props.Create<ClientActor>("tony", lobbySupervisor, serviceMock.Object), "tony");
+    var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>("lobbySupervisor");
+    var client = Sys.ActorOf(Props.Create<ClientActor>("tony", "connectionId", lobbySupervisor, provider), "tony");
 
-  //   client.Tell(new JoinLobby("testLobby", "tony"), probe.Ref);
-  //   var response = probe.ExpectMsg<JoinLobbyResponse>();
-  //   response.Message.Should().Be("Could not find lobby: testLobby.");
-  // }
+    client.Tell(new JoinLobby("testLobby", "tony"), probe.Ref);
+    await Task.Delay(100);
+
+    client.Tell(new GetClientState(), probe.Ref);
+    probe.ExpectMsg<GetClientStateResponse>(response => response.State == ClientState.NoLobby);
+  }
 
 
   // [Fact]
   // public void ClientSupervisorCanJoinLobby()
   // {
   //   var probe = CreateTestProbe();
-  //   var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
-  //   var clientSupervisor = Sys.ActorOf<ClientSupervisorActor>();
+  //   var (provider, signalRMock) = getServiceProvider();
 
-  //   clientSupervisor.Tell(new CreateClientActor("tony", ""), probe.Ref);
+  //   var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
+  //   var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(provider)), "clientSupervisor");
+
+  //   clientSupervisor.Tell(new CreateClientActor("tony", "connectionId"), probe.Ref);
   //   probe.ExpectMsg<CreateClientActorResponse>();
 
   //   lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);

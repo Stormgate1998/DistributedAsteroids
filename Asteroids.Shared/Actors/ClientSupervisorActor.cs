@@ -52,6 +52,10 @@ public class ClientSupervisorActor : ReceiveActor
       {
         user.Forward(message);
       }
+      else
+      {
+        throw new Exception($"Client Supervisor: Could not find client {message.Username}.");
+      }
     });
 
     Receive<StartGame>(message =>

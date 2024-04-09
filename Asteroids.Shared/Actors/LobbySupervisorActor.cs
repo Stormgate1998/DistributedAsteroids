@@ -61,7 +61,7 @@ public class LobbySupervisorActor : ReceiveActor
             }
             else
             {
-                Sender.Tell(new JoinLobbyResponse($"Could not find lobby: {message.LobbyName}."));
+                throw new Exception($"Could not find lobby: {message.LobbyName}.");
             }
         });
 

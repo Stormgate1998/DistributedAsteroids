@@ -9,7 +9,7 @@ public record GetLobbies(string Username);
 public record GetLobbiesResponse(List<string> Lobbies);
 
 public record JoinLobby(string LobbyName, string Username);
-public record JoinLobbyResponse(string? Message = null, IActorRef? Actor = null);
+public record JoinLobbyResponse(IActorRef Actor);
 
 
 public record LobbyError(string Message);
