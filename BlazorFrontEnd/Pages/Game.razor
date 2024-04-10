@@ -1,17 +1,22 @@
-﻿@page "/game/{username}/{lobbyname}"
-@using Microsoft.AspNetCore.SignalR.Client
+﻿@using Microsoft.AspNetCore.SignalR.Client
 @using BlazorFrontEnd.Services
 @using Asteroids.Shared.GameObjects
+
 @inject RemoteAkkaService AkkaService
 @inject SignalRService hubService
 
-@* @inject HubConnection hubConnection *@
+@page "/game/{username}/{lobbyname}"
+
 <h1>Welcome @Username</h1>
 
 <div>List of Joined</div>
-@if(@gameObject.state == GameState.JOINING){
+
+@if (@gameObject.state == GameState.JOINING)
+{
     <div>Joining</div>
-}else{
+} 
+else
+{
     <div>Playing</div>
 }
 
@@ -20,49 +25,85 @@
     @item.Username
 }
 
+<div
+    tabindex="0"
+    class="border border-4 border-black rounded-4 game-board"
+    style="height: 500px; width: 1000px;"
+    @onkeydown="handleKeyDown"
+    @onkeyup="handleKeyUp"
+    @onblur="handleBlur"
+>
+
+</div>
+
+<style>
+    .game-board:focus {
+        border-color: blue !important;
+        background-color: lightgrey;
+    }
+</style>
 
 @code {
     [Parameter]
-    public string? Username {get;set;}
+    public string? Username { get; set; }
 
     [Parameter]
-    public string? Lobbyname {get;set;}
+    public string? Lobbyname { get; set; }
 
     private List<string> list = new();
-
     private GameStateObject gameObject = new();
-    private System.Timers.Timer timer;
 
     protected override async Task OnInitializedAsync()
     {
         await hubService.EnsureStartedAsync();
         hubService.NewGameState += ReceiveGameState;
-        AkkaService.GetState(Lobbyname,Username);
-        StartTimer();
+        await AkkaService.GetState(Lobbyname, Username);
     }
-
-    public void Dispose()
-    {
-        hubService.NewGameState -= ReceiveGameState;
-    }
-
 
     private void ReceiveGameState(GameStateObject game){
         gameObject = game;
         InvokeAsync(StateHasChanged);
     }
 
-    private void StartTimer()
+    // Player controller
+    private string[] movementKeys = ["w", "a", "d"];
+    private HashSet<string> pressedKeys = new HashSet<string>();
+    
+    private void handleKeyDown(KeyboardEventArgs e)
     {
-        timer = new System.Timers.Timer(1); // 1 millisecond interval
-        timer.Elapsed += async (sender, e) =>
+        if (movementKeys.Contains(e.Key))
         {
-            await InvokeAsync(async () =>
-            {
-                await AkkaService.GetState(Lobbyname,Username);
-            });
-        };
-        timer.Start();
+            pressedKeys.Add(e.Key);
+        }
+        Console.WriteLine($"Key pressed: {e.Key}");
     }
 
+    private void handleKeyUp(KeyboardEventArgs e)
+    {
+        pressedKeys.Remove(e.Key);
+    }
+
+    private const double inputCheckInterval = 0.001;
+    
+    private void SendInputIfDifferent(object? state)
+    {
+        InvokeAsync(() =>
+        {
+            var forward = pressedKeys.Contains("w");
+            var left = pressedKeys.Contains("a") && !pressedKeys.Contains("d");
+            var right = !pressedKeys.Contains("a") && pressedKeys.Contains("d");
+
+            
+        });
+    }
+
+    private void handleBlur()
+    {
+        pressedKeys = new HashSet<string>();
+    }
+
+    public void Dispose()
+    {
+        hubService.NewGameState -= ReceiveGameState;
+    }
 }

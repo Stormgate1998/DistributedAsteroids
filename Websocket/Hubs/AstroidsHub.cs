@@ -27,8 +27,8 @@ public class AsteroidsHub : Hub
   public async Task SendGameState(GameStateObject state, string connectionId)
   {
     Console.WriteLine("Received game state from hub");
+
     var client = Clients.Client(connectionId);
     await client.SendAsync("ReceiveGameState", state);
-
   }
 }
