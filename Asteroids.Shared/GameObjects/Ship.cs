@@ -1,21 +1,16 @@
 namespace Asteroids.Shared.GameObjects;
 
-public class Ship
+public record Ship
 {
-    public string Username;
-    public int Health;
-    public int Score;
-    public int Xpos;
-    public int Ypos;
-    public int Direction;
-    public bool MovingForward;
-    public bool TurningRight;
-    public bool TurningLeft;
+    public string Username { get; init; }
+    public int Health { get; init; }
+    public int Score { get; init; }
+    public int Xpos { get; init; }
+    public int Ypos { get; init; }
+    public int Direction { get; init; }
+    public bool MovingForward { get; init; }
+    public bool TurningRight { get; init; }
+    public bool TurningLeft { get; init; }
 
-    public Ship()
-    {
-        MovingForward = false;
-        TurningLeft = false;
-        TurningRight = false;
-    }
+
 }

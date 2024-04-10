@@ -8,17 +8,26 @@
 @* @inject HubConnection hubConnection *@
 <h1>Welcome @Username</h1>
 
-<div>List of Joined</div>
+
 @if(@gameObject.state == GameState.JOINING){
     <div>Joining</div>
 }else{
     <div>Playing</div>
 }
+<div>List of Joined</div>
+@if(gameObject != null){
+    @if(gameObject.ships != null){
+        <div>Player Count: @gameObject.ships.Count</div>
+        <ul>
+        @foreach(var item in gameObject.ships)
+        {
+            <li> @item.Username</li>
+        }
+        </ul>
+    }
 
-@foreach(var item in gameObject.ships)
-{
-    @item.Username
 }
+
 
 
 @code {
@@ -30,11 +39,14 @@
 
     private List<string> list = new();
 
-    private GameStateObject gameObject = new();
+    private GameStateObject gameObject { get; set; }
     private System.Timers.Timer timer;
 
     protected override async Task OnInitializedAsync()
     {
+        if(gameObject == null){
+        gameObject = new();
+        }
         await hubService.EnsureStartedAsync();
         hubService.NewGameState += ReceiveGameState;
         AkkaService.GetState(Lobbyname,Username);
@@ -44,17 +56,28 @@
     public void Dispose()
     {
         hubService.NewGameState -= ReceiveGameState;
+        timer.Stop();
     }
 
 
     private void ReceiveGameState(GameStateObject game){
         gameObject = game;
+        Console.WriteLine(gameObject.state);
+        if(gameObject == null){
+            Console.WriteLine("null object gotten");
+        }
+        bool usernameFound = gameObject.ships.Any(ship => ship.Username == Username);
+        
+        if (!usernameFound)
+        {
+            Console.WriteLine($"Username '{Username}' not found in ships.");
+        }
         InvokeAsync(StateHasChanged);
     }
 
     private void StartTimer()
     {
-        timer = new System.Timers.Timer(1); // 1 millisecond interval
+        timer = new System.Timers.Timer(100); // 1 millisecond interval
         timer.Elapsed += async (sender, e) =>
         {
             await InvokeAsync(async () =>

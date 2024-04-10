@@ -28,6 +28,7 @@ public class AsteroidsHub : Hub
   {
     Console.WriteLine("Received game state from hub");
     var client = Clients.Client(connectionId);
+    Console.WriteLine($"Socket ship count: {state.ships.Count}");
     await client.SendAsync("ReceiveGameState", state);
 
   }

@@ -29,10 +29,11 @@ public class SignalRService
       Console.WriteLine("Received client state for blazor.");
       NewClientState?.Invoke(state);
     });
-    
+
     HubConnection.On<GameStateObject>("ReceiveGameState", (state) =>
     {
       Console.WriteLine("Received game state for blazor.");
+      Console.WriteLine($"Blazor ship count: {state.ships.Count}");
       NewGameState?.Invoke(state);
     });
   }

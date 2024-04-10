@@ -71,7 +71,7 @@ public class RemoteAkkaService : IHostedService
     }
     public async Task JoinLobby(string username, string lobbyName)
     {
-        clientSupervisor.Tell(new JoinLobby(username, lobbyName));
+        clientSupervisor.Tell(new JoinLobby(lobbyName, username));
     }
 
     public async Task<GameStateObject> StartGame(string username)

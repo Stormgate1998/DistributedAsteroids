@@ -55,7 +55,7 @@ public class ClientActor : ReceiveActor
             // var result = response.Actor;
             // if (result != null)
             // {
-                // CurrentLobby = result;
+            // CurrentLobby = result;
             // }
             CurrentLobby = message.Actor;
             State = ClientState.InLobby;
@@ -111,6 +111,7 @@ public class ClientActor : ReceiveActor
 
         Receive<GameStateSnapshot>(message =>
         {
+            Console.WriteLine($"Actor ship count: {message.Game.ships.Count}");
             _hubService.SendGameSnapshot(ConnectionId, message.Game)
                 .PipeTo(
                     Self,
