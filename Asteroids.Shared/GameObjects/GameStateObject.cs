@@ -1,14 +1,9 @@
 namespace Asteroids.Shared.GameObjects;
 
-public class GameStateObject
+public record GameStateObject
 {
-    public GameState state;
-    public List<Ship> ships;
-    public GameStateObject()
-    {
-        ships = [];
-        state = GameState.JOINING;
-    }
+    public GameState state { get; init; }
+    public List<Ship> ships { get; init; }
 }
 
 

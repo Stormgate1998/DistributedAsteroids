@@ -47,8 +47,8 @@ public class HubService : IHubService
   public async Task SendGameSnapshot(string connectionId, GameStateObject game)
   {
     await EnsureHubConnection();
-
-    Console.WriteLine("Hub Service: Sending current game state");
+    Console.WriteLine("sending current game state");
+    Console.WriteLine($"Ship count: {game.ships.Count}");
     await _connectionId.SendAsync("SendGameState", game, connectionId);
   }
 

@@ -51,10 +51,13 @@ else
     public string? Lobbyname { get; set; }
 
     private List<string> list = new();
-    private GameStateObject gameObject = new();
+    private GameStateObject gameObject { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        if(gameObject == null){
+        gameObject = new();
+        }
         await hubService.EnsureStartedAsync();
         hubService.NewGameState += ReceiveGameState;
         await AkkaService.GetState(Lobbyname, Username);
@@ -62,6 +65,16 @@ else
 
     private void ReceiveGameState(GameStateObject game){
         gameObject = game;
+        Console.WriteLine(gameObject.state);
+        if(gameObject == null){
+            Console.WriteLine("null object gotten");
+        }
+        bool usernameFound = gameObject.ships.Any(ship => ship.Username == Username);
+        
+        if (!usernameFound)
+        {
+            Console.WriteLine($"Username '{Username}' not found in ships.");
+        }
         InvokeAsync(StateHasChanged);
     }
 
