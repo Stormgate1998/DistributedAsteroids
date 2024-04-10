@@ -19,13 +19,20 @@ else
 }
 
 <div>List of Joined</div>
-@if (gameObject != null){
-    @if (gameObject.ships != null){
+@if (gameObject != null)
+{
+    @if (gameObject.ships != null)
+    {
+        @if (Lobbyname == Username && gameObject.state == GameState.JOINING)
+        {
+            <button  @onclick="StartGame">Start Game</button>
+        }
+
         <div>Player Count: @gameObject.ships.Count</div>
         <ul>
         @foreach (var item in gameObject.ships)
         {
-            <li> @item.Username</li>
+            <li>@item.Username</li>
         }
         </ul>
     }
@@ -96,7 +103,7 @@ else
 
     private void StartTimer()
     {
-        timer = new System.Timers.Timer(100);
+        @* timer = new System.Timers.Timer(100); // 1 millisecond interval
         timer.Elapsed += async (sender, e) =>
         {
             await InvokeAsync(async () =>
@@ -104,7 +111,16 @@ else
                 await AkkaService.GetState(Lobbyname, Username);
             });
         };
-        timer.Start();
+        timer.Start(); *@
+    }
+
+
+    private async Task StartGame()
+    {
+        if (Username == Lobbyname)
+        {
+            AkkaService.StartGame(Username);
+        }
     }
 
     // Player controller
@@ -123,20 +139,6 @@ else
     private void handleKeyUp(KeyboardEventArgs e)
     {
         pressedKeys.Remove(e.Key);
-    }
-
-    private const double inputCheckInterval = 0.001;
-    
-    private void SendInputIfDifferent(object? state)
-    {
-        InvokeAsync(() =>
-        {
-            var forward = pressedKeys.Contains("w");
-            var left = pressedKeys.Contains("a") && !pressedKeys.Contains("d");
-            var right = !pressedKeys.Contains("a") && pressedKeys.Contains("d");
-
-            
-        });
     }
 
     private void handleBlur()
