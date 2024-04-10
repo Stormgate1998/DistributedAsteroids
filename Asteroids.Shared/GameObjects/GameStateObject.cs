@@ -13,5 +13,4 @@ public enum GameState
 {
     JOINING,
     PLAYING,
-
 }
