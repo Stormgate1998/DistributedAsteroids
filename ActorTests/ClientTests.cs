@@ -172,8 +172,11 @@ public class ClientTests : TestKit
   {
     var (provider, signalRMock) = getServiceProvider();
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
-    var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(provider)), "clientSupervisor");
+    var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), 
+    "lobbySupervisor");
+    var clientSupervisor = Sys.ActorOf(Props.Create(() =>
+    new ClientSupervisorActor(provider)),
+    "clientSupervisor");
 
     clientSupervisor.Tell(new CreateClientActor("tony", ""));
     await Task.Delay(100);
@@ -184,7 +187,9 @@ public class ClientTests : TestKit
     clientSupervisor.Tell(new JoinLobby("tony", "tony"));
     await Task.Delay(100);
 
-    clientSupervisor.Tell(new StartGame("tony"), probe.Ref);
+    clientSupervisor.Tell(new StartGame("tony"));
+    await Task.Delay(100);
+    lobbySupervisor.Tell(new GetState("tony", "tony"), probe.Ref);
 
     var response = probe.ExpectMsg<GameStateSnapshot>();
 

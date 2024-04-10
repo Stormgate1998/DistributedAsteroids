@@ -17,6 +17,9 @@
 <div>List of Joined</div>
 @if(gameObject != null){
     @if(gameObject.ships != null){
+        @if(Lobbyname == Username && gameObject.state == GameState.JOINING){
+            <button  @onclick="StartGame">Start Game</button>
+        }
         <div>Player Count: @gameObject.ships.Count</div>
         <ul>
         @foreach(var item in gameObject.ships)
@@ -77,7 +80,7 @@
 
     private void StartTimer()
     {
-        timer = new System.Timers.Timer(100); // 1 millisecond interval
+        @* timer = new System.Timers.Timer(100); // 1 millisecond interval
         timer.Elapsed += async (sender, e) =>
         {
             await InvokeAsync(async () =>
@@ -85,7 +88,15 @@
                 await AkkaService.GetState(Lobbyname,Username);
             });
         };
-        timer.Start();
+        timer.Start(); *@
+    }
+
+
+    private async Task StartGame()
+    {
+        if(Username == Lobbyname){
+            AkkaService.StartGame(Username);
+        }
     }
 
 }

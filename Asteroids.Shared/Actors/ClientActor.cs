@@ -65,7 +65,7 @@ public class ClientActor : ReceiveActor
         {
             if (username == message.Username)
             {
-                LobbySupervisor.Forward(message);
+                CurrentLobby.Tell(message);
 
             }
         });

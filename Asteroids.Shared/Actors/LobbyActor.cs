@@ -14,7 +14,8 @@ public class LobbyActor : ReceiveActor
         this.onDeathCallback = onDeathCallback;
         gameState = new()
         {
-            state = GameState.JOINING
+            state = GameState.JOINING,
+            LobbyName = lobbyName,
         };
 
         Receive<LobbyDeath>(death =>
@@ -49,16 +50,16 @@ public class LobbyActor : ReceiveActor
 
         Receive<StartGame>(message =>
         {
-            if (message.Username == LobbyName)
+            // if (message.Username == gameState.LobbyName)
+            // {
+            GameStateObject newState = new()
             {
-                GameStateObject newState = new GameStateObject()
-                {
-                    state = GameState.PLAYING,
-                    ships = gameState.ships,
-                };
-                gameState = newState;
-                Sender.Tell(new GameStateSnapshot(newState));
-            }
+                state = GameState.PLAYING,
+                ships = gameState.ships,
+            };
+            gameState = newState;
+            Sender.Tell(new GameStateSnapshot(newState));
+            // }
         });
 
     }

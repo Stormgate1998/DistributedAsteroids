@@ -69,15 +69,15 @@ public class RemoteAkkaService : IHostedService
         var response = await clientSupervisor.Ask<CreateLobbyResponse>(new CreateLobby(lobbyName));
         return response.Message;
     }
-    public async Task JoinLobby(string username, string lobbyName)
+    public void JoinLobby(string username, string lobbyName)
     {
         clientSupervisor.Tell(new JoinLobby(lobbyName, username));
     }
 
-    public async Task<GameStateObject> StartGame(string username)
+    public void StartGame(string username)
     {
-        var response = await clientSupervisor.Ask<GameStateSnapshot>(new StartGame(username));
-        return response.Game;
+        Console.WriteLine("Starting game");
+        clientSupervisor.Tell(new StartGame(username));
     }
 
     public async Task<List<string>> GetLobbies(string username)
