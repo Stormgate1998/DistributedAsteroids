@@ -79,8 +79,17 @@ public class LobbyActor : ReceiveActor
         {
             direction = ship.Direction - 5;
         }
+        else if (ship.TurningLeft == true)
+        {
+            direction = ship.Direction + 5;
+        }
+        else
+        {
+            direction = ship.Direction;
+        }
 
-        double angleInRadians = ship.Direction * Math.PI / 180.0;
+
+        double angleInRadians = direction * Math.PI / 180.0;
 
         // Calculate the new x and y coordinates
         int newX = (int)(ship.Xpos + ship.Speed * Math.Cos(angleInRadians));
@@ -89,7 +98,7 @@ public class LobbyActor : ReceiveActor
         return new Ship()
         {
             Username = ship.Username,
-            Direction = ship.Direction,
+            Direction = direction,
             Xpos = newX,
             Ypos = newY,
             Health = ship.Health,
