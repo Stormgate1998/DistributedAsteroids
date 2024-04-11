@@ -85,9 +85,15 @@ public class RemoteAkkaService : IHostedService
         var response = await clientSupervisor.Ask<GetLobbiesResponse>(new GetLobbies(username));
         return response.Lobbies;
     }
+
     public async Task<GameStateObject> GetState(string lobby, string username)
     {
         var response = await clientSupervisor.Ask<GameStateSnapshot>(new GetState(lobby, username));
         return response.Game;
+    }
+
+    public void SendShipInput(ShipInput input)
+    {
+        clientSupervisor.Tell(new SendShipInput(input));
     }
 }

@@ -1,3 +1,4 @@
+using Asteroids.Shared.GameObjects;
 using Asteroids.Shared.Services;
 
 namespace Asteroids.Shared.Actors;
@@ -11,3 +12,5 @@ public record GetClientState();
 public record GetClientStateResponse(ClientState State);
 
 public record ClientError(string Message);
+
+public record SendShipInput(ShipInput Input);

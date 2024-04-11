@@ -82,6 +82,13 @@ public class ClientSupervisorActor : ReceiveActor
       }
     });
 
+    Receive<SendShipInput>(message =>
+    {
+      if (clients.TryGetValue(message.Input.Username, out var user))
+      {
+        user.Forward(message);
+      }
+    });
   }
 
 

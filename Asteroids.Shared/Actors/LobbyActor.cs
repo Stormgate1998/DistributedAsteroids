@@ -74,9 +74,26 @@ public class LobbyActor : ReceiveActor
             Sender.Tell(new ShipsUpdate(testShip));
         });
 
+        Receive<SendShipInput>(message =>
+        {
+            var shipToUpdate = gameState.ships.FirstOrDefault(ship => ship.Username == message.Input.Username);
+            
+            if (shipToUpdate != null)
+            {
+                Ship updatedShip = shipToUpdate with
+                {
+                    MovingForward = message.Input.Forward,
+                    TurningLeft = message.Input.Left,
+                    TurningRight = message.Input.Right,
+                };
 
-
+                // Update the ship in the collection
+                int index = gameState.ships.IndexOf(shipToUpdate);
+                gameState.ships[index] = updatedShip;
+            }
+        });
     }
+
     public Ship ProcessMovement(Ship ship)
     {
         int direction = 0;
@@ -123,6 +140,7 @@ public class LobbyActor : ReceiveActor
         {
             newShipList.Add(ProcessMovement(ship));
         }
+        
         return newShipList;
     }
 

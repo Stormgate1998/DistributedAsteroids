@@ -168,6 +168,7 @@ else
                 lastShipInput = input;
                 
                 Console.WriteLine($"Forward: {forward}, Left: {left}, Right: {right}");
+                AkkaService.SendShipInput(input);
             }
         });
     }

@@ -119,15 +119,10 @@ public class ClientActor : ReceiveActor
                 );
         });
 
-        // Receive<UpdateShip>(updateShip =>
-        // {
-        //     // Logic to update ship
-        //     // Assuming ship update details are in updateShip object
-        // });
-        // Receive<EnterLobby>(enterLobby =>
-        // {
-
-        // });
+        Receive<SendShipInput>(message =>
+        {
+            CurrentLobby.Tell(message);
+        });
     }
 
     // protected override void PreStart()
