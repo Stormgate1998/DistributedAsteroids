@@ -1,18 +1,40 @@
-using System.Data;
+using System.Threading;
 using Akka.Actor;
 using Asteroids.Shared.GameObjects;
+
 namespace Asteroids.Shared.Actors;
 
 public class LobbyActor : ReceiveActor
 {
     private readonly Action<string> onDeathCallback;
     private string LobbyName;
+    private Timer timer;
+    private Dictionary<string, IActorRef> particpatingUsers = [];
     private GameStateObject gameState = new() { state = GameState.JOINING, ships = [] };
 
     public LobbyActor(string lobbyName, Action<string> onDeathCallback)
     {
         LobbyName = lobbyName;
         this.onDeathCallback = onDeathCallback;
+
+        timer = new Timer(_ =>
+        {
+            var updatedShips = ProcessAllShipMovement(gameState.ships);
+
+            var newState = new GameStateObject
+            {
+                state = gameState.state,
+                ships = updatedShips,
+            };
+
+            gameState = newState;
+
+            foreach (var user in particpatingUsers.Values)
+            {
+                user.Tell(new GameStateSnapshot(gameState));
+            }
+
+        }, null, 0, 100);
 
         Receive<LobbyDeath>(death =>
         {
@@ -24,6 +46,7 @@ public class LobbyActor : ReceiveActor
         Receive<JoinLobby>(message =>
         {
             string userName = message.Username;
+            particpatingUsers[message.Username] = Sender;
 
             Ship ship = new()
             {
@@ -77,7 +100,7 @@ public class LobbyActor : ReceiveActor
         Receive<SendShipInput>(message =>
         {
             var shipToUpdate = gameState.ships.FirstOrDefault(ship => ship.Username == message.Input.Username);
-            
+
             if (shipToUpdate != null)
             {
                 Ship updatedShip = shipToUpdate with
@@ -127,6 +150,7 @@ public class LobbyActor : ReceiveActor
             speed = ship.Speed - 1;
         }
         speed = Math.Clamp(speed, 0, 10);
+
         return new Ship()
         {
             Username = ship.Username,
@@ -145,11 +169,12 @@ public class LobbyActor : ReceiveActor
     public List<Ship> ProcessAllShipMovement(List<Ship> shipList)
     {
         List<Ship> newShipList = [];
+
         foreach (Ship ship in shipList)
         {
             newShipList.Add(ProcessMovement(ship));
         }
-        
+
         return newShipList;
     }
 

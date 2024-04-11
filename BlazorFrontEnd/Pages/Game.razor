@@ -42,12 +42,20 @@ else
 <div
     tabindex="0"
     class="border border-4 border-black rounded-4 game-board"
-    style="height: 500px; width: 1000px;"
+    style="height: 500px; width: 1000px; position: relative;"
     @onkeydown="handleKeyDown"
     @onkeyup="handleKeyUp"
     @onblur="handleBlur"
 >
+    @if (gameObject != null && gameObject.ships != null)
+    {
 
+        @foreach (var ship in gameObject.ships)
+        {
+            
+            <div class="bg-primary" style=@($"width: 10px; height: 10px; rotate: {ship.Direction}deg; top: {ship.Ypos}px, left: {ship.Xpos}px; psition: absolute;")></div>
+        }
+    }
 </div>
 
 <style>
@@ -97,8 +105,6 @@ else
 
     private void ReceiveGameState(GameStateObject game){
         gameObject = game;
-
-        Console.WriteLine(gameObject.state);
 
         if (gameObject == null)
         {

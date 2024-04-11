@@ -11,7 +11,7 @@ public interface IHubService
   public Task StopAsync();
   public Task SendLobbyList(List<string> lobbyList, string connectionId);
   public Task SendGameSnapshot(string connectionId, GameStateObject game);
-
+  
 }
 
 public enum ClientState
