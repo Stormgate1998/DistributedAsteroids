@@ -117,7 +117,16 @@ public class LobbyActor : ReceiveActor
         // Calculate the new x and y coordinates
         int newX = (int)(ship.Xpos + ship.Speed * Math.Cos(angleInRadians));
         int newY = (int)(ship.Ypos + ship.Speed * Math.Sin(angleInRadians));
-
+        int speed = 0;
+        if (ship.MovingForward)
+        {
+            speed = ship.Speed + 2;
+        }
+        else
+        {
+            speed = ship.Speed - 1;
+        }
+        speed = Math.Clamp(speed, 0, 10);
         return new Ship()
         {
             Username = ship.Username,
@@ -129,7 +138,7 @@ public class LobbyActor : ReceiveActor
             MovingForward = ship.MovingForward,
             TurningLeft = ship.TurningLeft,
             TurningRight = ship.TurningRight,
-            Speed = ship.Speed,
+            Speed = speed,
         };
     }
 
