@@ -62,10 +62,16 @@ public class LobbyActor : ReceiveActor
 
         Receive<TestProcessMovement>(message =>
         {
-            Ship testShip = ProcessMovement(message.ship);
+            Ship testShip = ProcessMovement(message.TestShip);
             Sender.Tell(new ShipUpdate(testShip));
 
 
+        });
+
+        Receive<TestProcessMovementList>(message =>
+        {
+            List<Ship> testShip = ProcessAllShipMovement(message.TestShip);
+            Sender.Tell(new ShipsUpdate(testShip));
         });
 
 
@@ -108,6 +114,16 @@ public class LobbyActor : ReceiveActor
             TurningRight = ship.TurningRight,
             Speed = ship.Speed,
         };
+    }
+
+    public List<Ship> ProcessAllShipMovement(List<Ship> shipList)
+    {
+        List<Ship> newShipList = [];
+        foreach (Ship ship in shipList)
+        {
+            newShipList.Add(ProcessMovement(ship));
+        }
+        return newShipList;
     }
 
     // protected override void PreStart()

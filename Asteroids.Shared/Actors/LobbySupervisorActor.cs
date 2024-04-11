@@ -85,7 +85,14 @@ public class LobbySupervisorActor : ReceiveActor
 
         Receive<TestProcessMovement>(message =>
         {
-            if (lobbies.TryGetValue(message.lobbyName, out var lobby))
+            if (lobbies.TryGetValue(message.LobbyName, out var lobby))
+            {
+                lobby.Forward(message);
+            }
+        });
+        Receive<TestProcessMovementList>(message =>
+        {
+            if (lobbies.TryGetValue(message.LobbyName, out var lobby))
             {
                 lobby.Forward(message);
             }

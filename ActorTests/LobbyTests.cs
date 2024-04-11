@@ -197,7 +197,6 @@ public class LobbyTests : TestKit
             MovingForward = false,
             TurningLeft = false,
             TurningRight = false,
-
         };
 
         Ship expectedShip = new()
@@ -212,9 +211,7 @@ public class LobbyTests : TestKit
             MovingForward = false,
             TurningLeft = false,
             TurningRight = false,
-
         };
-
         lobbySupervisor.Tell(new TestProcessMovement(testShip, "testLobby"), probe.Ref);
         var response = probe.ExpectMsg<ShipUpdate>();
 
@@ -245,7 +242,6 @@ public class LobbyTests : TestKit
             MovingForward = false,
             TurningLeft = true,
             TurningRight = false,
-
         };
 
         Ship expectedShip = new()
@@ -260,7 +256,6 @@ public class LobbyTests : TestKit
             MovingForward = false,
             TurningLeft = true,
             TurningRight = false,
-
         };
 
         lobbySupervisor.Tell(new TestProcessMovement(testShip, "testLobby"), probe.Ref);
@@ -294,10 +289,8 @@ public class LobbyTests : TestKit
             TurningLeft = false,
             TurningRight = true,
         };
-
         lobbySupervisor.Tell(new TestProcessMovement(testShip2, "testLobby"), probe.Ref);
         response = probe.ExpectMsg<ShipUpdate>();
-
         response.Updated.Should().Be(expectedShip2);
     }
 
@@ -312,7 +305,7 @@ public class LobbyTests : TestKit
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectNoMsg();
-        Ship testShip = new Ship()
+        Ship testShip = new()
         {
             Username = "tony",
             Health = 40,
@@ -324,7 +317,6 @@ public class LobbyTests : TestKit
             MovingForward = false,
             TurningLeft = true,
             TurningRight = false,
-
         };
 
         Ship expectedShip = new()
@@ -339,12 +331,87 @@ public class LobbyTests : TestKit
             MovingForward = false,
             TurningLeft = true,
             TurningRight = false,
-
         };
 
         lobbySupervisor.Tell(new TestProcessMovement(testShip, "testLobby"), probe.Ref);
         var response = probe.ExpectMsg<ShipUpdate>();
 
         response.Updated.Should().Be(expectedShip);
+    }
+
+
+
+    [Fact]
+    public void TestProcessesListOfShipsCorrectly()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectNoMsg();
+
+        var testShipList = new List<Ship>
+        {
+            new() {
+                Username = "tony",
+                Health = 40,
+                Score = 40,
+                Speed = 0,
+                Xpos = 0,
+                Ypos = 0,
+                Direction = 0,
+                MovingForward = false,
+                TurningLeft = true,
+                TurningRight = false
+            },
+            new() {
+                Username = "tony",
+                Health = 40,
+                Score = 40,
+                Speed = 0,
+                Xpos = 0,
+                Ypos = 0,
+                Direction = 0,
+                MovingForward = false,
+                TurningLeft = false,
+                TurningRight = true
+            }
+        };
+
+        var expectedShipList = new List<Ship>{
+            new(){
+                Username = "tony",
+                Health = 40,
+                Score = 40,
+                Speed = 0,
+                Xpos = 0,
+                Ypos = 0,
+                Direction = 5,
+                MovingForward = false,
+                TurningLeft = true,
+                TurningRight = false,
+            },
+            new(){
+                Username = "tony",
+                Health = 40,
+                Score = 40,
+                Speed = 0,
+                Xpos = 0,
+                Ypos = 0,
+                Direction = -5,
+                MovingForward = false,
+                TurningLeft = false,
+                TurningRight = true,
+            }
+
+        };
+
+        lobbySupervisor.Tell(new TestProcessMovementList(testShipList, "testLobby"), probe.Ref);
+        var response = probe.ExpectMsg<ShipsUpdate>();
+
+        response.Updated.Should().BeEquivalentTo(expectedShipList);
     }
 }

@@ -15,7 +15,11 @@ public record JoinLobbyResponse(IActorRef Actor);
 public record LobbyError(string Message);
 public record LobbyDeath(string LobbyName);
 public record ShipUpdate(Ship Updated);
-public record TestProcessMovement(Ship ship, string lobbyName);
+public record TestProcessMovement(Ship TestShip, string LobbyName);
+public record TestProcessMovementList(List<Ship> TestShip, string LobbyName);
+
+public record ShipsUpdate(List<Ship> Updated);
+
 
 public record GetState(string LobbyName, string Username);
 public record GameStateSnapshot(GameStateObject Game);
