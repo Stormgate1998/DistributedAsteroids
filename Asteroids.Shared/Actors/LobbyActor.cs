@@ -104,19 +104,12 @@ public class LobbyActor : ReceiveActor
         if (ship.MovingForward)
         {
             speed = ship.Speed + 2;
-            if (speed > 10)
-            {
-                speed = 10;
-            }
         }
         else
         {
             speed = ship.Speed - 1;
-            if (speed < 0)
-            {
-                speed = 0;
-            }
         }
+        speed = Math.Clamp(speed, 0, 10);
         return new Ship()
         {
             Username = ship.Username,
