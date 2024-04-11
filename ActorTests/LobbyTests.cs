@@ -100,7 +100,7 @@ public class LobbyTests : TestKit
             Xpos = 0,
             Ypos = 0,
             Direction = 0,
-            MovingForward = true,
+            MovingForward = false,
             TurningLeft = false,
             TurningRight = false,
 
@@ -115,8 +115,229 @@ public class LobbyTests : TestKit
             Xpos = 5,
             Ypos = 0,
             Direction = 0,
-            MovingForward = true,
+            MovingForward = false,
             TurningLeft = false,
+            TurningRight = false,
+
+        };
+
+        lobbySupervisor.Tell(new TestProcessMovement(testShip, "testLobby"), probe.Ref);
+        var response = probe.ExpectMsg<ShipUpdate>();
+
+        response.Updated.Should().Be(expectedShip);
+    }
+
+    [Fact]
+    public void MovementFunctionMovesShipVertical()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectNoMsg();
+        Ship testShip = new Ship()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 5,
+            Xpos = 0,
+            Ypos = 0,
+            Direction = 90,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+
+        };
+
+        Ship expectedShip = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 5,
+            Xpos = 0,
+            Ypos = 5,
+            Direction = 90,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+
+        };
+
+        lobbySupervisor.Tell(new TestProcessMovement(testShip, "testLobby"), probe.Ref);
+        var response = probe.ExpectMsg<ShipUpdate>();
+
+        response.Updated.Should().Be(expectedShip);
+    }
+
+    [Fact]
+    public void MovementFunctionMovesShipTilted()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectNoMsg();
+        Ship testShip = new Ship()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 5,
+            Xpos = 0,
+            Ypos = 0,
+            Direction = 45,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+
+        };
+
+        Ship expectedShip = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 5,
+            Xpos = 3,
+            Ypos = 3,
+            Direction = 45,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+
+        };
+
+        lobbySupervisor.Tell(new TestProcessMovement(testShip, "testLobby"), probe.Ref);
+        var response = probe.ExpectMsg<ShipUpdate>();
+
+        response.Updated.Should().Be(expectedShip);
+    }
+
+
+    [Fact]
+    public void MovementFunctionRotatesShipLeftAndRight()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectNoMsg();
+        Ship testShip = new Ship()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Xpos = 0,
+            Ypos = 0,
+            Direction = 0,
+            MovingForward = false,
+            TurningLeft = true,
+            TurningRight = false,
+
+        };
+
+        Ship expectedShip = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Xpos = 0,
+            Ypos = 0,
+            Direction = 5,
+            MovingForward = false,
+            TurningLeft = true,
+            TurningRight = false,
+
+        };
+
+        lobbySupervisor.Tell(new TestProcessMovement(testShip, "testLobby"), probe.Ref);
+        var response = probe.ExpectMsg<ShipUpdate>();
+
+        response.Updated.Should().Be(expectedShip);
+        Ship testShip2 = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Xpos = 0,
+            Ypos = 0,
+            Direction = 0,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = true,
+        };
+
+        Ship expectedShip2 = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Xpos = 0,
+            Ypos = 0,
+            Direction = -5,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = true,
+        };
+
+        lobbySupervisor.Tell(new TestProcessMovement(testShip2, "testLobby"), probe.Ref);
+        response = probe.ExpectMsg<ShipUpdate>();
+
+        response.Updated.Should().Be(expectedShip2);
+    }
+
+    [Fact]
+    public void TestProcessMovementDoesMovementAndTurningRight()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectNoMsg();
+        Ship testShip = new Ship()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 5,
+            Xpos = 0,
+            Ypos = 0,
+            Direction = 0,
+            MovingForward = false,
+            TurningLeft = true,
+            TurningRight = false,
+
+        };
+
+        Ship expectedShip = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 5,
+            Xpos = 4,
+            Ypos = 0,
+            Direction = 5,
+            MovingForward = false,
+            TurningLeft = true,
             TurningRight = false,
 
         };
