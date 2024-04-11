@@ -1,6 +1,7 @@
 ﻿@using Microsoft.AspNetCore.SignalR.Client
 @using BlazorFrontEnd.Services
 @using Asteroids.Shared.GameObjects
+@using System.Threading
 
 @inject RemoteAkkaService AkkaService
 @inject SignalRService hubService
@@ -65,7 +66,8 @@ else
 
     private List<string> list = new();
     private GameStateObject gameObject { get; set; }
-    private System.Timers.Timer timer;
+
+    private Timer timer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -77,8 +79,11 @@ else
         await hubService.EnsureStartedAsync();
         hubService.NewGameState += ReceiveGameState;
         AkkaService.GetState(Lobbyname, Username);
-        
-        StartTimer();
+
+        timer = new Timer(_ =>
+        {
+            SendShipInput();
+        }, null, 0, 1000);
     }
 
     private void ReceiveGameState(GameStateObject game){
@@ -101,20 +106,6 @@ else
         InvokeAsync(StateHasChanged);
     }
 
-    private void StartTimer()
-    {
-        @* timer = new System.Timers.Timer(100); // 1 millisecond interval
-        timer.Elapsed += async (sender, e) =>
-        {
-            await InvokeAsync(async () =>
-            {
-                await AkkaService.GetState(Lobbyname, Username);
-            });
-        };
-        timer.Start(); *@
-    }
-
-
     private async Task StartGame()
     {
         if (Username == Lobbyname)
@@ -133,7 +124,6 @@ else
         {
             pressedKeys.Add(e.Key);
         }
-        Console.WriteLine($"Key pressed: {e.Key}");
     }
 
     private void handleKeyUp(KeyboardEventArgs e)
@@ -146,9 +136,21 @@ else
         pressedKeys = new HashSet<string>();
     }
 
+    private void SendShipInput()
+    {
+        InvokeAsync(() =>
+        {
+            bool forward = pressedKeys.Contains("w");
+            bool left = pressedKeys.Contains("a") && !pressedKeys.Contains("d");
+            bool right = !pressedKeys.Contains("a") && pressedKeys.Contains("d");
+
+            Console.WriteLine($"Forward: {forward}, Left: {left}, Right: {right}");
+        });
+    }
+
     public void Dispose()
     {
         hubService.NewGameState -= ReceiveGameState;
-        timer.Stop();
+        timer?.Dispose();
     }
 }
