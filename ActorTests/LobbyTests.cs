@@ -2,6 +2,7 @@ using Akka.Actor;
 using FluentAssertions;
 using Akka.TestKit.Xunit2;
 using Asteroids.Shared.Actors;
+using Asteroids.Shared.GameObjects;
 
 namespace ActorTests;
 
@@ -49,7 +50,7 @@ public class LobbyTests : TestKit
 
         lobbySupervisor.Tell(new CreateLobby("testLobby1"), probe.Ref);
         var lobby1 = probe.ExpectMsg<CreateLobbyResponse>();
-        
+
         lobbySupervisor.Tell(new CreateLobby("testLobby2"), probe.Ref);
         var lobby2 = probe.ExpectMsg<CreateLobbyResponse>();
 
@@ -76,5 +77,53 @@ public class LobbyTests : TestKit
         var response = probe.ExpectMsg<GetLobbiesResponse>();
 
         response.Lobbies.Should().BeEquivalentTo(["testLobby"]);
+    }
+
+
+    [Fact]
+    public void MovementFunctionMovesShipHorizontal()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectNoMsg();
+        Ship testShip = new Ship()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 5,
+            Xpos = 0,
+            Ypos = 0,
+            Direction = 0,
+            MovingForward = true,
+            TurningLeft = false,
+            TurningRight = false,
+
+        };
+
+        Ship expectedShip = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 5,
+            Xpos = 5,
+            Ypos = 0,
+            Direction = 0,
+            MovingForward = true,
+            TurningLeft = false,
+            TurningRight = false,
+
+        };
+
+        lobbySupervisor.Tell(new TestProcessMovement(testShip, "testLobby"), probe.Ref);
+        var response = probe.ExpectMsg<ShipUpdate>();
+
+        response.Updated.Should().Be(expectedShip);
     }
 }

@@ -82,6 +82,14 @@ public class LobbySupervisorActor : ReceiveActor
             }
 
         });
+
+        Receive<TestProcessMovement>(message =>
+        {
+            if (lobbies.TryGetValue(message.lobbyName, out var lobby))
+            {
+                lobby.Forward(message);
+            }
+        });
     }
 
     private void OnLobbyDeath(string lobbyName)

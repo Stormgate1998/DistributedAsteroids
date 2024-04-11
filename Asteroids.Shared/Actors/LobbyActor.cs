@@ -60,8 +60,47 @@ public class LobbyActor : ReceiveActor
             // }
         });
 
+        Receive<TestProcessMovement>(message =>
+        {
+            Ship testShip = ProcessMovement(message.ship);
+            Sender.Tell(new ShipUpdate(testShip));
+
+
+        });
+
+
+
     }
-    
+    public Ship ProcessMovement(Ship ship)
+    {
+        int direction = 0;
+
+        if (ship.TurningRight == true)
+        {
+            direction = ship.Direction - 5;
+        }
+
+        double angleInRadians = ship.Direction * Math.PI / 180.0;
+
+        // Calculate the new x and y coordinates
+        int newX = (int)(ship.Xpos + ship.Speed * Math.Cos(angleInRadians));
+        int newY = (int)(ship.Ypos + ship.Speed * Math.Sin(angleInRadians));
+
+        return new Ship()
+        {
+            Username = ship.Username,
+            Direction = ship.Direction,
+            Xpos = newX,
+            Ypos = newY,
+            Health = ship.Health,
+            Score = ship.Score,
+            MovingForward = ship.MovingForward,
+            TurningLeft = ship.TurningLeft,
+            TurningRight = ship.TurningRight,
+            Speed = ship.Speed,
+        };
+    }
+
     // protected override void PreStart()
     // {
     //     gameState = new GameStateObject
@@ -74,7 +113,7 @@ public class LobbyActor : ReceiveActor
     protected override void PostStop()
     {
         base.PostStop();
-        
+
         var self = Self;
         onDeathCallback?.Invoke(self.Path.Name);
     }
