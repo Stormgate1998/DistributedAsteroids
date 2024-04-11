@@ -19,7 +19,7 @@ public class MovementTests : TestKit
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectNoMsg();
-        Ship testShip = new Ship()
+        Ship testShip = new()
         {
             Username = "tony",
             Health = 40,
@@ -66,7 +66,7 @@ public class MovementTests : TestKit
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectNoMsg();
-        Ship testShip = new Ship()
+        Ship testShip = new()
         {
             Username = "tony",
             Health = 40,
@@ -78,7 +78,6 @@ public class MovementTests : TestKit
             MovingForward = false,
             TurningLeft = false,
             TurningRight = false,
-
         };
 
         Ship expectedShip = new()
@@ -418,6 +417,57 @@ public class MovementTests : TestKit
         lobbySupervisor.Tell(new TestProcessMovement(testShip2, "testLobby"), probe.Ref);
         response = probe.ExpectMsg<ShipUpdate>();
         response.Updated.Should().Be(secondExpectedShip);
+
+    }
+
+
+
+    [Fact]
+    public void TestSpeedUpperAndLowerBoundsSet()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectNoMsg();
+        Ship testShip = new Ship()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Xpos = 0,
+            Ypos = 0,
+            Direction = 90,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+
+        };
+        lobbySupervisor.Tell(new TestProcessMovement(testShip, "testLobby"), probe.Ref);
+        var response = probe.ExpectMsg<ShipUpdate>();
+        response.Updated.Speed.Should().Be(0);
+
+        Ship testShip2 = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 10,
+            Xpos = 0,
+            Ypos = 0,
+            Direction = 90,
+            MovingForward = true,
+            TurningLeft = false,
+            TurningRight = false,
+
+        };
+        lobbySupervisor.Tell(new TestProcessMovement(testShip2, "testLobby"), probe.Ref);
+        response = probe.ExpectMsg<ShipUpdate>();
+        response.Updated.Speed.Should().Be(10);
 
     }
 
