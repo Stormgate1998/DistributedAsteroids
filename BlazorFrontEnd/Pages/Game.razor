@@ -68,6 +68,7 @@ else
     private GameStateObject gameObject { get; set; }
 
     private Timer timer;
+    private ShipInput lastShipInput;
 
     protected override async Task OnInitializedAsync()
     {
@@ -83,7 +84,15 @@ else
         timer = new Timer(_ =>
         {
             SendShipInput();
-        }, null, 0, 1000);
+        }, null, 0, 1);
+
+        lastShipInput = new()
+        {
+            Username = Username,
+            Forward = false,
+            Left = false,
+            Right = false
+        };
     }
 
     private void ReceiveGameState(GameStateObject game){
@@ -144,7 +153,22 @@ else
             bool left = pressedKeys.Contains("a") && !pressedKeys.Contains("d");
             bool right = !pressedKeys.Contains("a") && pressedKeys.Contains("d");
 
-            Console.WriteLine($"Forward: {forward}, Left: {left}, Right: {right}");
+            var input = new ShipInput
+            {
+                Username = Username,
+                Forward = forward,
+                Left = left,
+                Right = right,
+            };
+
+            if (input.Forward != lastShipInput.Forward
+                || input.Left != lastShipInput.Left
+                || input.Right != lastShipInput.Right)
+            {
+                lastShipInput = input;
+                
+                Console.WriteLine($"Forward: {forward}, Left: {left}, Right: {right}");
+            }
         });
     }
 

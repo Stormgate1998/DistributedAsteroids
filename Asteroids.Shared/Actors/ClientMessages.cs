@@ -1,4 +1,3 @@
-using Akka.Actor;
 using Asteroids.Shared.Services;
 
 namespace Asteroids.Shared.Actors;

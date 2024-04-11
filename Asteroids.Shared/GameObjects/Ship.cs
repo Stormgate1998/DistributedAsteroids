@@ -16,3 +16,11 @@ public record Ship
 
 
 }
+
+public class ShipInput
+{
+    public string Username { get; set; }
+    public bool Forward { get; set; }
+    public bool Left { get; set; }
+    public bool Right { get; set; }
+}
