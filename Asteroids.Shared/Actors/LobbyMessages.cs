@@ -11,6 +11,7 @@ public record GetLobbiesResponse(List<string> Lobbies);
 public record JoinLobby(string LobbyName, string Username);
 public record JoinLobbyResponse(IActorRef Actor);
 
+public record ProcessAllShipMovement();
 
 public record LobbyError(string Message);
 public record LobbyDeath(string LobbyName);

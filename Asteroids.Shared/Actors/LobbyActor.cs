@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Threading;
 using Akka.Actor;
 using Asteroids.Shared.GameObjects;
@@ -14,26 +15,13 @@ public class LobbyActor : ReceiveActor
 
     public LobbyActor(string lobbyName, Action<string> onDeathCallback)
     {
+        IActorRef self = Self;
         LobbyName = lobbyName;
         this.onDeathCallback = onDeathCallback;
-
+        
         timer = new Timer(_ =>
         {
-            var updatedShips = ProcessAllShipMovement(gameState.ships);
-
-            var newState = new GameStateObject
-            {
-                state = gameState.state,
-                ships = updatedShips,
-            };
-
-            gameState = newState;
-
-            foreach (var user in particpatingUsers.Values)
-            {
-                user.Tell(new GameStateSnapshot(gameState));
-            }
-
+            self.Tell(new ProcessAllShipMovement());
         }, null, 0, 10);
 
         Receive<LobbyDeath>(death =>
@@ -98,6 +86,7 @@ public class LobbyActor : ReceiveActor
 
         Receive<SendShipInput>(message =>
         {
+            Console.WriteLine($"Sending ship input to service. {DateTime.Now}");
             var shipToUpdate = gameState.ships.FirstOrDefault(ship => ship.Username == message.Input.Username);
 
             if (shipToUpdate != null)
@@ -111,7 +100,34 @@ public class LobbyActor : ReceiveActor
 
                 // Update the ship in the collection
                 int index = gameState.ships.IndexOf(shipToUpdate);
+
+                if (index == -1)
+                {
+                    Console.WriteLine($"Could not find index of ship to update. {JsonSerializer.Serialize(shipToUpdate)} | {JsonSerializer.Serialize(gameState.ships)}");
+                }
+
                 gameState.ships[index] = updatedShip;
+            }
+            else
+            {
+                Console.WriteLine("Could not find ship for client input");
+                Console.WriteLine($"Username: {message.Input.Username} | Ships: {JsonSerializer.Serialize(gameState.ships)}");
+            }
+        });
+
+        Receive<ProcessAllShipMovement>(message =>
+        {
+            var updatedShips = ProcessAllShipMovement(gameState.ships);
+
+            gameState = gameState with
+            {
+                state = gameState.state,
+                ships = updatedShips,
+            };
+
+            foreach (var user in particpatingUsers.Values)
+            {
+                user.Tell(new GameStateSnapshot(gameState));
             }
         });
     }
@@ -182,6 +198,12 @@ public class LobbyActor : ReceiveActor
         foreach (Ship ship in myShipList)
         {
             newShipList.Add(ProcessMovement(ship));
+        }
+
+        if (myShipList.Count != newShipList.Count())
+        {
+            Console.WriteLine($"Old: {JsonSerializer.Serialize(myShipList)} | New: {JsonSerializer.Serialize(newShipList)}");
+            throw new Exception("Lost ship during processing.");
         }
 
         return newShipList;
