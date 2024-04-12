@@ -28,6 +28,10 @@ public class LobbyActor : ReceiveActor
             };
 
             gameState = newState;
+            //TODO
+            //If all ships have health less than 0
+            //self.tell gameover
+            //in gameover, timer.Dispose();
 
             foreach (var user in particpatingUsers.Values)
             {
@@ -124,7 +128,7 @@ public class LobbyActor : ReceiveActor
             ? TurnShipRight(ship)
             : ship.Direction;
 
-        Location location = CalculateNextPosition(ship, direction);
+        Location location = CalculateNextPosition(ship.Location, ship.speed, direction);
 
         int speed = ship.MovingForward
             ? ship.Speed + 2
@@ -140,12 +144,12 @@ public class LobbyActor : ReceiveActor
         };
     }
 
-    private Location CalculateNextPosition(Ship ship, int direction)
+    private Location CalculateNextPosition(Location location, int speed, int direction)
     {
         double angleInRadians = direction * Math.PI / 180.0;
 
-        int xPosition = (int)(ship.Location.X + ship.Speed * Math.Cos(angleInRadians));
-        int yPosition = (int)(ship.Location.Y + ship.Speed * Math.Sin(angleInRadians));
+        int xPosition = (int)(location.X + speed * Math.Cos(angleInRadians));
+        int yPosition = (int)(location.Y + speed * Math.Sin(angleInRadians));
 
         return new Location
         (

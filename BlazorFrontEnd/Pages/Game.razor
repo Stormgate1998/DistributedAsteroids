@@ -53,13 +53,14 @@ else
 
         @foreach (var ship in gameObject.ships)
         {
-            
+            @if(ship.Health > 0){
             <div
                 class="position-absolute"
                 style="rotate: @((ship.Direction + 90) % 360)deg; top: @(ship.Location.Y)px; left: @(ship.Location.X)px;"
             >
             <ShipSVG/>
             </div>
+            }
         }
     }
 </div>
@@ -161,6 +162,7 @@ else
 
     private void SendShipInput()
     {
+        
         InvokeAsync(() =>
         {
             bool forward = pressedKeys.Contains("w");
@@ -182,7 +184,14 @@ else
                 lastShipInput = input;
                 
                 Console.WriteLine($"Forward: {forward}, Left: {left}, Right: {right}");
-                AkkaService.SendShipInput(input);
+                Ship? ship = new();
+                if(gameObject != null){
+                    ship = gameObject.ships.FirstOrDefault(ship => ship.Username == Username);
+
+                }
+                if(ship != null && ship.Health > 0){
+                    AkkaService.SendShipInput(input);
+                }
             }
         });
     }
