@@ -2,6 +2,7 @@
 @using BlazorFrontEnd.Services
 @using Asteroids.Shared.GameObjects
 @using System.Threading
+@using BlazorFrontEnd.Models
 
 @inject RemoteAkkaService AkkaService
 @inject SignalRService hubService
@@ -54,10 +55,10 @@ else
         {
             
             <div
-                class="bg-primary position-absolute"
-                style="rotate: @(ship.Direction)deg; top: @(ship.Location.Y)px; left: @(ship.Location.X)px;"
+                class="position-absolute"
+                style="rotate: @((ship.Direction + 90) % 360)deg; top: @(ship.Location.Y)px; left: @(ship.Location.X)px;"
             >
-            <AsteroidSvg/>
+            <ShipSVG/>
             </div>
         }
     }
