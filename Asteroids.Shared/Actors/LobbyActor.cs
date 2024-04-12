@@ -166,7 +166,7 @@ public class LobbyActor : ReceiveActor
 
     private int TurnShipLeft(Ship ship)
     {
-        int newDirection =  ship.Direction - 5;
+        int newDirection = ship.Direction - 5;
 
         if (newDirection <= 0)
             newDirection += 360;
@@ -176,9 +176,10 @@ public class LobbyActor : ReceiveActor
 
     public List<Ship> ProcessAllShipMovement(List<Ship> shipList)
     {
+        List<Ship> myShipList = new(shipList);
         List<Ship> newShipList = [];
 
-        foreach (Ship ship in shipList)
+        foreach (Ship ship in myShipList)
         {
             newShipList.Add(ProcessMovement(ship));
         }
