@@ -13,6 +13,8 @@ public record JoinLobbyResponse(IActorRef Actor);
 
 public record ProcessAllShipMovement();
 
+public record ProcessOneTick();
+
 public record LobbyError(string Message);
 public record LobbyDeath(string LobbyName);
 public record ShipUpdate(Ship Updated);

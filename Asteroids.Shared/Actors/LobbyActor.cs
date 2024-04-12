@@ -18,10 +18,10 @@ public class LobbyActor : ReceiveActor
         IActorRef self = Self;
         LobbyName = lobbyName;
         this.onDeathCallback = onDeathCallback;
-        
+
         timer = new Timer(_ =>
         {
-            self.Tell(new ProcessAllShipMovement());
+            self.Tell(new ProcessOneTick());
         }, null, 0, 10);
 
         Receive<LobbyDeath>(death =>
@@ -115,16 +115,16 @@ public class LobbyActor : ReceiveActor
             }
         });
 
-        Receive<ProcessAllShipMovement>(message =>
+
+        Receive<ProcessOneTick>(message =>
         {
             var updatedShips = ProcessAllShipMovement(gameState.ships);
-
+            updatedShips = ProcessAllShipCollisions(updatedShips, gameState.asteroids);
             gameState = gameState with
             {
                 state = gameState.state,
                 ships = updatedShips,
             };
-
             foreach (var user in particpatingUsers.Values)
             {
                 user.Tell(new GameStateSnapshot(gameState));
@@ -234,6 +234,33 @@ public class LobbyActor : ReceiveActor
         }
 
         return newShipList;
+    }
+
+    public List<Ship> ProcessAllShipCollisions(List<Ship> shipList, List<Asteroid> AsteroidList)
+    {
+        List<Ship> newShipList = new(shipList);
+        List<Asteroid> newAsteroidLIst = new(AsteroidList);
+
+        List<Ship> returnedShipList = [];
+
+        foreach (Ship ship in newShipList)
+        {
+            int hitcount = 0;
+            foreach (Asteroid asteroid in newAsteroidLIst)
+            {
+                if (IsColliding(ship, asteroid))
+                {
+                    hitcount++;
+                }
+
+            }
+            Ship newShip = ship with
+            {
+                Health = (ship.Health - (5 * hitcount)),
+            };
+            returnedShipList.Add(newShip);
+        }
+        return returnedShipList;
     }
 
 
