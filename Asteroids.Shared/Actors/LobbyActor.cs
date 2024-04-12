@@ -140,7 +140,7 @@ public class LobbyActor : ReceiveActor
             ? TurnShipRight(ship)
             : ship.Direction;
 
-        Location location = CalculateNextPosition(ship, direction);
+        Location location = CalculateNextPosition(ship.Location, ship.Speed, direction);
 
         int speed = ship.MovingForward
             ? ship.Speed + 2
@@ -156,12 +156,12 @@ public class LobbyActor : ReceiveActor
         };
     }
 
-    private Location CalculateNextPosition(Ship ship, int direction)
+    private Location CalculateNextPosition(Location location, int speed, int direction)
     {
         double angleInRadians = direction * Math.PI / 180.0;
 
-        int xPosition = (int)(ship.Location.X + ship.Speed * Math.Cos(angleInRadians));
-        int yPosition = (int)(ship.Location.Y + ship.Speed * Math.Sin(angleInRadians));
+        int xPosition = (int)(location.X + speed * Math.Cos(angleInRadians));
+        int yPosition = (int)(location.Y + speed * Math.Sin(angleInRadians));
 
         return new Location
         (
@@ -209,14 +209,20 @@ public class LobbyActor : ReceiveActor
         return newShipList;
     }
 
-    // protected override void PreStart()
-    // {
-    //     gameState = new GameStateObject
-    //     {
-    //         state = GameState.JOINING,
-    //         ships = []
-    //     };
-    // }
+    public bool IsColliding(Ship colliding, Asteroid asteroid)
+    {
+        return (Distance(colliding.Location.X, colliding.Location.Y) + Distance(asteroid.Location.X, asteroid.Location.Y) <= (400 + (asteroid.Size * asteroid.Size)));
+    }
+
+    public bool IsColliding(Bullet colliding, Asteroid asteroid)
+    {
+        return (Distance(colliding.Location.X, colliding.Location.Y) + Distance(asteroid.Location.X, asteroid.Location.Y) <= (9 + (asteroid.Size * asteroid.Size)));
+    }
+
+    public int Distance(int x, int y)
+    {
+        return (x * x + y * y);
+    }
 
     protected override void PostStop()
     {

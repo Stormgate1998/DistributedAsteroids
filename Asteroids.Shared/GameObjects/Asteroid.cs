@@ -1,10 +1,10 @@
 namespace Asteroids.Shared.GameObjects;
 
-public class Asteroid
+public record Asteroid
 {
-    public int Health;
-    public int Xpos;
-    public int Ypos;
-    public int Direction;
-
+    public int Health { get; init; }
+    public Location Location { get; init; }
+    public int Direction { get; init; }
+    public int Size { get; init; }
+    public int Speed { get; init; }
 }

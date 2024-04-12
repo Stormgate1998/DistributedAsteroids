@@ -11,6 +11,7 @@ public record Ship
     public bool MovingForward { get; init; }
     public bool TurningRight { get; init; }
     public bool TurningLeft { get; init; }
+    public bool IsFiring { get; init; }
 }
 
 public record Location(int X, int Y);
