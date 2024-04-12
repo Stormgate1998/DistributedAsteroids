@@ -11,7 +11,7 @@ public class LobbyActor : ReceiveActor
     private string LobbyName;
     private Timer timer;
     private Dictionary<string, IActorRef> particpatingUsers = [];
-    private GameStateObject gameState = new() { state = GameState.JOINING, ships = [] };
+    private GameStateObject gameState = new() { state = GameState.JOINING, ships = [], asteroids = [], bullets = [] };
 
     public LobbyActor(string lobbyName, Action<string> onDeathCallback)
     {
@@ -64,6 +64,8 @@ public class LobbyActor : ReceiveActor
             {
                 state = GameState.PLAYING,
                 ships = gameState.ships,
+                asteroids = gameState.asteroids,
+                bullets = gameState.bullets,
             };
             gameState = newState;
             Sender.Tell(new GameStateSnapshot(newState));
@@ -119,7 +121,7 @@ public class LobbyActor : ReceiveActor
         Receive<ProcessOneTick>(message =>
         {
             var updatedShips = ProcessAllShipMovement(gameState.ships);
-            //updatedShips = ProcessAllShipCollisions(updatedShips, gameState.asteroids);
+            updatedShips = ProcessAllShipCollisions(updatedShips, gameState.asteroids);
             gameState = gameState with
             {
                 state = gameState.state,
@@ -256,7 +258,7 @@ public class LobbyActor : ReceiveActor
             }
             Ship newShip = ship with
             {
-                Health = (ship.Health - (5 * hitcount)),
+                Health = ship.Health - (5 * hitcount),
             };
             returnedShipList.Add(newShip);
         }
