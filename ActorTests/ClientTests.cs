@@ -157,8 +157,7 @@ public class ClientTests : TestKit
     {
       Username = "tony",
       Direction = 45,
-      Xpos = 50,
-      Ypos = 50,
+      Location = new(100, 100),
       Health = 50,
       Score = 0,
     };

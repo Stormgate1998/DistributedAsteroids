@@ -111,6 +111,7 @@ public class ClientActor : ReceiveActor
 
         Receive<GameStateSnapshot>(message =>
         {
+            Console.WriteLine($"CLIENT ACTOR | Location: ({message.Game.ships.FirstOrDefault()?.Location.X}, {message.Game.ships.FirstOrDefault()?.Location.Y})");
             Console.WriteLine($"Actor ship count: {message.Game.ships.Count}");
             _hubService.SendGameSnapshot(ConnectionId, message.Game)
                 .PipeTo(
@@ -124,10 +125,5 @@ public class ClientActor : ReceiveActor
             CurrentLobby.Tell(message);
         });
     }
-
-    // protected override void PreStart()
-    // {
-    //     _hubService.StartAsync();
-    // }
 }
 

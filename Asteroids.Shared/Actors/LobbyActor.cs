@@ -34,7 +34,7 @@ public class LobbyActor : ReceiveActor
                 user.Tell(new GameStateSnapshot(gameState));
             }
 
-        }, null, 0, 100);
+        }, null, 0, 10);
 
         Receive<LobbyDeath>(death =>
         {
@@ -52,8 +52,7 @@ public class LobbyActor : ReceiveActor
             {
                 Username = userName,
                 Direction = 45,
-                Xpos = 50,
-                Ypos = 50,
+                Location = new(100, 100),
                 Health = 50,
                 Score = 0,
             };
@@ -119,51 +118,60 @@ public class LobbyActor : ReceiveActor
 
     public Ship ProcessMovement(Ship ship)
     {
-        int direction = 0;
+        int direction = ship.TurningLeft
+            ? TurnShipLeft(ship)
+            : ship.TurningRight
+            ? TurnShipRight(ship)
+            : ship.Direction;
 
-        if (ship.TurningRight == true)
-        {
-            direction = ship.Direction - 5;
-        }
-        else if (ship.TurningLeft == true)
-        {
-            direction = ship.Direction + 5;
-        }
-        else
-        {
-            direction = ship.Direction;
-        }
+        Location location = CalculateNextPosition(ship, direction);
 
+        Console.WriteLine($"Old Location: ({ship.Location.X}, {ship.Location.Y})");
+        Console.WriteLine($"New Location: ({location.X}, {location.Y})");
 
-        double angleInRadians = direction * Math.PI / 180.0;
+        int speed = ship.MovingForward
+            ? ship.Speed + 2
+            : ship.Speed - 1;
 
-        // Calculate the new x and y coordinates
-        int newX = (int)(ship.Xpos + ship.Speed * Math.Cos(angleInRadians));
-        int newY = (int)(ship.Ypos + ship.Speed * Math.Sin(angleInRadians));
-        int speed = 0;
-        if (ship.MovingForward)
-        {
-            speed = ship.Speed + 2;
-        }
-        else
-        {
-            speed = ship.Speed - 1;
-        }
         speed = Math.Clamp(speed, 0, 10);
 
-        return new Ship()
+        return ship with
         {
-            Username = ship.Username,
             Direction = direction,
-            Xpos = newX,
-            Ypos = newY,
-            Health = ship.Health,
-            Score = ship.Score,
-            MovingForward = ship.MovingForward,
-            TurningLeft = ship.TurningLeft,
-            TurningRight = ship.TurningRight,
+            Location = location,
             Speed = speed,
         };
+    }
+
+    private Location CalculateNextPosition(Ship ship, int direction)
+    {
+        double angleInRadians = direction * Math.PI / 180.0;
+
+        return new Location
+        (
+            X: (int)(ship.Location.X + ship.Speed * Math.Cos(angleInRadians)),
+            Y: (int)(ship.Location.Y + ship.Speed * Math.Sin(angleInRadians))
+        );
+    }
+
+    private int TurnShipRight(Ship ship)
+    {
+        int newDirection = ship.Direction + 5;
+
+        if (newDirection >= 360)
+            newDirection -= 360;
+
+        return newDirection;
+    }
+
+    private int TurnShipLeft(Ship ship)
+    {
+        int newDirection =  ship.Direction - 5;
+
+        if (newDirection <= 0)
+            newDirection += 360;
+
+        return newDirection;
     }
 
     public List<Ship> ProcessAllShipMovement(List<Ship> shipList)

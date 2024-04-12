@@ -6,16 +6,14 @@ public record Ship
     public int Health { get; init; }
     public int Speed { get; init; }
     public int Score { get; init; }
-    public int Xpos { get; init; }
-    public int Ypos { get; init; }
+    public Location Location { get; init; }
     public int Direction { get; init; }
     public bool MovingForward { get; init; }
     public bool TurningRight { get; init; }
     public bool TurningLeft { get; init; }
-
-
-
 }
+
+public record Location(int X, int Y);
 
 public class ShipInput
 {
