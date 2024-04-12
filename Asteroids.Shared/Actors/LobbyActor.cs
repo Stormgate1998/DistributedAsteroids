@@ -126,9 +126,6 @@ public class LobbyActor : ReceiveActor
 
         Location location = CalculateNextPosition(ship, direction);
 
-        Console.WriteLine($"Old Location: ({ship.Location.X}, {ship.Location.Y})");
-        Console.WriteLine($"New Location: ({location.X}, {location.Y})");
-
         int speed = ship.MovingForward
             ? ship.Speed + 2
             : ship.Speed - 1;
@@ -147,10 +144,13 @@ public class LobbyActor : ReceiveActor
     {
         double angleInRadians = direction * Math.PI / 180.0;
 
+        int xPosition = (int)(ship.Location.X + ship.Speed * Math.Cos(angleInRadians));
+        int yPosition = (int)(ship.Location.Y + ship.Speed * Math.Sin(angleInRadians));
+
         return new Location
         (
-            X: (int)(ship.Location.X + ship.Speed * Math.Cos(angleInRadians)),
-            Y: (int)(ship.Location.Y + ship.Speed * Math.Sin(angleInRadians))
+            X: Math.Clamp(xPosition, 0, 1000),
+            Y: Math.Clamp(yPosition, 0, 500)
         );
     }
 

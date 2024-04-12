@@ -24,10 +24,10 @@
 ## Week 2 - April 13th
 - [ ] Implement timing logic for starting a lobby
 - [ ] Create ship model
-- [ ] Display entity position on front-end
-- [ ] Implement ship controls on front-end
-- [ ] Entity speed logic
-- [ ] Create entity movement logic
+- [X] Display entity position on front-end
+- [X] Implement ship controls on front-end
+- [X] Entity speed logic
+- [X] Create entity movement logic
 - [ ] Create bullet model
 - [ ] Create asteroid model
 - [ ] Entity size logic
