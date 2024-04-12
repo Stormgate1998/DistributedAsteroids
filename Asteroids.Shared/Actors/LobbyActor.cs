@@ -119,7 +119,7 @@ public class LobbyActor : ReceiveActor
         Receive<ProcessOneTick>(message =>
         {
             var updatedShips = ProcessAllShipMovement(gameState.ships);
-            updatedShips = ProcessAllShipCollisions(updatedShips, gameState.asteroids);
+            //updatedShips = ProcessAllShipCollisions(updatedShips, gameState.asteroids);
             gameState = gameState with
             {
                 state = gameState.state,

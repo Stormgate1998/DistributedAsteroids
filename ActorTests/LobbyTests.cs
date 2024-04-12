@@ -26,20 +26,35 @@ public class LobbyTests : TestKit
         var probe = CreateTestProbe();
 
         var supervisor = Sys.ActorOf<LobbySupervisorActor>();
+
         supervisor.Tell(new CreateLobby("testLobby1"), probe.Ref);
-        probe.ExpectMsg<CreateLobbyResponse>();
-
-        supervisor.Tell(new CreateLobby("testLobby2"), probe.Ref);
-        probe.ExpectMsg<CreateLobbyResponse>();
-
-        supervisor.Tell(new CreateLobby("testLobby3"), probe.Ref);
-        probe.ExpectMsg<CreateLobbyResponse>();
+        var response = probe.ExpectMsg<CreateLobbyResponse>();
+        response.Message.Should().Be("Lobby 'testLobby1' created.");
 
         supervisor.Tell(new GetLobbies("TestUser"), probe.Ref);
-        var response = probe.ExpectMsg<GetLobbiesResponse>();
+        var responselobbies = probe.ExpectMsg<GetLobbiesResponse>();
+        responselobbies.Lobbies.Should().BeEquivalentTo(["testLobby1"]);
+
+
+        supervisor.Tell(new CreateLobby("testLobby2"), probe.Ref);
+        response = probe.ExpectMsg<CreateLobbyResponse>();
+        response.Message.Should().Be("Lobby 'testLobby2' created.");
+
+        supervisor.Tell(new GetLobbies("TestUser"), probe.Ref);
+        responselobbies = probe.ExpectMsg<GetLobbiesResponse>();
+        responselobbies.Lobbies.Should().BeEquivalentTo(["testLobby1", "testLobby2"]);
+
+
+        supervisor.Tell(new CreateLobby("testLobby3"), probe.Ref);
+        response = probe.ExpectMsg<CreateLobbyResponse>();
+        response.Message.Should().Be("Lobby 'testLobby3' created.");
+
+
+        supervisor.Tell(new GetLobbies("TestUser"), probe.Ref);
+        responselobbies = probe.ExpectMsg<GetLobbiesResponse>();
 
         List<string> TestList = ["testLobby1", "testLobby2", "testLobby3"];
-        response.Lobbies.Should().BeEquivalentTo(TestList);
+        responselobbies.Lobbies.Should().BeEquivalentTo(TestList);
     }
 
     [Fact]
@@ -80,6 +95,6 @@ public class LobbyTests : TestKit
     }
 
 
-    
+
 
 }
