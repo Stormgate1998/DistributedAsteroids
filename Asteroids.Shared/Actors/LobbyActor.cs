@@ -128,7 +128,7 @@ public class LobbyActor : ReceiveActor
             ? TurnShipRight(ship)
             : ship.Direction;
 
-        Location location = CalculateNextPosition(ship.Location, ship.speed, direction);
+        Location location = CalculateNextPosition(ship.Location, ship.Speed, direction);
 
         int speed = ship.MovingForward
             ? ship.Speed + 2
@@ -189,6 +189,21 @@ public class LobbyActor : ReceiveActor
         }
 
         return newShipList;
+    }
+
+    public bool IsColliding(Ship colliding, Asteroid asteroid)
+    {
+        return (Distance(colliding.Location.X, colliding.Location.Y) + Distance(asteroid.Location.X, asteroid.Location.Y) <= (400 + (asteroid.Size * asteroid.Size)));
+    }
+
+    public bool IsColliding(Bullet colliding, Asteroid asteroid)
+    {
+        return (Distance(colliding.Location.X, colliding.Location.Y) + Distance(asteroid.Location.X, asteroid.Location.Y) <= (9 + (asteroid.Size * asteroid.Size)));
+    }
+
+    public int Distance(int x, int y)
+    {
+        return (x * x + y * y);
     }
 
     // protected override void PreStart()

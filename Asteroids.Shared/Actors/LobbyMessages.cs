@@ -29,6 +29,11 @@ public record StartGame(string Username);
 
 public record TestProcessMovement(Ship TestShip, string LobbyName);
 public record TestProcessMovementList(List<Ship> TestShip, string LobbyName);
-public record TestCollision(object )
+public record TestShipCollision(Ship collidingShip, Asteroid asteroid);
+public record TestBulletCollision(Bullet collidingBullet, Asteroid asteroid);
+
+public record BulletCollisionResult(bool result);
+public record ShipCollisionResult(bool result);
+
 
 
