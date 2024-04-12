@@ -183,7 +183,7 @@ else
             {
                 lastShipInput = input;
                 
-                Console.WriteLine($"Forward: {forward}, Left: {left}, Right: {right}");
+                @* Console.WriteLine($"Forward: {forward}, Left: {left}, Right: {right}"); *@
                 Ship? ship = new();
                 if(gameObject != null){
                     ship = gameObject.ships.FirstOrDefault(ship => ship.Username == Username);
