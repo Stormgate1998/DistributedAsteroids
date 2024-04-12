@@ -118,6 +118,33 @@ public class LobbyActor : ReceiveActor
                 gameState.ships[index] = updatedShip;
             }
         });
+
+        Receive<TestShipCollision>(message =>
+        {
+            Sender.Tell(new ShipCollisionResult(IsColliding(message.collidingShip, message.asteroid)));
+
+        });
+
+        Receive<TestBulletCollision>(message =>
+        {
+            Sender.Tell(new BulletCollisionResult(IsColliding(message.collidingBullet, message.asteroid)));
+        });
+
+
+        Receive<TestingAddAsteroid>(message =>
+        {
+            gameState.asteroids.Add(message.Asteroid);
+        });
+        Receive<TestingAddShip>(message =>
+        {
+            gameState.ships.Add(message.Ship);
+
+        });
+        Receive<TestingAddBullet>(message =>
+        {
+            gameState.bullets.Add(message.Bullet);
+
+        });
     }
 
     public Ship ProcessMovement(Ship ship)
@@ -190,6 +217,8 @@ public class LobbyActor : ReceiveActor
 
         return newShipList;
     }
+
+
 
     public bool IsColliding(Ship colliding, Asteroid asteroid)
     {

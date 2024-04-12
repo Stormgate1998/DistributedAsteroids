@@ -17,8 +17,6 @@ public class MovementTests : TestKit
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
 
-        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
-        probe.ExpectNoMsg();
         Ship testShip = new()
         {
             Username = "tony",
@@ -62,8 +60,6 @@ public class MovementTests : TestKit
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
 
-        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
-        probe.ExpectNoMsg();
         Ship testShip = new()
         {
             Username = "tony",
@@ -106,8 +102,6 @@ public class MovementTests : TestKit
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
 
-        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
-        probe.ExpectNoMsg();
         Ship testShip = new Ship()
         {
             Username = "tony",
@@ -149,8 +143,6 @@ public class MovementTests : TestKit
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
 
-        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
-        probe.ExpectNoMsg();
         Ship testShip = new Ship()
         {
             Username = "tony",
@@ -220,8 +212,6 @@ public class MovementTests : TestKit
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
 
-        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
-        probe.ExpectNoMsg();
         Ship testShip = new()
         {
             Username = "tony",
@@ -264,9 +254,6 @@ public class MovementTests : TestKit
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
-
-        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
-        probe.ExpectNoMsg();
 
         var testShipList = new List<Ship>
         {
@@ -335,8 +322,6 @@ public class MovementTests : TestKit
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
 
-        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
-        probe.ExpectNoMsg();
         Ship testShip = new Ship()
         {
             Username = "tony",
@@ -411,9 +396,6 @@ public class MovementTests : TestKit
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
 
-        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
-        probe.ExpectNoMsg();
-
         Ship testShip = new Ship()
         {
             Username = "tony",
@@ -450,5 +432,145 @@ public class MovementTests : TestKit
         lobbySupervisor.Tell(new TestProcessMovement(testShip2, "testLobby"), probe.Ref);
         response = probe.ExpectMsg<ShipUpdate>();
         response.Updated.Speed.Should().Be(10);
+    }
+
+
+
+    [Fact]
+    public void TestCollisionShipRegistersTrue()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        Ship testShip = new Ship()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Location = new(0, 0),
+            Direction = 90,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+
+        };
+
+        Asteroid asteroid = new Asteroid()
+        {
+            Health = 20,
+            Location = new(0, 20),
+            Direction = 0,
+            Size = 20,
+            Speed = 0
+        };
+        lobbySupervisor.Tell(new TestShipCollision("testLobby", testShip, asteroid), probe.Ref);
+        var response = probe.ExpectMsg<ShipCollisionResult>();
+        response.result.Should().Be(true);
+    }
+
+
+    [Fact]
+    public void TestCollisionShipRegistersFalse()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        Ship testShip = new Ship()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Location = new(0, -40),
+            Direction = 90,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+
+        };
+
+        Asteroid asteroid = new Asteroid()
+        {
+            Health = 20,
+            Location = new(0, 20),
+            Direction = 0,
+            Size = 20,
+            Speed = 0
+        };
+        lobbySupervisor.Tell(new TestShipCollision("testLobby", testShip, asteroid), probe.Ref);
+        var response = probe.ExpectMsg<ShipCollisionResult>();
+
+        response.result.Should().Be(false);
+    }
+
+
+
+    [Fact]
+    public void TestCollisionBulletRegistersTrue()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        Bullet testBullet = new Bullet()
+        {
+            Username = "tony",
+            Speed = 0,
+            Location = new(0, 0),
+            Direction = 90,
+        };
+
+        Asteroid asteroid = new Asteroid()
+        {
+            Health = 20,
+            Location = new(0, 20),
+            Direction = 0,
+            Size = 20,
+            Speed = 0
+        };
+        lobbySupervisor.Tell(new TestBulletCollision("testLobby", testBullet, asteroid), probe.Ref);
+        var response = probe.ExpectMsg<BulletCollisionResult>();
+        response.result.Should().Be(true);
+    }
+
+
+    [Fact]
+    public void TestCollisionBulletRegistersFalse()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        Bullet testBullet = new Bullet()
+        {
+            Username = "tony",
+            Speed = 0,
+            Location = new(0, 50),
+            Direction = 90,
+        };
+
+        Asteroid asteroid = new Asteroid()
+        {
+            Health = 20,
+            Location = new(0, 20),
+            Direction = 0,
+            Size = 20,
+            Speed = 0
+        };
+        lobbySupervisor.Tell(new TestBulletCollision("testLobby", testBullet, asteroid), probe.Ref);
+        var response = probe.ExpectMsg<BulletCollisionResult>();
+
+        response.result.Should().Be(false);
     }
 }

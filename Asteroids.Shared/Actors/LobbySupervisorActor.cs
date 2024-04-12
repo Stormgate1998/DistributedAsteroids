@@ -97,6 +97,42 @@ public class LobbySupervisorActor : ReceiveActor
                 lobby.Forward(message);
             }
         });
+        Receive<TestShipCollision>(message =>
+        {
+            if (lobbies.TryGetValue(message.LobbyName, out var lobby))
+            {
+                lobby.Forward(message);
+            }
+        });
+        Receive<TestBulletCollision>(message =>
+        {
+            if (lobbies.TryGetValue(message.LobbyName, out var lobby))
+            {
+                lobby.Forward(message);
+            }
+        });
+
+        Receive<TestingAddAsteroid>(message =>
+        {
+            if (lobbies.TryGetValue(message.LobbyName, out var lobby))
+            {
+                lobby.Forward(message);
+            }
+        });
+        Receive<TestingAddShip>(message =>
+        {
+            if (lobbies.TryGetValue(message.LobbyName, out var lobby))
+            {
+                lobby.Forward(message);
+            }
+        });
+        Receive<TestingAddBullet>(message =>
+        {
+            if (lobbies.TryGetValue(message.LobbyName, out var lobby))
+            {
+                lobby.Forward(message);
+            }
+        });
     }
 
     private void OnLobbyDeath(string lobbyName)
