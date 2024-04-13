@@ -72,7 +72,7 @@ else
                     class="position-absolute"
                     style="rotate: @((asteroid.Direction + 90) % 360)deg; top: @(asteroid.Location.Y)px; left: @(asteroid.Location.X)px;"
                 >
-                    <AsteroidSVG />
+                    <AsteroidSVG Size="@(asteroid.Size)" />
                 </div>
             }
         }

@@ -259,25 +259,17 @@ public class LobbyActor : ReceiveActor
         double deltaX = 500 - spawnLocation.X;
         double deltaY = 250 - spawnLocation.Y;
 
-        // Check if the spawn location is on the y-axis
-        if (deltaX == 0)
-        {
-            // Handle the case when the spawn location is on the y-axis
-            // The direction should be either directly above (180 degrees) or below (0 degrees) the center
-            return deltaY >= 0 ? 0 : 180;
-        }
-
-        // Calculate the angle in radians from the spawn location to the center
         double angleRadians = Math.Atan2(deltaY, deltaX);
-
-        // Convert radians to degrees
         double angleDegrees = angleRadians * (180 / Math.PI);
 
-        // Adjust the angle to ensure it's between 0 and 360 degrees
-        int direction = (int)((angleDegrees + 360) % 360);
+        Random rng = new Random();
 
-        return direction;
+        int offset = rng.Next(-10, 11);
+        angleDegrees += offset;
+
+        return (int)((angleDegrees + 360) % 360);
     }
+
 
     private int DetermineAsteroidSpeed(Random rng)
     {
@@ -286,7 +278,7 @@ public class LobbyActor : ReceiveActor
 
     private int DetermineAsteroidSize(Random rng)
     {
-        return rng.Next(1, 5);
+        return rng.Next(1, 3);
     }
 
     private int CalculateAsteroidHealth(int size, int speed)
@@ -320,7 +312,7 @@ public class LobbyActor : ReceiveActor
 
     private Location CalculateNextPosition(Location location, int speed, int direction)
     {
-        double angleInRadians = direction * Math.PI / 180.0;
+        double angleInRadians = direction * (Math.PI / 180.0);
 
         int xPosition = (int)(location.X + speed * Math.Cos(angleInRadians));
         int yPosition = (int)(location.Y + speed * Math.Sin(angleInRadians));
@@ -404,21 +396,23 @@ public class LobbyActor : ReceiveActor
 
         foreach (Asteroid asteroid in copyOfAsteroids)
         {
+            Location nextLocation = CalculateNextPosition(asteroid.Location, asteroid.Speed, asteroid.Direction);
+            int xPosition = nextLocation.X;
+            int yPosition = nextLocation.Y;
+
+            if (asteroid.Location.X == xPosition)
+                xPosition += 1;
+
+            if (asteroid.Location.Y == yPosition)
+                yPosition += 1;
+
             var updatedAsteroid = asteroid with
             {
-                Location = CalculateNextPosition(asteroid.Location, asteroid.Speed, asteroid.Direction)
+                Location = new(xPosition, yPosition)
             };
 
             if (!HasHitBorder(asteroid))
-            {
-                Console.WriteLine("Has not the border.");
                 newAsteroids.Add(updatedAsteroid);
-            }
-            else
-            {
-                Console.WriteLine("Has hit the border.");
-            }
-            
         }
 
         Console.WriteLine($"Copy of asteroids: {JsonSerializer.Serialize(newAsteroids)}");
