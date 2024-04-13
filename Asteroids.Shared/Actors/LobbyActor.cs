@@ -116,13 +116,31 @@ public class LobbyActor : ReceiveActor
 
         Receive<ProcessOneTick>(message =>
         {
+
+            List<Bullet> updatedBullets = new(gameState.bullets);
             var updatedShips = ProcessAllShipMovement(gameState.ships);
-            updatedShips = ProcessAllShipCollisions(updatedShips, gameState.asteroids);
+            var newBullets = CreateAllBulletsThatShouldExist(updatedShips);
+            if (newBullets.Count > 0)
+            {
+                updatedBullets.AddRange(newBullets);
+
+            }
+
+            List<Asteroid> updatedAsteroids;
+            (updatedShips, updatedAsteroids, updatedBullets) =
+            ProcessAllAsteroidCollisions(updatedShips, gameState.asteroids, updatedBullets);
+
+            updatedShips = ProcessAllShipCollisions(updatedShips, updatedAsteroids);
+            updatedBullets = RemoveOutOfBoundsBullets(updatedBullets);
+
             gameState = gameState with
             {
                 state = gameState.state,
                 ships = updatedShips,
+                asteroids = updatedAsteroids,
+                bullets = updatedBullets,
             };
+
             foreach (var user in particpatingUsers.Values)
             {
                 user.Tell(new GameStateSnapshot(gameState));
@@ -148,7 +166,7 @@ public class LobbyActor : ReceiveActor
         Receive<TestingAddShip>(message =>
         {
             gameState.ships.Add(message.Ship);
-
+            Sender.Tell(new GameStateSnapshot(gameState));
         });
         Receive<TestingAddBullet>(message =>
         {
@@ -157,12 +175,28 @@ public class LobbyActor : ReceiveActor
         });
         Receive<TestOneTick>(message =>
         {
+            List<Bullet> updatedBullets = new(gameState.bullets);
             var updatedShips = ProcessAllShipMovement(gameState.ships);
+            var newBullets = CreateAllBulletsThatShouldExist(updatedShips);
+            if (newBullets.Count > 0)
+            {
+                updatedBullets.AddRange(newBullets);
+
+            }
+
+            List<Asteroid> updatedAsteroids;
+            (updatedShips, updatedAsteroids, updatedBullets) =
+            ProcessAllAsteroidCollisions(updatedShips, gameState.asteroids, updatedBullets);
+
             updatedShips = ProcessAllShipCollisions(updatedShips, gameState.asteroids);
+            updatedBullets = RemoveOutOfBoundsBullets(updatedBullets);
+
             gameState = gameState with
             {
                 state = gameState.state,
                 ships = updatedShips,
+                asteroids = updatedAsteroids,
+                bullets = updatedBullets,
             };
             Sender.Tell(new GameStateSnapshot(gameState));
         });
@@ -204,6 +238,21 @@ public class LobbyActor : ReceiveActor
             X: Math.Clamp(xPosition, 0, 1000),
             Y: Math.Clamp(yPosition, 0, 500)
         );
+    }
+
+    private static List<Bullet> RemoveOutOfBoundsBullets(List<Bullet> bullets)
+    {
+        List<Bullet> returnedBullets = new(bullets);
+        foreach (Bullet bullet in bullets)
+        {
+            bool xlimit = bullet.Location.X > 1000 || bullet.Location.X <= 0;
+            bool ylimit = bullet.Location.Y > 500 || bullet.Location.Y <= 0;
+            if (xlimit || ylimit)
+            {
+                returnedBullets.Remove(bullet);
+            }
+        }
+        return returnedBullets;
     }
 
     private int TurnShipRight(Ship ship)
@@ -281,21 +330,93 @@ public class LobbyActor : ReceiveActor
         return returnedShipList;
     }
 
+    public (List<Ship>, List<Asteroid>, List<Bullet>) ProcessAllAsteroidCollisions
+    (List<Ship> ships, List<Asteroid> asteroids, List<Bullet> bullets)
+    {
+        List<Ship> shipList = new(ships);
+        List<Asteroid> asteroidsList = new(asteroids);
+        List<Bullet> bulletList = new(bullets);
+
+
+        foreach (var bullet in bullets)
+        {
+            foreach (Asteroid asteroid in asteroids)
+            {
+                if (IsColliding(bullet, asteroid))
+                {
+                    int asteroidIndex = asteroids.FindIndex(x => x.Location == asteroid.Location);
+                    var updatedAsteroid = asteroids[asteroidIndex] with { Health = asteroid.Health - 5 };
+                    if (updatedAsteroid.Health <= 0)
+                    {
+                        asteroidsList.Remove(asteroid);
+                        var shipIndex = shipList.FindIndex(ship => ship.Username == bullet.Username);
+                        if (shipIndex != -1)
+                        {
+                            var updatedShip = shipList[shipIndex] with { Score = shipList[shipIndex].Score + asteroid.Speed * asteroid.Size };
+                            shipList[shipIndex] = updatedShip;
+                        }
+                    }
+                    else
+                    {
+                        asteroidsList[asteroidIndex] = updatedAsteroid;
+                        var shipIndex = shipList.FindIndex(ship => ship.Username == bullet.Username);
+                        if (shipIndex != -1)
+                        {
+                            var updatedShip = shipList[shipIndex] with { Score = shipList[shipIndex].Score + asteroid.Speed * asteroid.Size / 10 };
+                            shipList[shipIndex] = updatedShip;
+                        }
+                    }
+
+                    bulletList.Remove(bullet);
+                    break;
+                }
+
+            }
+        }
+
+        return (shipList, asteroidsList, bulletList);
+
+    }
+
+
+    public List<Bullet> CreateAllBulletsThatShouldExist(List<Ship> ships)
+    {
+        List<Bullet> newBulletList = [];
+
+
+        foreach (Ship ship in ships)
+        {
+            if (ship.IsFiring)
+            {
+                Bullet bullet = new Bullet()
+                {
+                    Location = ship.Location,
+                    Username = ship.Username,
+                    Speed = 20,
+                    Direction = ship.Direction,
+                };
+                newBulletList.Add(bullet);
+
+            }
+        }
+        return newBulletList;
+    }
+
 
 
     public bool IsColliding(Ship colliding, Asteroid asteroid)
     {
-        return Distance(colliding.Location.X, colliding.Location.Y) + Distance(asteroid.Location.X, asteroid.Location.Y) <= (400 + (asteroid.Size * asteroid.Size));
+        return Distance(colliding.Location.X, asteroid.Location.X) + Distance(colliding.Location.Y, asteroid.Location.Y) <= (400 + (asteroid.Size * asteroid.Size));
     }
 
     public bool IsColliding(Bullet colliding, Asteroid asteroid)
     {
-        return Distance(colliding.Location.X, colliding.Location.Y) + Distance(asteroid.Location.X, asteroid.Location.Y) <= (9 + (asteroid.Size * asteroid.Size));
+        return Distance(colliding.Location.X, asteroid.Location.X) + Distance(colliding.Location.Y, asteroid.Location.Y) <= (9 + (asteroid.Size * asteroid.Size));
     }
 
     public int Distance(int x, int y)
     {
-        return (x * x + y * y);
+        return (y - x) * (y - x);
     }
 
     protected override void PostStop()

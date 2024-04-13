@@ -633,7 +633,7 @@ public class MovementTests : TestKit
         {
             Username = "tony",
             Health = 40,
-            Score = 40,
+            Score = 0,
             Speed = 0,
             Location = new(-90, -90),
             Direction = 90,
@@ -668,11 +668,15 @@ public class MovementTests : TestKit
         lobbySupervisor.Tell(new TestOneTick("testLobby"), probe.Ref);
         var response = probe.ExpectMsg<GameStateSnapshot>();
         response.Game.asteroids.Count.Should().Be(1);
-        response.Game.asteroids[0].Health.Should().Be(15);
         response.Game.bullets.Count.Should().Be(0);
         Ship ship = response.Game.ships[0];
         ship.Health.Should().Be(40);
         ship.Score.Should().Be(2);
+        response.Game.asteroids.Count.Should().Be(1);
+
+        response.Game.asteroids[0].Health.Should().Be(15);
+
+
 
     }
 
@@ -682,6 +686,10 @@ public class MovementTests : TestKit
         var probe = CreateTestProbe();
         var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
 
+        List<string> strings = new List<string>();
+
+        List<string> newStrigns = ["hi", "hi"];
+        strings.AddRange(newStrigns);
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
         Ship testShip = new()
@@ -690,21 +698,33 @@ public class MovementTests : TestKit
             Health = 40,
             Score = 40,
             Speed = 0,
-            Location = new(0, 0),
+            Location = new(45, 45),
             Direction = 90,
             MovingForward = false,
             TurningLeft = false,
             TurningRight = false,
-            IsFiring = true
+            IsFiring = true,
         };
-        lobbySupervisor.Tell(new TestingAddShip("testLobby", testShip));
 
-        await Task.Delay(100);
+        Bullet bullet = new()
+        {
+            Location = new(45, 45),
+            Direction = 90,
+            Speed = 20,
+            Username = "tony",
+        };
+
+        lobbySupervisor.Tell(new TestingAddShip("testLobby", testShip), probe.Ref);
+        var response = probe.ExpectMsg<GameStateSnapshot>();
+        response.Game.ships.Count.Should().Be(1);
+
+
 
         lobbySupervisor.Tell(new TestOneTick("testLobby"), probe.Ref);
-        var response = probe.ExpectMsg<GameStateSnapshot>();
+        response = probe.ExpectMsg<GameStateSnapshot>();
+        response.Game.ships.Count.Should().Be(1);
         response.Game.bullets.Count.Should().Be(1);
-        response.Game.bullets[0].Location.Should().Be(new Location(0, 10));
+        response.Game.bullets[0].Should().Be(bullet);
 
     }
 }
