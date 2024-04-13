@@ -130,6 +130,16 @@ public class LobbyActor : ReceiveActor
                 user.Tell(new GameStateSnapshot(gameState));
             }
         });
+
+        Receive<SetLobbyGameState>(message =>
+        {
+            // Set gameState = message
+        });
+
+        Receive<AdvanceTicks>(message =>
+        {
+            // Advance timer by 1 tick
+        });
     }
 
     public Ship ProcessMovement(Ship ship)
@@ -221,7 +231,7 @@ public class LobbyActor : ReceiveActor
 
     public int Distance(int x, int y)
     {
-        return (x * x + y * y);
+        return x * x + y * y;
     }
 
     protected override void PostStop()

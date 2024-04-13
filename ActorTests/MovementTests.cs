@@ -8,6 +8,11 @@ namespace ActorTests;
 
 public class MovementTests : TestKit
 {
+    private void OnLobbyDeath(string lobbyName)
+    {
+        
+    }
+
     [Fact]
     public void MovementFunctionMovesShipHorizontal()
     {
@@ -450,5 +455,27 @@ public class MovementTests : TestKit
         lobbySupervisor.Tell(new TestProcessMovement(testShip2, "testLobby"), probe.Ref);
         response = probe.ExpectMsg<ShipUpdate>();
         response.Updated.Speed.Should().Be(10);
+    }
+
+    [Fact]
+    public void LobbyCanSpawnAsteroid()
+    {
+        var probe = CreateTestProbe();
+        var lobby = Sys.ActorOf(Props.Create(() => new LobbyActor("testLobby", OnLobbyDeath)), "testLobby");
+
+        lobby.Tell(new SetLobbyGameState
+        {
+            LobbyName = "testLobby",
+            State = GameState.PLAYING,
+            SubscribedClients = [probe.Ref],
+            Asteroids = [],
+            AsteroidSpawnInterval = 1,
+        });
+
+        lobby.Tell(new AdvanceTicks());
+
+        var snapshot = probe.ExpectMsg<GameStateSnapshot>();
+
+        snapshot.Game.asteroids.Count.Should().Be(1);
     }
 }

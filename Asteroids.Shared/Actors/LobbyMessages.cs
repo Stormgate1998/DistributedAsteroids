@@ -36,5 +36,14 @@ public record TestBulletCollision(Bullet collidingBullet, Asteroid asteroid);
 public record BulletCollisionResult(bool result);
 public record ShipCollisionResult(bool result);
 
-
-
+public record SetLobbyGameState
+{
+  public string LobbyName { get; init; }
+  public GameState State { get; init; }
+  public List<IActorRef> SubscribedClients { get; init; }
+  public List<Ship>? Ships { get; init; }
+  public List<Asteroid>? Asteroids { get; init; }
+  public List<Bullet>? Bullets { get; init; }
+  public int? AsteroidSpawnInterval { get; init; }
+};
+public record AdvanceTicks();
