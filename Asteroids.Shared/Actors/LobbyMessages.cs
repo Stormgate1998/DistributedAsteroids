@@ -13,6 +13,8 @@ public record JoinLobbyResponse(IActorRef Actor);
 
 public record ProcessAllShipMovement();
 
+public record ProcessOneTick();
+
 public record LobbyError(string Message);
 public record LobbyDeath(string LobbyName);
 public record ShipUpdate(Ship Updated);
@@ -30,8 +32,16 @@ public record StartGame(string Username);
 
 public record TestProcessMovement(Ship TestShip, string LobbyName);
 public record TestProcessMovementList(List<Ship> TestShip, string LobbyName);
-public record TestShipCollision(Ship collidingShip, Asteroid asteroid);
-public record TestBulletCollision(Bullet collidingBullet, Asteroid asteroid);
+public record TestShipCollision(string LobbyName, Ship collidingShip, Asteroid asteroid);
+public record TestBulletCollision(string LobbyName, Bullet collidingBullet, Asteroid asteroid);
+
+public record TestingAddAsteroid(string LobbyName, Asteroid Asteroid);
+public record TestingAddShip(string LobbyName, Ship Ship);
+public record TestingAddBullet(string LobbyName, Bullet Bullet);
+
+public record TestOneTick(string LobbyName);
+
+
 
 public record BulletCollisionResult(bool result);
 public record ShipCollisionResult(bool result);
