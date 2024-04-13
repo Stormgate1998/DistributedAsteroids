@@ -3,6 +3,7 @@ using FluentAssertions;
 using Akka.TestKit.Xunit2;
 using Asteroids.Shared.Actors;
 using Asteroids.Shared.GameObjects;
+using Akka.Dispatch.SysMsg;
 
 namespace ActorTests;
 
@@ -739,19 +740,25 @@ public class MovementTests : TestKit
         var probe = CreateTestProbe();
         var lobby = Sys.ActorOf(Props.Create(() => new LobbyActor("testLobby", OnLobbyDeath)), "testLobby");
 
-        lobby.Tell(new SetLobbyGameState
-        {
-            LobbyName = "testLobby",
-            State = GameState.PLAYING,
-            SubscribedClients = [probe.Ref],
-            Asteroids = [],
-            AsteroidSpawnInterval = 1,
-        });
-
-        lobby.Tell(new AdvanceTicks());
-
+        lobby.Tell(new TestOneTick("testLobby", 1), probe.Ref);
         var snapshot = probe.ExpectMsg<GameStateSnapshot>();
 
         snapshot.Game.asteroids.Count.Should().Be(1);
+    }
+
+    [Fact]
+    public void AstroidMovesAfterOneTick()
+    {
+        var probe = CreateTestProbe();
+        var lobby = Sys.ActorOf(Props.Create(() => new LobbyActor("testLobby", OnLobbyDeath)), "testLobby");
+
+        lobby.Tell(new TestOneTick("testLobby", 100), probe.Ref);
+        var firstSnapshot = probe.ExpectMsg<GameStateSnapshot>();
+
+        lobby.Tell(new TestOneTick("testLobby", 100), probe.Ref);
+        var secondSnapshot = probe.ExpectMsg<GameStateSnapshot>();
+
+        firstSnapshot.Game.asteroids.First().Location.X.Should().NotBe(secondSnapshot.Game.asteroids.First().Location.X);
+        firstSnapshot.Game.asteroids.First().Location.Y.Should().NotBe(secondSnapshot.Game.asteroids.First().Location.Y);
     }
 }

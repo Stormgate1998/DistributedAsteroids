@@ -53,13 +53,27 @@ else
 
         @foreach (var ship in gameObject.ships)
         {
-            @if(ship.Health > 0){
-            <div
-                class="position-absolute"
-                style="rotate: @((ship.Direction + 90) % 360)deg; top: @(ship.Location.Y)px; left: @(ship.Location.X)px;"
-            >
-            <ShipSVG/>
-            </div>
+            @if(ship.Health > 0)
+            {
+                <div
+                    class="position-absolute"
+                    style="rotate: @((ship.Direction + 90) % 360)deg; top: @(ship.Location.Y)px; left: @(ship.Location.X)px;"
+                >
+                    <ShipSVG/>
+                </div>
+            }
+        }
+
+        @if (gameObject.asteroids != null)
+        {
+            @foreach (var asteroid in gameObject.asteroids)
+            {
+                <div
+                    class="position-absolute"
+                    style="rotate: @((asteroid.Direction + 90) % 360)deg; top: @(asteroid.Location.Y)px; left: @(asteroid.Location.X)px;"
+                >
+                    <AsteroidSVG />
+                </div>
             }
         }
     }

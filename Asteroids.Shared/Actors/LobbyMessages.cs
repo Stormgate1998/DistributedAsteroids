@@ -39,7 +39,7 @@ public record TestingAddAsteroid(string LobbyName, Asteroid Asteroid);
 public record TestingAddShip(string LobbyName, Ship Ship);
 public record TestingAddBullet(string LobbyName, Bullet Bullet);
 
-public record TestOneTick(string LobbyName);
+public record TestOneTick(string LobbyName, int SpawnInterval = 1);
 
 
 

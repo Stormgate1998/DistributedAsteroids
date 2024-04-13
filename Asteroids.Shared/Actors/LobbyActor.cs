@@ -1,3 +1,4 @@
+using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using System.Threading;
 using Akka.Actor;
@@ -10,6 +11,8 @@ public class LobbyActor : ReceiveActor
     private readonly Action<string> onDeathCallback;
     private string LobbyName;
     private Timer timer;
+    private int Ticks = 0;
+    private int AsteroidSpawnInterval = 50;
     private Dictionary<string, IActorRef> particpatingUsers = [];
     private GameStateObject gameState = new() { state = GameState.JOINING, ships = [], asteroids = [], bullets = [] };
 
@@ -116,7 +119,6 @@ public class LobbyActor : ReceiveActor
 
         Receive<ProcessOneTick>(message =>
         {
-
             List<Bullet> updatedBullets = new(gameState.bullets);
             var updatedShips = ProcessAllShipMovement(gameState.ships);
             var newBullets = CreateAllBulletsThatShouldExist(updatedShips);
@@ -126,9 +128,12 @@ public class LobbyActor : ReceiveActor
 
             }
 
-            List<Asteroid> updatedAsteroids;
+            List<Asteroid> updatedAsteroids = ProcessAsteroids(gameState.asteroids);
+
+            Console.WriteLine($"Updated asteroids before processing collisions: {JsonSerializer.Serialize(updatedAsteroids)}");
+
             (updatedShips, updatedAsteroids, updatedBullets) =
-            ProcessAllAsteroidCollisions(updatedShips, gameState.asteroids, updatedBullets);
+            ProcessAllAsteroidCollisions(updatedShips, updatedAsteroids, updatedBullets);
 
             updatedShips = ProcessAllShipCollisions(updatedShips, updatedAsteroids);
             updatedBullets = RemoveOutOfBoundsBullets(updatedBullets);
@@ -141,10 +146,14 @@ public class LobbyActor : ReceiveActor
                 bullets = updatedBullets,
             };
 
+            Console.WriteLine($"GAMESTATE: {JsonSerializer.Serialize(gameState)}");
+
             foreach (var user in particpatingUsers.Values)
             {
                 user.Tell(new GameStateSnapshot(gameState));
             }
+
+            Ticks++;
         });
 
         Receive<TestShipCollision>(message =>
@@ -175,18 +184,18 @@ public class LobbyActor : ReceiveActor
         });
         Receive<TestOneTick>(message =>
         {
+            AsteroidSpawnInterval = message.SpawnInterval;
             List<Bullet> updatedBullets = new(gameState.bullets);
             var updatedShips = ProcessAllShipMovement(gameState.ships);
             var newBullets = CreateAllBulletsThatShouldExist(updatedShips);
             if (newBullets.Count > 0)
             {
                 updatedBullets.AddRange(newBullets);
-
             }
 
-            List<Asteroid> updatedAsteroids;
+            List<Asteroid> updatedAsteroids = ProcessAsteroids(gameState.asteroids);
             (updatedShips, updatedAsteroids, updatedBullets) =
-            ProcessAllAsteroidCollisions(updatedShips, gameState.asteroids, updatedBullets);
+            ProcessAllAsteroidCollisions(updatedShips, updatedAsteroids, updatedBullets);
 
             updatedShips = ProcessAllShipCollisions(updatedShips, gameState.asteroids);
             updatedBullets = RemoveOutOfBoundsBullets(updatedBullets);
@@ -210,6 +219,79 @@ public class LobbyActor : ReceiveActor
         {
             // Advance timer by 1 tick
         });
+    }
+
+    private List<Asteroid> ProcessAsteroids(List<Asteroid> asteroids)
+    {
+        if (Ticks % AsteroidSpawnInterval == 0)
+        {
+            asteroids.Add(SpawnAsteroid());
+        }
+
+        return ProcessAllAsteroidMovement(asteroids);
+    }
+
+    private Asteroid SpawnAsteroid()
+    {
+        var rng = new Random();
+        List<Location> spawnPoints = [new Location(0, 0), new Location(1000, 0), new Location(0, 500), new Location(1000, 500)];
+
+        int selectedLocationIndex = rng.Next(0, 3);
+        Location selectedLocation = spawnPoints[selectedLocationIndex];
+
+        int direction = CalculateDirectionTowardsCenter(selectedLocation);
+        int speed = DetermineAsteroidSpeed(rng);
+        int size = DetermineAsteroidSize(rng);
+        int health = CalculateAsteroidHealth(size, speed);
+
+        return new Asteroid
+        {
+            Location = selectedLocation,
+            Direction = direction,
+            Health = health,
+            Size = size,
+            Speed = speed,
+        };
+    }
+
+    private int CalculateDirectionTowardsCenter(Location spawnLocation)
+{
+    double deltaX = 500 - spawnLocation.X;
+    double deltaY = 250 - spawnLocation.Y;
+
+    // Check if the spawn location is on the y-axis
+    if (deltaX == 0)
+    {
+        // Handle the case when the spawn location is on the y-axis
+        // The direction should be either directly above (180 degrees) or below (0 degrees) the center
+        return deltaY >= 0 ? 0 : 180;
+    }
+
+    // Calculate the angle in radians from the spawn location to the center
+    double angleRadians = Math.Atan2(deltaY, deltaX);
+
+    // Convert radians to degrees
+    double angleDegrees = angleRadians * (180 / Math.PI);
+
+    // Adjust the angle to ensure it's between 0 and 360 degrees
+    int direction = (int)((angleDegrees + 360) % 360);
+    
+    return direction;
+}
+
+    private int DetermineAsteroidSpeed(Random rng)
+    {
+        return rng.Next(1, 10);
+    }
+
+    private int DetermineAsteroidSize(Random rng)
+    {
+        return rng.Next(1, 5);
+    }
+
+    private int CalculateAsteroidHealth(int size, int speed)
+    {
+        return size * speed * 1;
     }
 
     public Ship ProcessMovement(Ship ship)
@@ -281,7 +363,7 @@ public class LobbyActor : ReceiveActor
         timer = new Timer(_ =>
                 {
                     self.Tell(new ProcessOneTick());
-                }, null, 0, 10);
+                }, null, 0, 33);
     }
 
     private int TurnShipLeft(Ship ship)
@@ -311,6 +393,34 @@ public class LobbyActor : ReceiveActor
         }
 
         return newShipList;
+    }
+
+    public List<Asteroid> ProcessAllAsteroidMovement(List<Asteroid> asteroids)
+    {
+        Console.WriteLine("Processing movement of all asteroids.");
+
+        List<Asteroid> copyOfAsteroids = new(asteroids);
+        List<Asteroid> newAsteroids = [];
+
+        foreach (Asteroid asteroid in copyOfAsteroids)
+        {
+            // copyOfAsteroids.Add(CalculateNextPosition(asteroid.Location, asteroid.Speed, asteroid.Direction));
+            var updatedAsteroid = asteroid with
+            {
+                Location = CalculateNextPosition(asteroid.Location, asteroid.Speed, asteroid.Direction)
+            };
+
+            newAsteroids.Add(updatedAsteroid);
+        }
+
+        if (copyOfAsteroids.Count != newAsteroids.Count())
+        {
+            throw new Exception("Lost asteroid during processing.");
+        }
+
+        Console.WriteLine($"Copy of asteroids: {JsonSerializer.Serialize(newAsteroids)}");
+
+        return newAsteroids;
     }
 
     public List<Ship> ProcessAllShipCollisions(List<Ship> shipList, List<Asteroid> AsteroidList)
@@ -347,6 +457,7 @@ public class LobbyActor : ReceiveActor
         List<Asteroid> asteroidsList = new(asteroids);
         List<Bullet> bulletList = new(bullets);
 
+        Console.WriteLine($"Updated asteroids after processing collisions: {JsonSerializer.Serialize(asteroidsList)}");
 
         foreach (var bullet in bullets)
         {
@@ -383,6 +494,8 @@ public class LobbyActor : ReceiveActor
 
             }
         }
+
+        Console.WriteLine($"Updated asteroids after processing collisions: {JsonSerializer.Serialize(asteroidsList)}");
 
         return (shipList, asteroidsList, bulletList);
 
