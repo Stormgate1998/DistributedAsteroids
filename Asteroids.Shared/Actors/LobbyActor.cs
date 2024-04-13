@@ -19,10 +19,7 @@ public class LobbyActor : ReceiveActor
         LobbyName = lobbyName;
         this.onDeathCallback = onDeathCallback;
 
-        timer = new Timer(_ =>
-        {
-            self.Tell(new ProcessOneTick());
-        }, null, 0, 10);
+
 
         Receive<LobbyDeath>(death =>
         {
@@ -58,8 +55,6 @@ public class LobbyActor : ReceiveActor
 
         Receive<StartGame>(message =>
         {
-            // if (message.Username == gameState.LobbyName)
-            // {
             GameStateObject newState = new()
             {
                 state = GameState.PLAYING,
@@ -68,8 +63,9 @@ public class LobbyActor : ReceiveActor
                 bullets = gameState.bullets,
             };
             gameState = newState;
+            StartTimer();
             Sender.Tell(new GameStateSnapshot(newState));
-            // }
+
         });
 
         Receive<TestProcessMovement>(message =>
@@ -159,6 +155,17 @@ public class LobbyActor : ReceiveActor
             gameState.bullets.Add(message.Bullet);
 
         });
+        Receive<TestOneTick>(message =>
+        {
+            var updatedShips = ProcessAllShipMovement(gameState.ships);
+            updatedShips = ProcessAllShipCollisions(updatedShips, gameState.asteroids);
+            gameState = gameState with
+            {
+                state = gameState.state,
+                ships = updatedShips,
+            };
+            Sender.Tell(new GameStateSnapshot(gameState));
+        });
     }
 
     public Ship ProcessMovement(Ship ship)
@@ -207,6 +214,15 @@ public class LobbyActor : ReceiveActor
             newDirection -= 360;
 
         return newDirection;
+    }
+
+    private void StartTimer()
+    {
+        var self = Self;
+        timer = new Timer(_ =>
+                {
+                    self.Tell(new ProcessOneTick());
+                }, null, 0, 10);
     }
 
     private int TurnShipLeft(Ship ship)

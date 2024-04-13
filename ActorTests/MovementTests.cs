@@ -573,4 +573,138 @@ public class MovementTests : TestKit
 
         response.result.Should().Be(false);
     }
+
+    [Fact]
+    public async void TestShipCollisionRemovesHealth()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        Ship testShip = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Location = new(0, 0),
+            Direction = 90,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+
+        };
+
+        Asteroid asteroid = new()
+        {
+            Health = 20,
+            Location = new(0, 20),
+            Direction = 0,
+            Size = 20,
+            Speed = 0
+        };
+
+        lobbySupervisor.Tell(new TestingAddShip("testLobby", testShip));
+        lobbySupervisor.Tell(new TestingAddAsteroid("testLobby", asteroid));
+
+        await Task.Delay(100);
+
+        lobbySupervisor.Tell(new TestOneTick("testLobby"), probe.Ref);
+        var response = probe.ExpectMsg<GameStateSnapshot>();
+        response.Game.asteroids.Count.Should().Be(1);
+        Ship ship = response.Game.ships[0];
+        ship.Health.Should().Be(35);
+
+    }
+
+
+    [Fact]
+    public async void TestBulletCollisionRemovesHealthAndIncreasesScore()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        Ship testShip = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Location = new(-90, -90),
+            Direction = 90,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+
+        };
+
+        Asteroid asteroid = new()
+        {
+            Health = 20,
+            Location = new(0, 90),
+            Direction = 0,
+            Size = 20,
+            Speed = 1
+        };
+
+        Bullet bullet = new()
+        {
+            Username = "tony",
+            Speed = 0,
+            Location = new(0, 87),
+            Direction = 0,
+        };
+
+        lobbySupervisor.Tell(new TestingAddShip("testLobby", testShip));
+        lobbySupervisor.Tell(new TestingAddAsteroid("testLobby", asteroid));
+        lobbySupervisor.Tell(new TestingAddBullet("testLobby", bullet));
+        await Task.Delay(100);
+
+        lobbySupervisor.Tell(new TestOneTick("testLobby"), probe.Ref);
+        var response = probe.ExpectMsg<GameStateSnapshot>();
+        response.Game.asteroids.Count.Should().Be(1);
+        response.Game.asteroids[0].Health.Should().Be(15);
+        response.Game.bullets.Count.Should().Be(0);
+        Ship ship = response.Game.ships[0];
+        ship.Health.Should().Be(40);
+        ship.Score.Should().Be(2);
+
+    }
+
+    [Fact]
+    public async Task TestIsFiringCreatesABullet()
+    {
+        var probe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+        Ship testShip = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Location = new(0, 0),
+            Direction = 90,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+            IsFiring = true
+        };
+        lobbySupervisor.Tell(new TestingAddShip("testLobby", testShip));
+
+        await Task.Delay(100);
+
+        lobbySupervisor.Tell(new TestOneTick("testLobby"), probe.Ref);
+        var response = probe.ExpectMsg<GameStateSnapshot>();
+        response.Game.bullets.Count.Should().Be(1);
+        response.Game.bullets[0].Location.Should().Be(new Location(0, 10));
+
+    }
 }

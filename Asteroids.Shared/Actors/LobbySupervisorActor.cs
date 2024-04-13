@@ -133,6 +133,13 @@ public class LobbySupervisorActor : ReceiveActor
                 lobby.Forward(message);
             }
         });
+        Receive<TestOneTick>(message =>
+        {
+            if (lobbies.TryGetValue(message.LobbyName, out var lobby))
+            {
+                lobby.Forward(message);
+            }
+        });
     }
 
     private void OnLobbyDeath(string lobbyName)
