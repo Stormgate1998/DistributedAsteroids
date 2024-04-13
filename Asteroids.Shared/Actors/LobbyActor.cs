@@ -1,7 +1,9 @@
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Threading;
 using Akka.Actor;
+using Akka.Util.Internal;
 using Asteroids.Shared.GameObjects;
 
 namespace Asteroids.Shared.Actors;
@@ -12,7 +14,7 @@ public class LobbyActor : ReceiveActor
     private string LobbyName;
     private Timer timer;
     private int Ticks = 0;
-    private int AsteroidSpawnInterval = 50;
+    private int AsteroidSpawnInterval = 30;
     private Dictionary<string, IActorRef> particpatingUsers = [];
     private GameStateObject gameState = new() { state = GameState.JOINING, ships = [], asteroids = [], bullets = [] };
 
@@ -21,8 +23,6 @@ public class LobbyActor : ReceiveActor
         IActorRef self = Self;
         LobbyName = lobbyName;
         this.onDeathCallback = onDeathCallback;
-
-
 
         Receive<LobbyDeath>(death =>
         {
@@ -234,7 +234,7 @@ public class LobbyActor : ReceiveActor
     private Asteroid SpawnAsteroid()
     {
         var rng = new Random();
-        List<Location> spawnPoints = [new Location(0, 0), new Location(1000, 0), new Location(0, 500), new Location(1000, 500)];
+        List<Location> spawnPoints = [new Location(1, 1), new Location(999, 1), new Location(1, 499), new Location(999, 499)];
 
         int selectedLocationIndex = rng.Next(0, 3);
         Location selectedLocation = spawnPoints[selectedLocationIndex];
@@ -255,29 +255,29 @@ public class LobbyActor : ReceiveActor
     }
 
     private int CalculateDirectionTowardsCenter(Location spawnLocation)
-{
-    double deltaX = 500 - spawnLocation.X;
-    double deltaY = 250 - spawnLocation.Y;
-
-    // Check if the spawn location is on the y-axis
-    if (deltaX == 0)
     {
-        // Handle the case when the spawn location is on the y-axis
-        // The direction should be either directly above (180 degrees) or below (0 degrees) the center
-        return deltaY >= 0 ? 0 : 180;
+        double deltaX = 500 - spawnLocation.X;
+        double deltaY = 250 - spawnLocation.Y;
+
+        // Check if the spawn location is on the y-axis
+        if (deltaX == 0)
+        {
+            // Handle the case when the spawn location is on the y-axis
+            // The direction should be either directly above (180 degrees) or below (0 degrees) the center
+            return deltaY >= 0 ? 0 : 180;
+        }
+
+        // Calculate the angle in radians from the spawn location to the center
+        double angleRadians = Math.Atan2(deltaY, deltaX);
+
+        // Convert radians to degrees
+        double angleDegrees = angleRadians * (180 / Math.PI);
+
+        // Adjust the angle to ensure it's between 0 and 360 degrees
+        int direction = (int)((angleDegrees + 360) % 360);
+
+        return direction;
     }
-
-    // Calculate the angle in radians from the spawn location to the center
-    double angleRadians = Math.Atan2(deltaY, deltaX);
-
-    // Convert radians to degrees
-    double angleDegrees = angleRadians * (180 / Math.PI);
-
-    // Adjust the angle to ensure it's between 0 and 360 degrees
-    int direction = (int)((angleDegrees + 360) % 360);
-    
-    return direction;
-}
 
     private int DetermineAsteroidSpeed(Random rng)
     {
@@ -404,23 +404,39 @@ public class LobbyActor : ReceiveActor
 
         foreach (Asteroid asteroid in copyOfAsteroids)
         {
-            // copyOfAsteroids.Add(CalculateNextPosition(asteroid.Location, asteroid.Speed, asteroid.Direction));
             var updatedAsteroid = asteroid with
             {
                 Location = CalculateNextPosition(asteroid.Location, asteroid.Speed, asteroid.Direction)
             };
 
-            newAsteroids.Add(updatedAsteroid);
-        }
-
-        if (copyOfAsteroids.Count != newAsteroids.Count())
-        {
-            throw new Exception("Lost asteroid during processing.");
+            if (!HasHitBorder(asteroid))
+            {
+                Console.WriteLine("Has not the border.");
+                newAsteroids.Add(updatedAsteroid);
+            }
+            else
+            {
+                Console.WriteLine("Has hit the border.");
+            }
+            
         }
 
         Console.WriteLine($"Copy of asteroids: {JsonSerializer.Serialize(newAsteroids)}");
 
         return newAsteroids;
+    }
+
+    private bool HasHitBorder(Asteroid asteroid)
+    {
+        if (asteroid.Location.X >= 1000
+            || asteroid.Location.X <= 0
+            || asteroid.Location.Y >= 500
+            || asteroid.Location.Y <= 0)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public List<Ship> ProcessAllShipCollisions(List<Ship> shipList, List<Asteroid> AsteroidList)
