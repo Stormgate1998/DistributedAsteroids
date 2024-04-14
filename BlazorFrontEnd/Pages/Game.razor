@@ -15,9 +15,11 @@
 {
     <div>Joining</div>
 } 
-else
+else if (@gameObject.state == GameState.PLAYING)
 {
     <div>Playing</div>
+}else{
+    <div> Game Over</div>
 }
 
 <div>List of Joined</div>
