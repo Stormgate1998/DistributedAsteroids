@@ -1,8 +1,11 @@
 using Akka.Actor;
 using Akka.DependencyInjection;
-using Akka.Routing;
-using Asteroids.Shared.Actors;
 using Asteroids.Shared.GameObjects;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+
+namespace Asteroids.Shared.Actors;
+
 
 public class RemoteAkkaService : IHostedService
 {
@@ -25,24 +28,9 @@ public class RemoteAkkaService : IHostedService
         var bootstrap = BootstrapSetup.Create();
         var mergeSystemSetup = bootstrap.And(dependencyInjectionSetup);
 
-        _actorSystem = ActorSystem.Create("BlazorActorSystem", mergeSystemSetup);
+        _actorSystem = ActorSystem.Create("je-actor-system", mergeSystemSetup);
         lobbySupervisor = _actorSystem.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
         clientSupervisor = _actorSystem.ActorOf(Props.Create<ClientSupervisorActor>(serviceProvider), "clientSupervisor");
-
-        // var config = ConfigurationFactory.ParseString
-        //     (@"
-        //     akka {
-        //         actor {
-        //             provider = remote
-        //         }
-        //         remote {
-        //             dot-netty.tcp {
-        //                 hostname = ""localhost""
-        //                 port = 8081
-        //             }
-        //         }
-        //     }"
-        //     );
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

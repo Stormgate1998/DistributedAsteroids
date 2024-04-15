@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Asteroids.Shared", "Asteroi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Websocket", "Websocket\Websocket.csproj", "{81B79F80-F373-4C5F-B2D0-6491C00F0C02}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cluster", "Cluster\Cluster.csproj", "{DD55AF42-4BAA-411C-BE02-41027AB70BE1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{81B79F80-F373-4C5F-B2D0-6491C00F0C02}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81B79F80-F373-4C5F-B2D0-6491C00F0C02}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81B79F80-F373-4C5F-B2D0-6491C00F0C02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD55AF42-4BAA-411C-BE02-41027AB70BE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD55AF42-4BAA-411C-BE02-41027AB70BE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD55AF42-4BAA-411C-BE02-41027AB70BE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD55AF42-4BAA-411C-BE02-41027AB70BE1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

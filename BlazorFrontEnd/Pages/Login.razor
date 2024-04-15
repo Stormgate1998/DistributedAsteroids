@@ -1,8 +1,11 @@
 @using Microsoft.AspNetCore.SignalR.Client;
+@using Asteroids.Shared.Actors
 @using BlazorFrontEnd.Services;
+
 @inject RemoteAkkaService AkkaService
 @inject NavigationManager NavigationManager
 @inject SignalRService hubService
+
 @* @inject HubConnection hubConnection *@
 @page "/"
 

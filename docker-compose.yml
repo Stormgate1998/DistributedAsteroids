@@ -7,6 +7,23 @@ services:
     build:
       context: .
       dockerfile: BlazorFrontEnd/Dockerfile
+    environment:
+      ASTEROIDS_CLUSTER_CONFIG: |
+        akka {
+          actor {
+            provider = cluster
+          }
+          remote {
+            dot-netty.tcp {
+              hostname = "je-asteroids-web"
+              port = 2551
+            }
+          }
+          cluster {
+            seed-nodes = ["akka.tcp://je-actor-system@je-asteroids-akka-1:2551"]
+            roles = ["client"]
+          }
+        }
 
   je-asteroids-reverse-proxy:
     container_name: je-asteroids-reverse-proxy
@@ -25,6 +42,54 @@ services:
     build:
       context: .
       dockerfile: Websocket/Dockerfile
+
+  je-asteroids-akka-1:
+    container_name: je-asteroids-akka-1
+    image: cluster
+    build:
+      context: .
+      dockerfile: Cluster/Dockerfile
+    environment:
+      ASTEROIDS_CLUSTER_CONFIG: |
+        akka {
+          actor {
+            provider = cluster
+          }
+          remote {
+            dot-netty.tcp {
+              hostname = "je-asteroids-akka-1"
+              port = 2551
+            }
+          }
+          cluster {
+            seed-nodes = ["akka.tcp://je-actor-system@je-asteroids-akka-1:2551"]
+            roles = ["lobby"]
+          }
+        }
+
+  je-asteroids-akka-2:
+    container_name: je-asteroids-akka-2
+    image: cluster
+    build:
+      context: .
+      dockerfile: Cluster/Dockerfile
+    environment:
+      ASTEROIDS_CLUSTER_CONFIG: |
+        akka {
+          actor {
+            provider = cluster
+          }
+          remote {
+            dot-netty.tcp {
+              hostname = "je-asteroids-akka-2"
+              port = 2551
+            }
+          }
+          cluster {
+            seed-nodes = ["akka.tcp://je-actor-system@je-asteroids-akka-1:2551"]
+            roles = ["lobby"]
+          }
+        }
 
   # je-asteroids-akka:
   #   container_name: je-asteroids-akka

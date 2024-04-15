@@ -1,5 +1,6 @@
 using Asteroids.Shared.Services;
 using BlazorFrontEnd.Services;
+using Asteroids.Shared.Actors;
 
 var builder = WebApplication.CreateBuilder(args);
 
