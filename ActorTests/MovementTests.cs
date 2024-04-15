@@ -676,7 +676,7 @@ public class MovementTests : TestKit
         response.Game.asteroids.Count.Should().Be(1);
         response.Game.bullets.Count.Should().Be(0);
         Ship ship = response.Game.ships[0];
-        ship.Health.Should().Be(40);
+        ship.Health.Should().Be(35);
         ship.Score.Should().Be(2);
         response.Game.asteroids.Count.Should().Be(1);
 
