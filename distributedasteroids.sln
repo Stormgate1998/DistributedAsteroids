@@ -5,8 +5,6 @@ VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorFrontEnd", "BlazorFrontEnd\BlazorFrontEnd.csproj", "{8C078FD0-16E2-4448-8186-B05B89E8B901}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AkkaCluster", "AkkaCluster\AkkaCluster.csproj", "{4522A52B-21A6-4C49-A494-4458E8B0458C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActorTests", "ActorTests\ActorTests.csproj", "{132BE6B7-006A-4F53-945F-4177850D5F4D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Asteroids.Shared", "Asteroids.Shared\Asteroids.Shared.csproj", "{8E947276-9938-43F8-8AD5-43356CB5C925}"

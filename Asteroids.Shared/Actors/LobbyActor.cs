@@ -119,41 +119,56 @@ public class LobbyActor : ReceiveActor
 
         Receive<ProcessOneTick>(message =>
         {
-            List<Bullet> updatedBullets = new(gameState.bullets);
-            var updatedShips = ProcessAllShipMovement(gameState.ships);
-            var newBullets = CreateAllBulletsThatShouldExist(updatedShips);
-            if (newBullets.Count > 0)
+            if (gameState.state == GameState.PLAYING)
             {
-                updatedBullets.AddRange(newBullets);
 
+                List<Bullet> updatedBullets = new(gameState.bullets);
+                var updatedShips = ProcessAllShipMovement(gameState.ships);
+                var newBullets = CreateAllBulletsThatShouldExist(updatedShips);
+                if (newBullets.Count > 0)
+                {
+                    updatedBullets.AddRange(newBullets);
+
+                }
+
+                List<Asteroid> updatedAsteroids = ProcessAsteroids(gameState.asteroids);
+
+                Console.WriteLine($"Updated asteroids before processing collisions: {JsonSerializer.Serialize(updatedAsteroids)}");
+
+                (updatedShips, updatedAsteroids, updatedBullets) =
+                ProcessAllAsteroidCollisions(updatedShips, updatedAsteroids, updatedBullets);
+
+                updatedShips = ProcessAllShipCollisions(updatedShips, updatedAsteroids);
+                updatedBullets = RemoveOutOfBoundsBullets(updatedBullets);
+
+                gameState = gameState with
+                {
+                    state = gameState.state,
+                    ships = updatedShips,
+                    asteroids = updatedAsteroids,
+                    bullets = updatedBullets,
+                };
+
+                bool allShipsDead = updatedShips.All(ship => ship.Health <= 0);
+
+                if (allShipsDead)
+                {
+                    gameState = gameState with
+                    {
+                        state = GameState.GAMEOVER,
+                    };
+                }
+
+                Console.WriteLine($"GAMESTATE: {JsonSerializer.Serialize(gameState)}");
+
+                foreach (var user in particpatingUsers.Values)
+                {
+                    user.Tell(new GameStateSnapshot(gameState));
+                }
+
+                Ticks++;
             }
 
-            List<Asteroid> updatedAsteroids = ProcessAsteroids(gameState.asteroids);
-
-            Console.WriteLine($"Updated asteroids before processing collisions: {JsonSerializer.Serialize(updatedAsteroids)}");
-
-            (updatedShips, updatedAsteroids, updatedBullets) =
-            ProcessAllAsteroidCollisions(updatedShips, updatedAsteroids, updatedBullets);
-
-            updatedShips = ProcessAllShipCollisions(updatedShips, updatedAsteroids);
-            updatedBullets = RemoveOutOfBoundsBullets(updatedBullets);
-
-            gameState = gameState with
-            {
-                state = gameState.state,
-                ships = updatedShips,
-                asteroids = updatedAsteroids,
-                bullets = updatedBullets,
-            };
-
-            Console.WriteLine($"GAMESTATE: {JsonSerializer.Serialize(gameState)}");
-
-            foreach (var user in particpatingUsers.Values)
-            {
-                user.Tell(new GameStateSnapshot(gameState));
-            }
-
-            Ticks++;
         });
 
         Receive<TestShipCollision>(message =>
