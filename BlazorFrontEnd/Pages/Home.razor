@@ -16,14 +16,14 @@
 
 <div>
     @* <input type="text" @bind="key" placeholder="Enter the key"> *@
-    <button @onclick="CreateLobby">Create Lobby</button>
-    <button @onclick="GetList">Get Lobby List</button>
+    <button class="btn btn-primary" @onclick="CreateLobby">Create Lobby</button>
+    <button class="btn btn-primary" @onclick="GetList">Get Lobby List</button>
 </div>
 <p>@response</p>
 @foreach(var item in list)
 {
     <div>
-        <button @onclick="() => JoinLobby(item)">Join @item</button>
+        <button class="btn btn-primary" @onclick="() => JoinLobby(item)">Join @item</button>
     </div>
 }
 
