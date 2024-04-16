@@ -23,34 +23,12 @@ else if (@gameObject.state == GameState.PLAYING)
     <div> Game Over</div>
 }
 
-<div>List of Joined</div>
-@if (gameObject != null)
+@if (Lobbyname == Username && gameObject.state == GameState.JOINING)
 {
-    @if (gameObject.ships != null)
-    {
-        @if (Lobbyname == Username && gameObject.state == GameState.JOINING)
-        {
-            <button  @onclick="StartGame">Start Game</button>
-        }
-
-        <div>Player Count: @gameObject.ships.Count</div>
-        <ul>
-        @foreach (var item in gameObject.ships)
-        {
-            <li>@item.Username</li>
-        }
-        </ul>
-    }
+    <button  @onclick="StartGame">Start Game</button>
 }
 
-<div
-    tabindex="0"
-    class="border border-4 border-black rounded-4 position-relative game-board"
-    style="height: 500px; width: 1000px;"
-    @onkeydown="handleKeyDown"
-    @onkeyup="handleKeyUp"
-    @onblur="handleBlur"
->
+<div tabindex="0" class="border border-4 border-black rounded-4 position-relative game-board" style="height: 500px; width: 1000px;" @onkeydown="handleKeyDown" @onkeyup="handleKeyUp" @onblur="handleBlur">
     @if (gameObject != null && gameObject.ships != null)
     {
 
@@ -58,11 +36,14 @@ else if (@gameObject.state == GameState.PLAYING)
         {
             @if(ship.Health > 0)
             {
+                <div class="position-absolute" style="top: @(ship.Location.Y)px; left: @(ship.Location.X)px;">
+                <div>@ship.Username</div>
                 <div
-                    class="position-absolute"
-                    style="rotate: @((ship.Direction + 90) % 360)deg; top: @(ship.Location.Y)px; left: @(ship.Location.X)px;"
+                    style="rotate: @((ship.Direction + 90) % 360)deg;"
                 >
                     <ShipSVG/>
+                </div>
+                <div>@ship.Health</div>
                 </div>
             }
         }
@@ -71,16 +52,44 @@ else if (@gameObject.state == GameState.PLAYING)
         {
             @foreach (var asteroid in gameObject.asteroids)
             {
+                <div class="position-absolute" 
+                style="top: @(asteroid.Location.Y)px; left: @(asteroid.Location.X)px;">
+                <div>@asteroid.Health</div>
                 <div
-                    class="position-absolute"
-                    style="rotate: @((asteroid.Direction + 90) % 360)deg; top: @(asteroid.Location.Y)px; left: @(asteroid.Location.X)px;"
-                >
+                    style="rotate: @((asteroid.Direction + 90) % 360)deg;">
                     <AsteroidSVG Size="@(asteroid.Size)" />
-                </div>
+                    </div>
+                    </div>
             }
         }
     }
 </div>
+@if (gameObject != null)
+{
+    @if (gameObject.ships != null)
+    {
+    <div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in gameObject.ships)
+            {
+                <tr>
+                    <td>@item.Username</td>
+                    <td>@item.Score</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    </div>
+    }
+}
 
 <style>
     .game-board:focus {

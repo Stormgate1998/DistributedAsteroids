@@ -168,6 +168,11 @@ public class LobbyActor : ReceiveActor
 
                 Ticks++;
             }
+            if (gameState.state == GameState.GAMEOVER)
+            {
+                var self = Self;
+                self.Tell(new LobbyDeath(""));
+            }
 
         });
 
