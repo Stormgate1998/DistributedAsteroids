@@ -22,4 +22,5 @@ public class ShipInput
     public bool Forward { get; set; }
     public bool Left { get; set; }
     public bool Right { get; set; }
+    public bool Firing { get; set; }
 }

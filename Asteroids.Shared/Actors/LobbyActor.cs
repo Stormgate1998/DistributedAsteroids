@@ -97,6 +97,7 @@ public class LobbyActor : ReceiveActor
                     MovingForward = message.Input.Forward,
                     TurningLeft = message.Input.Left,
                     TurningRight = message.Input.Right,
+                    IsFiring = message.Input.Firing
                 };
 
                 // Update the ship in the collection
@@ -121,14 +122,13 @@ public class LobbyActor : ReceiveActor
         {
             if (gameState.state == GameState.PLAYING)
             {
-
                 List<Bullet> updatedBullets = new(gameState.bullets);
                 var updatedShips = ProcessAllShipMovement(gameState.ships);
                 var newBullets = CreateAllBulletsThatShouldExist(updatedShips);
                 if (newBullets.Count > 0)
                 {
                     updatedBullets.AddRange(newBullets);
-
+                    updatedBullets = ProcessAllBulletMovement(updatedBullets);
                 }
 
                 List<Asteroid> updatedAsteroids = ProcessAsteroids(gameState.asteroids);
@@ -440,6 +440,30 @@ public class LobbyActor : ReceiveActor
         return newAsteroids;
     }
 
+    public List<Bullet> ProcessAllBulletMovement(List<Bullet> bullets)
+    {
+        Console.WriteLine("Processing movement of all bullets.");
+
+        List<Bullet> copyOfBullets = new(bullets);
+        List<Bullet> newBullets = [];
+
+        foreach (Bullet bullet in copyOfBullets)
+        {
+            Location nextLocation = CalculateNextPosition(bullet.Location, bullet.Speed, bullet.Direction);
+            int xPosition = nextLocation.X;
+            int yPosition = nextLocation.Y;
+
+            var updatedBullet = bullet with
+            {
+                Location = new(xPosition, yPosition)
+            };
+
+            newBullets.Add(updatedBullet);
+        }
+
+        return newBullets;
+    }
+
     private bool HasHitBorder(Asteroid asteroid)
     {
         if (asteroid.Location.X >= 1000
@@ -548,10 +572,11 @@ public class LobbyActor : ReceiveActor
                     Speed = 20,
                     Direction = ship.Direction,
                 };
-                newBulletList.Add(bullet);
 
+                newBulletList.Add(bullet);
             }
         }
+
         return newBulletList;
     }
 
