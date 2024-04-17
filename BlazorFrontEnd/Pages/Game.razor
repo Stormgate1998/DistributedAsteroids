@@ -25,7 +25,7 @@ else if (@gameObject.state == GameState.PLAYING)
 
 @if (Lobbyname == Username && gameObject.state == GameState.JOINING)
 {
-    <button  @onclick="StartGame">Start Game</button>
+    <button  class="btn btn-primary" @onclick="StartGame">Start Game</button>
 }
 
 <div tabindex="0" class="border border-4 border-black rounded-4 position-relative game-board" style="height: 500px; width: 1000px;" @onkeydown="handleKeyDown" @onkeyup="handleKeyUp" @onblur="handleBlur">
@@ -97,7 +97,7 @@ else if (@gameObject.state == GameState.PLAYING)
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in gameObject.ships)
+            @foreach (var item in gameObject.ships.OrderByDescending(ship => ship.Score))
             {
                 <tr>
                     <td>@item.Username</td>

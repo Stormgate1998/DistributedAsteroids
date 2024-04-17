@@ -41,7 +41,7 @@ public class LobbyActor : ReceiveActor
                 Username = userName,
                 Direction = 45,
                 Location = new(100, 100),
-                Health = 50,
+                Health = 200,
                 Score = 0,
             };
 
@@ -140,6 +140,10 @@ public class LobbyActor : ReceiveActor
 
                 updatedShips = ProcessAllShipCollisions(updatedShips, updatedAsteroids);
                 updatedBullets = RemoveOutOfBoundsBullets(updatedBullets);
+                if (Ticks % 20 == 0)
+                {
+                    updatedShips = IncreaseAllShipsScoreByOne(updatedShips);
+                }
 
                 gameState = gameState with
                 {
@@ -239,6 +243,20 @@ public class LobbyActor : ReceiveActor
         {
             // Advance timer by 1 tick
         });
+    }
+
+    private List<Ship> IncreaseAllShipsScoreByOne(List<Ship> updatedShips)
+    {
+        List<Ship> returnedShips = new(updatedShips);
+        foreach (Ship ship in updatedShips)
+        {
+            if (ship.Health > 0)
+            {
+                int index = updatedShips.FindIndex(x => x.Username == ship.Username);
+                returnedShips[index] = ship with { Score = ship.Score + 1 };
+            }
+        }
+        return returnedShips;
     }
 
     private List<Asteroid> ProcessAsteroids(List<Asteroid> asteroids)
@@ -584,7 +602,7 @@ public class LobbyActor : ReceiveActor
 
     public bool IsColliding(Ship colliding, Asteroid asteroid)
     {
-        return Distance(colliding.Location.X, asteroid.Location.X) + Distance(colliding.Location.Y, asteroid.Location.Y) <= (400 + (asteroid.Size * asteroid.Size));
+        return Distance(colliding.Location.X, asteroid.Location.X + asteroid.Size / 2) + Distance(colliding.Location.Y, asteroid.Location.Y + asteroid.Size / 2) <= (400 + (asteroid.Size * asteroid.Size));
     }
 
     public bool IsColliding(Bullet colliding, Asteroid asteroid)

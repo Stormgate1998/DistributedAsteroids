@@ -14,7 +14,7 @@
 <div>
     <label for="username">Username:</label>
     <input id="username" type="text" @bind="username" placeholder="Enter a username">
-    <button @onclick="LogIn">Submit</button>
+    <button class="btn btn-primary" @onclick="LogIn">Submit</button>
     @if (username.Contains(" "))
     {
         <p class="text-error">Spaces are not allowed in the username.</p>
