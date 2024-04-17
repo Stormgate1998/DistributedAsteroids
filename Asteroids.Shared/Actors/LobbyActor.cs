@@ -125,12 +125,13 @@ public class LobbyActor : ReceiveActor
                 List<Bullet> updatedBullets = new(gameState.bullets);
                 var updatedShips = ProcessAllShipMovement(gameState.ships);
                 var newBullets = CreateAllBulletsThatShouldExist(updatedShips);
+                
                 if (newBullets.Count > 0)
                 {
                     updatedBullets.AddRange(newBullets);
-                    updatedBullets = ProcessAllBulletMovement(updatedBullets);
                 }
 
+                updatedBullets = ProcessAllBulletMovement(updatedBullets);
                 List<Asteroid> updatedAsteroids = ProcessAsteroids(gameState.asteroids);
 
                 Console.WriteLine($"Updated asteroids before processing collisions: {JsonSerializer.Serialize(updatedAsteroids)}");
