@@ -367,8 +367,8 @@ public class LobbyActor : ReceiveActor
         List<Bullet> returnedBullets = new(bullets);
         foreach (Bullet bullet in bullets)
         {
-            bool xlimit = bullet.Location.X > 1000 || bullet.Location.X <= 0;
-            bool ylimit = bullet.Location.Y > 500 || bullet.Location.Y <= 0;
+            bool xlimit = bullet.Location.X >= 1000 || bullet.Location.X <= 0;
+            bool ylimit = bullet.Location.Y >= 500 || bullet.Location.Y <= 0;
             if (xlimit || ylimit)
             {
                 returnedBullets.Remove(bullet);
