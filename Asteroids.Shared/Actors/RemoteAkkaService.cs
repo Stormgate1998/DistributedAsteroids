@@ -3,7 +3,8 @@ using Akka.DependencyInjection;
 using Asteroids.Shared.GameObjects;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-
+using Akka.Configuration;
+using Akka.Cluster.Tools.Singleton;
 namespace Asteroids.Shared.Actors;
 
 
@@ -19,18 +20,50 @@ public class RemoteAkkaService : IHostedService
     {
         this.serviceProvider = serviceProvider;
         this.configuration = configuration;
+
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var dependencyInjectionSetup = DependencyResolverSetup.Create(serviceProvider);
+        string configString = Environment.GetEnvironmentVariable("ASTEROIDS_CLUSTER_CONFIG");
+        var config = ConfigurationFactory.ParseString(configString);
+        var bootstrap = BootstrapSetup.Create().WithConfig(config);
 
-        var bootstrap = BootstrapSetup.Create();
+
+        var dependencyInjectionSetup = DependencyResolverSetup.Create(serviceProvider);
         var mergeSystemSetup = bootstrap.And(dependencyInjectionSetup);
 
         _actorSystem = ActorSystem.Create("je-actor-system", mergeSystemSetup);
-        lobbySupervisor = _actorSystem.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
+        var cluster = Akka.Cluster.Cluster.Get(_actorSystem);
+
+        if (cluster.SelfRoles.Contains("client"))
+        {
+            var proxyProps = ClusterSingletonProxy.Props(
+                singletonManagerPath: "/user/lobbiesSingletonManager",
+                settings: ClusterSingletonProxySettings.Create(_actorSystem)
+            );
+            lobbySupervisor = _actorSystem.ActorOf(proxyProps, "lobbySupervisorProxy");
+        }
+
+        if (cluster.SelfRoles.Contains("lobby"))
+        {
+            var lobbyProps = DependencyResolver.For(_actorSystem).Props<LobbySupervisorActor>();
+            var singletonProps = ClusterSingletonManager.Props(
+            singletonProps: lobbyProps,
+            terminationMessage: PoisonPill.Instance,
+            settings: ClusterSingletonManagerSettings.Create(_actorSystem)
+            );
+            lobbySupervisor = _actorSystem.ActorOf(singletonProps, "lobbyManagerSingleton");
+        }
+
+
+
+        // lobbySupervisor = _actorSystem.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
         clientSupervisor = _actorSystem.ActorOf(Props.Create<ClientSupervisorActor>(serviceProvider), "clientSupervisor");
+
+
+
+
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

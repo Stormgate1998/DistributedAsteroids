@@ -1,17 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Akka" Version="1.5.18" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.3" />
-    <PackageReference Include="Akka.DependencyInjection" Version="1.5.18" />
-    <PackageReference Include="Akka.Remote" Version="1.5.18" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Akka" Version="1.5.18"/>
+    <PackageReference Include="Akka.Configuration" Version="1.0.5835.36887"/>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.3"/>
+    <PackageReference Include="Akka.DependencyInjection" Version="1.5.18"/>
+    <PackageReference Include="Akka.Remote" Version="1.5.18"/>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0-preview.3.24172.9"/>
+    <PackageReference Include="Akka.Cluster.Tools" Version="1.5.18"/>
+    <PackageReference Include="Akka.Cluster" Version="1.5.18"/>
   </ItemGroup>
-
 </Project>
