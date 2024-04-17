@@ -52,14 +52,34 @@ else if (@gameObject.state == GameState.PLAYING)
         {
             @foreach (var asteroid in gameObject.asteroids)
             {
-                <div class="position-absolute" 
-                style="top: @(asteroid.Location.Y)px; left: @(asteroid.Location.X)px;">
-                <div>@asteroid.Health</div>
                 <div
+                    class="position-absolute"
+                    style="top: @(asteroid.Location.Y)px;
+                           left: @(asteroid.Location.X)px;"
+                >
+                <div>@asteroid.Health</div>
+                    <div
                     style="rotate: @((asteroid.Direction + 90) % 360)deg;">
-                    <AsteroidSVG Size="@(asteroid.Size)" />
+                        <AsteroidSVG Size="@(asteroid.Size)" />
                     </div>
+                </div>
+            }
+        }
+
+        if (gameObject.bullets != null)
+        {
+            @foreach (var bullet in gameObject.bullets)
+            {
+                <div
+                    class="position-absolute" 
+                    style="top: @(bullet.Location.Y)px;
+                           left: @(bullet.Location.X)px;"
+                >
+                    <div
+                        style="rotate: @((bullet.Direction + 90) % 360)deg;">
+                        <Bullet />
                     </div>
+                </div>
             }
         }
     }
@@ -139,6 +159,8 @@ else if (@gameObject.state == GameState.PLAYING)
     private void ReceiveGameState(GameStateObject game){
         gameObject = game;
 
+        Console.WriteLine($"FRONTEND: Bullets = {game.bullets}");
+
         Console.WriteLine($"GAME PAGE | Location: ({game.ships.FirstOrDefault()?.Location.X}, {game.ships.FirstOrDefault()?.Location.Y}).");
 
         if (gameObject == null)
@@ -165,12 +187,12 @@ else if (@gameObject.state == GameState.PLAYING)
     }
 
     // Player controller
-    private string[] movementKeys = ["w", "a", "d"];
+    private string[] controlKeys = ["w", "a", "d", " "];
     private HashSet<string> pressedKeys = new HashSet<string>();
     
     private void handleKeyDown(KeyboardEventArgs e)
     {
-        if (movementKeys.Contains(e.Key))
+        if (controlKeys.Contains(e.Key))
         {
             pressedKeys.Add(e.Key);
         }
@@ -194,6 +216,7 @@ else if (@gameObject.state == GameState.PLAYING)
             bool forward = pressedKeys.Contains("w");
             bool left = pressedKeys.Contains("a") && !pressedKeys.Contains("d");
             bool right = !pressedKeys.Contains("a") && pressedKeys.Contains("d");
+            bool firing = pressedKeys.Contains(" ");
 
             var input = new ShipInput
             {
@@ -201,11 +224,13 @@ else if (@gameObject.state == GameState.PLAYING)
                 Forward = forward,
                 Left = left,
                 Right = right,
+                Firing = firing,
             };
 
             if (input.Forward != lastShipInput.Forward
                 || input.Left != lastShipInput.Left
-                || input.Right != lastShipInput.Right)
+                || input.Right != lastShipInput.Right
+                || input.Firing != lastShipInput.Firing)
             {
                 lastShipInput = input;
                 
