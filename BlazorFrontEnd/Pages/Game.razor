@@ -77,7 +77,7 @@ else if (@gameObject.state == GameState.PLAYING)
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in gameObject.ships)
+            @foreach (var item in gameObject.ships.OrderByDescending(ship => ship.Score))
             {
                 <tr>
                     <td>@item.Username</td>
