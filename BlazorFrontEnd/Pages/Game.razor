@@ -25,10 +25,20 @@ else if (@gameObject.state == GameState.PLAYING)
 
 @if (Lobbyname == Username && gameObject.state == GameState.JOINING)
 {
-    <button  class="btn btn-primary" @onclick="StartGame">Start Game</button>
+    <button class="btn btn-primary" @onclick="StartGame">Start Game</button>
 }
 
-<div tabindex="0" class="border border-4 border-black rounded-4 position-relative game-board" style="height: 500px; width: 1000px;" @onkeydown="handleKeyDown" @onkeyup="handleKeyUp" @onblur="handleBlur">
+<div
+    tabindex="0"
+    class="border border-4 border-black rounded-4 position-relative game-board"
+    style="
+        height: 500px;
+        width: 1000px;
+        overflow: hidden;"
+    @onkeydown="handleKeyDown"
+    @onkeyup="handleKeyUp"
+    @onblur="handleBlur"
+>
     @if (gameObject != null && gameObject.ships != null)
     {
 
@@ -36,14 +46,19 @@ else if (@gameObject.state == GameState.PLAYING)
         {
             @if(ship.Health > 0)
             {
-                <div class="position-absolute" style="top: @(ship.Location.Y)px; left: @(ship.Location.X)px;">
-                <div>@ship.Username</div>
                 <div
-                    style="rotate: @((ship.Direction + 90) % 360)deg;"
+                    class="position-absolute d-flex flex-column justify-content-center align-items-center"
+                    style="
+                        top: @(ship.Location.Y)px;
+                        left: @(ship.Location.X)px;
+                        transform: translate(-50%, -50%);
+                        overflow: visible;"
                 >
-                    <ShipSVG/>
-                </div>
-                <div>@ship.Health</div>
+                    <div>@ship.Username</div>
+                    <div style="transform: rotate(@((ship.Direction + 90) % 360)deg);">
+                        <ShipSVG/>
+                    </div>
+                    <div>@ship.Health</div>
                 </div>
             }
         }
@@ -53,15 +68,17 @@ else if (@gameObject.state == GameState.PLAYING)
             @foreach (var asteroid in gameObject.asteroids)
             {
                 <div
-                    class="position-absolute"
-                    style="top: @(asteroid.Location.Y)px;
-                           left: @(asteroid.Location.X)px;"
+                    class="position-absolute d-flex flex-column justify-content-center align-items-center"
+                    style="
+                        top: @(asteroid.Location.Y)px;
+                        left: @(asteroid.Location.X)px;
+                        transform: translate(-50%, -50%);
+                        overflow: visible;"
                 >
-                <div>@asteroid.Health</div>
-                    <div
-                    style="rotate: @((asteroid.Direction + 90) % 360)deg;">
+                    <div style="rotate: @((asteroid.Direction + 90) % 360)deg;">
                         <AsteroidSVG Size="@(asteroid.Size)" />
                     </div>
+                    <div>@asteroid.Health</div>
                 </div>
             }
         }
@@ -72,8 +89,10 @@ else if (@gameObject.state == GameState.PLAYING)
             {
                 <div
                     class="position-absolute" 
-                    style="top: @(bullet.Location.Y)px;
-                           left: @(bullet.Location.X)px;"
+                    style="
+                        top: @(bullet.Location.Y)px;
+                        left: @(bullet.Location.X)px;
+                        transform: translate(-50%, -50%);"
                 >
                     <div
                         style="rotate: @((bullet.Direction + 90) % 360)deg;">
