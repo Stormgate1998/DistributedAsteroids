@@ -603,7 +603,7 @@ public class LobbyActor : ReceiveActor
 
     public bool IsColliding(Ship colliding, Asteroid asteroid)
     {
-        return Distance(colliding.Location.X, asteroid.Location.X + asteroid.Size / 2) + Distance(colliding.Location.Y, asteroid.Location.Y + asteroid.Size / 2) <= (400 + (asteroid.Size * asteroid.Size));
+        return Distance(colliding.Location.X, asteroid.Location.X) + Distance(colliding.Location.Y, asteroid.Location.Y) <= (400 + (asteroid.Size * asteroid.Size));
     }
 
     public bool IsColliding(Bullet colliding, Asteroid asteroid)
