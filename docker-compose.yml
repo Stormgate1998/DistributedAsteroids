@@ -67,29 +67,29 @@ services:
           }
         }
 
-  je-asteroids-akka-2:
-    container_name: je-asteroids-akka-2
-    image: cluster
-    build:
-      context: .
-      dockerfile: Cluster/Dockerfile
-    environment:
-      ASTEROIDS_CLUSTER_CONFIG: |
-        akka {
-          actor {
-            provider = cluster
-          }
-          remote {
-            dot-netty.tcp {
-              hostname = "je-asteroids-akka-2"
-              port = 2551
-            }
-          }
-          cluster {
-            seed-nodes = ["akka.tcp://je-actor-system@je-asteroids-akka-1:2551"]
-            roles = ["lobby"]
-          }
-        }
+  # je-asteroids-akka-2:
+  #   container_name: je-asteroids-akka-2
+  #   image: cluster
+  #   build:
+  #     context: .
+  #     dockerfile: Cluster/Dockerfile
+  #   environment:
+  #     ASTEROIDS_CLUSTER_CONFIG: |
+  #       akka {
+  #         actor {
+  #           provider = cluster
+  #         }
+  #         remote {
+  #           dot-netty.tcp {
+  #             hostname = "je-asteroids-akka-2"
+  #             port = 2551
+  #           }
+  #         }
+  #         cluster {
+  #           seed-nodes = ["akka.tcp://je-actor-system@je-asteroids-akka-1:2551"]
+  #           roles = ["lobby"]
+  #         }
+  #       }
 
   # je-asteroids-akka:
   #   container_name: je-asteroids-akka

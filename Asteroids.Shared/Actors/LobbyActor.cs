@@ -65,10 +65,10 @@ public class LobbyActor : ReceiveActor
                 asteroids = gameState.asteroids,
                 bullets = gameState.bullets,
             };
+            
             gameState = newState;
             StartTimer();
             Sender.Tell(new GameStateSnapshot(newState));
-
         });
 
         Receive<TestProcessMovement>(message =>

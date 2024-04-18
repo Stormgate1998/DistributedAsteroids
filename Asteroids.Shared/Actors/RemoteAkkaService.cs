@@ -29,41 +29,33 @@ public class RemoteAkkaService : IHostedService
         var config = ConfigurationFactory.ParseString(configString);
         var bootstrap = BootstrapSetup.Create().WithConfig(config);
 
-
         var dependencyInjectionSetup = DependencyResolverSetup.Create(serviceProvider);
         var mergeSystemSetup = bootstrap.And(dependencyInjectionSetup);
 
         _actorSystem = ActorSystem.Create("je-actor-system", mergeSystemSetup);
         var cluster = Akka.Cluster.Cluster.Get(_actorSystem);
 
-        if (cluster.SelfRoles.Contains("client"))
-        {
-            var proxyProps = ClusterSingletonProxy.Props(
-                singletonManagerPath: "/user/lobbiesSingletonManager",
-                settings: ClusterSingletonProxySettings.Create(_actorSystem)
-            );
-            lobbySupervisor = _actorSystem.ActorOf(proxyProps, "lobbySupervisorProxy");
-        }
-
         if (cluster.SelfRoles.Contains("lobby"))
         {
             var lobbyProps = DependencyResolver.For(_actorSystem).Props<LobbySupervisorActor>();
             var singletonProps = ClusterSingletonManager.Props(
-            singletonProps: lobbyProps,
-            terminationMessage: PoisonPill.Instance,
-            settings: ClusterSingletonManagerSettings.Create(_actorSystem)
+                singletonProps: lobbyProps,
+                terminationMessage: PoisonPill.Instance,
+                settings: ClusterSingletonManagerSettings.Create(_actorSystem).WithRole("lobby")
             );
-            lobbySupervisor = _actorSystem.ActorOf(singletonProps, "lobbyManagerSingleton");
+
+            _actorSystem.ActorOf(singletonProps, "lobbyManagerSingleton");
         }
 
+        var proxyProps = ClusterSingletonProxy.Props(
+            singletonManagerPath: "/user/lobbyManagerSingleton",
+            settings: ClusterSingletonProxySettings.Create(_actorSystem).WithRole("lobby")
+        );
 
+        lobbySupervisor = _actorSystem.ActorOf(proxyProps, "lobbySupervisorProxy");
 
         // lobbySupervisor = _actorSystem.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
-        clientSupervisor = _actorSystem.ActorOf(Props.Create<ClientSupervisorActor>(serviceProvider), "clientSupervisor");
-
-
-
-
+        clientSupervisor = _actorSystem.ActorOf(Props.Create<ClientSupervisorActor>(lobbySupervisor, serviceProvider), "clientSupervisor");
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

@@ -33,6 +33,8 @@ public class ClientActor : ReceiveActor
 
         Receive<CreateLobby>(createLobby =>
         {
+            Console.WriteLine("Sending CreateLobby to lobby supervisor.");
+            Console.WriteLine(LobbySupervisor);
             LobbySupervisor.Tell(createLobby);
         });
 

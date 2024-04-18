@@ -10,6 +10,8 @@ public class LobbySupervisorActor : ReceiveActor
     {
         Receive<CreateLobby>(message =>
         {
+            Console.WriteLine("Creating lobby in lobby supervisor.");
+
             if (!lobbies.ContainsKey(message.LobbyName))
             {
                 IActorRef newLobby = Context.ActorOf(Props.Create(() => new LobbyActor(message.LobbyName, OnLobbyDeath)), message.LobbyName);

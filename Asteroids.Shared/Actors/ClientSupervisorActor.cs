@@ -9,8 +9,10 @@ public class ClientSupervisorActor : ReceiveActor
   private readonly Dictionary<string, IActorRef> clients = [];
   private IActorRef LobbySupervisor;
 
-  public ClientSupervisorActor(IServiceProvider serviceProvider)
+  public ClientSupervisorActor(IActorRef lobbySupervisor, IServiceProvider serviceProvider)
   {
+    LobbySupervisor = lobbySupervisor;
+
     Receive<CreateClientActor>(message =>
     {
       if (!clients.ContainsKey(message.Username))
@@ -92,10 +94,10 @@ public class ClientSupervisorActor : ReceiveActor
   }
 
 
-  protected override void PreStart()
-  {
-    IActorRef lobbySupervisor = Context.ActorSelection("/user/lobbySupervisor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
-    LobbySupervisor = lobbySupervisor;
-  }
+  // protected override void PreStart()
+  // {
+  //   IActorRef lobbySupervisor = Context.ActorSelection("/user/lobbiesSingletonManager").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+  //   LobbySupervisor = lobbySupervisor;
+  // }
 
 }
