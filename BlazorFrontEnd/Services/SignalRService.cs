@@ -39,9 +39,9 @@ public class SignalRService
       NewGameState?.Invoke(state);
     });
 
-    HubConnection.On<int>("RecieveCountDown", (state) =>
+    HubConnection.On<int>("ReceiveCountdown", (state) =>
     {
-      Console.WriteLine($"Counting down: {state}");
+      Console.WriteLine("Invoking countdown event.");
       NewCountDown?.Invoke(state);
     });
   }

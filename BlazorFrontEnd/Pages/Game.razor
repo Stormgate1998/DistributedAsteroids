@@ -19,7 +19,9 @@
 else if (@gameObject.state == GameState.PLAYING)
 {
     <div>Playing</div>
-}else{
+}
+else
+{
     <div> Game Over</div>
 }
 
@@ -28,7 +30,8 @@ else if (@gameObject.state == GameState.PLAYING)
     <button class="btn btn-primary" @onclick="StartGame">Start Game</button>
 }
 
-@if(countDown > -1){
+@if(countDown > 0)
+{
     <div>Starting in: @countDown</div>
 }
 
@@ -152,14 +155,13 @@ else if (@gameObject.state == GameState.PLAYING)
     private List<string> list = new();
     private GameStateObject gameObject { get; set; }
 
-    private int countDown {get;set;}
+    private int countDown { get; set; } = 10;
 
     private Timer timer;
     private ShipInput lastShipInput;
 
     protected override async Task OnInitializedAsync()
     {
-        countDown = -1;
         if (gameObject == null)
         {
             gameObject = new();
@@ -184,11 +186,15 @@ else if (@gameObject.state == GameState.PLAYING)
         };
     }
 
-    private void ReceiveCountDown(int count){
+    private void ReceiveCountDown(int count)
+    {
         countDown = count;
+
+        InvokeAsync(StateHasChanged);
     }
 
-    private void ReceiveGameState(GameStateObject game){
+    private void ReceiveGameState(GameStateObject game)
+    {
         gameObject = game;
 
         Console.WriteLine($"FRONTEND: Bullets = {game.bullets}");

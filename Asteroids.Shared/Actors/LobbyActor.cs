@@ -59,14 +59,17 @@ public class LobbyActor : ReceiveActor
         Receive<StartGame>(message =>
         {
             var self = Self;
-            for (int i = 10; i >= 0; i--)
+
+            for (int i = 10; i > 0; i--)
             {
-                Console.WriteLine($"Counting Down {i}");
-                self.Tell(new CountDown(i));
-                Task.Delay(1000).Wait();
-                Thread.Sleep(1000);
+                Console.WriteLine($"LOBBY ACTOR | Countdown: {i}s");
+                Task.Delay(1000)
+                    .PipeTo(
+                        Self,
+                        success: () => new CountDown(i)
+                    );
             }
-            self.Tell(new CountDown(-1));
+
             GameStateObject newState = new()
             {
                 state = GameState.PLAYING,
@@ -82,7 +85,6 @@ public class LobbyActor : ReceiveActor
 
         Receive<CountDown>(message =>
         {
-            Console.WriteLine(message.Number);
             foreach (var user in particpatingUsers.Values)
             {
                 user.Tell(message);

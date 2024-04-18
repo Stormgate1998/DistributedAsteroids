@@ -96,9 +96,14 @@ public class ClientActor : ReceiveActor
         });
 
 
-        Receive<CountDown>(async message =>
+        Receive<CountDown>(message =>
         {
-            await _hubService.SendCountDownNumber(message.Number, ConnectionId);
+            Console.WriteLine("Received countdown message");
+            _hubService.SendCountDownNumber(message.Number, ConnectionId)
+                .PipeTo(
+                    Self,
+                    failure: ex => new ClientError(ex.Message)
+                );
         });
 
         // Make this function generic. Upon receiving new client state, forward to hub

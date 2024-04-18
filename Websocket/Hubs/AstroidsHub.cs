@@ -32,4 +32,12 @@ public class AsteroidsHub : Hub
     Console.WriteLine($"Socket ship count: {state.ships.Count}");
     await client.SendAsync("ReceiveGameState", state);
   }
+
+  public async Task SendCountdown(int number, string connectionId)
+  {
+    Console.WriteLine($"Received countdown from hub service. {number}s");
+
+    var client = Clients.Client(connectionId);
+    await client.SendAsync("ReceiveCountdown", number);
+  }
 }

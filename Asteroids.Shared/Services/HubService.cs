@@ -67,7 +67,7 @@ public class HubService : IHubService
     await EnsureHubConnection();
 
     Console.WriteLine($"Sending countdown number to hub: {number}");
-    await _connectionId.SendAsync("RecieveCountDown", number, connectionId);
+    await _connectionId.SendAsync("SendCountdown", number, connectionId);
 
   }
 }
