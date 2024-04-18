@@ -9,6 +9,8 @@ public class SignalRService
   public event Action<List<string>>? NewLobbyList;
   public event Action<ClientState>? NewClientState;
   public event Action<GameStateObject>? NewGameState;
+
+  public event Action<int>? NewCountDown;
   private readonly HubConnection HubConnection;
 
   public SignalRService()
@@ -35,6 +37,12 @@ public class SignalRService
       Console.WriteLine("Received game state for blazor.");
       Console.WriteLine($"Blazor ship count: {state.ships.Count}");
       NewGameState?.Invoke(state);
+    });
+
+    HubConnection.On<int>("RecieveCountDown", (state) =>
+    {
+      Console.WriteLine($"Counting down: {state}");
+      NewCountDown?.Invoke(state);
     });
   }
 

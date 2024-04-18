@@ -28,6 +28,11 @@ else if (@gameObject.state == GameState.PLAYING)
     <button class="btn btn-primary" @onclick="StartGame">Start Game</button>
 }
 
+@if(countDown > -1){
+    <div>Starting in: @countDown</div>
+}
+
+
 <div
     tabindex="0"
     class="border border-4 border-black rounded-4 position-relative game-board"
@@ -147,11 +152,14 @@ else if (@gameObject.state == GameState.PLAYING)
     private List<string> list = new();
     private GameStateObject gameObject { get; set; }
 
+    private int countDown {get;set;}
+
     private Timer timer;
     private ShipInput lastShipInput;
 
     protected override async Task OnInitializedAsync()
     {
+        countDown = -1;
         if (gameObject == null)
         {
             gameObject = new();
@@ -159,6 +167,7 @@ else if (@gameObject.state == GameState.PLAYING)
 
         await hubService.EnsureStartedAsync();
         hubService.NewGameState += ReceiveGameState;
+        hubService.NewCountDown += ReceiveCountDown;
         AkkaService.GetState(Lobbyname, Username);
 
         timer = new Timer(_ =>
@@ -173,6 +182,10 @@ else if (@gameObject.state == GameState.PLAYING)
             Left = false,
             Right = false
         };
+    }
+
+    private void ReceiveCountDown(int count){
+        countDown = count;
     }
 
     private void ReceiveGameState(GameStateObject game){

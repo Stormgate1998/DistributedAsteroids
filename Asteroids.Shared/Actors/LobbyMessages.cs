@@ -57,3 +57,5 @@ public record SetLobbyGameState
   public int? AsteroidSpawnInterval { get; init; }
 };
 public record AdvanceTicks();
+
+public record CountDown(int Number);

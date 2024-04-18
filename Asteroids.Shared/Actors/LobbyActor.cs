@@ -58,6 +58,15 @@ public class LobbyActor : ReceiveActor
 
         Receive<StartGame>(message =>
         {
+            var self = Self;
+            for (int i = 10; i >= 0; i--)
+            {
+                Console.WriteLine($"Counting Down {i}");
+                self.Tell(new CountDown(i));
+                Task.Delay(1000).Wait();
+                Thread.Sleep(1000);
+            }
+            self.Tell(new CountDown(-1));
             GameStateObject newState = new()
             {
                 state = GameState.PLAYING,
@@ -65,10 +74,19 @@ public class LobbyActor : ReceiveActor
                 asteroids = gameState.asteroids,
                 bullets = gameState.bullets,
             };
-            
+
             gameState = newState;
             StartTimer();
             Sender.Tell(new GameStateSnapshot(newState));
+        });
+
+        Receive<CountDown>(message =>
+        {
+            Console.WriteLine(message.Number);
+            foreach (var user in particpatingUsers.Values)
+            {
+                user.Tell(message);
+            }
         });
 
         Receive<TestProcessMovement>(message =>
@@ -125,7 +143,7 @@ public class LobbyActor : ReceiveActor
                 List<Bullet> updatedBullets = new(gameState.bullets);
                 var updatedShips = ProcessAllShipMovement(gameState.ships);
                 var newBullets = CreateAllBulletsThatShouldExist(updatedShips);
-                
+
                 if (newBullets.Count > 0)
                 {
                     updatedBullets.AddRange(newBullets);

@@ -61,4 +61,13 @@ public class HubService : IHubService
     Console.WriteLine("Sending list of lobbies to hub.");
     await _connectionId.SendAsync("SendLobbyList", lobbyList, connectionId);
   }
+
+  public async Task SendCountDownNumber(int number, string connectionId)
+  {
+    await EnsureHubConnection();
+
+    Console.WriteLine($"Sending countdown number to hub: {number}");
+    await _connectionId.SendAsync("RecieveCountDown", number, connectionId);
+
+  }
 }
