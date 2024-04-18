@@ -13,6 +13,8 @@ public class RemoteAkkaService : IHostedService
     private ActorSystem _actorSystem;
     private IActorRef lobbySupervisor;
     private IActorRef clientSupervisor;
+
+    private IActorRef storageActor;
     private readonly IServiceProvider serviceProvider;
     private readonly IConfiguration configuration;
 
@@ -56,6 +58,7 @@ public class RemoteAkkaService : IHostedService
 
         // lobbySupervisor = _actorSystem.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
         clientSupervisor = _actorSystem.ActorOf(Props.Create<ClientSupervisorActor>(lobbySupervisor, serviceProvider), "clientSupervisor");
+        storageActor = _actorSystem.ActorOf(Props.Create<StorageActor>(), "storageActor");
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
