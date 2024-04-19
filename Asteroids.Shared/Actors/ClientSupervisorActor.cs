@@ -46,6 +46,13 @@ public class ClientSupervisorActor : ReceiveActor
         throw new Exception($"Cannot create lobby {message.LobbyName}. Client does not exist.");
       }
     });
+    Receive<LeaveLobby>(message =>
+    {
+      if (clients.TryGetValue(message.Username, out var user))
+      {
+        user.Forward(message);
+      }
+    });
 
 
     Receive<JoinLobby>(message =>

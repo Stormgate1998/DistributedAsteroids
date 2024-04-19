@@ -206,6 +206,15 @@ public class LobbyActor : ReceiveActor
 
         });
 
+        Receive<LeaveLobby>(message =>
+        {
+            Ship removalShip = gameState.ships.First(ship => ship.Username == message.Username);
+            if (removalShip.Username == message.Username)
+            {
+                gameState.ships.Remove(removalShip);
+            }
+        });
+
         Receive<TestShipCollision>(message =>
         {
             Sender.Tell(new ShipCollisionResult(IsColliding(message.collidingShip, message.asteroid)));
