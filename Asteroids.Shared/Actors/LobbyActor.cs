@@ -607,9 +607,9 @@ public class LobbyActor : ReceiveActor
 
         foreach (Ship ship in ships)
         {
-            if (ship.IsFiring)
+            if (ship.IsFiring && ship.Health > 0)
             {
-                Bullet bullet = new Bullet()
+                Bullet bullet = new()
                 {
                     Location = ship.Location,
                     Username = ship.Username,
