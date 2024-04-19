@@ -35,17 +35,37 @@ public class LobbyActor : ReceiveActor
         {
             string userName = message.Username;
             particpatingUsers[message.Username] = Sender;
-
-            Ship ship = new()
+            if (userName == "DEMO_TEST")
             {
-                Username = userName,
-                Direction = 45,
-                Location = new(100, 100),
-                Health = 200,
-                Score = 0,
-            };
+                Ship ship = new()
+                {
+                    Username = userName,
+                    Direction = 45,
+                    Location = new(100, 100),
+                    Health = 200,
+                    Score = 0,
+                    IsTriple = true,
+                    HasExtraLife = true,
+                    CanFireBackwards = true,
+                    HasDoubleDamage = true,
+                };
 
-            gameState.ships.Add(ship);
+                gameState.ships.Add(ship);
+            }
+            else
+            {
+
+                Ship ship = new()
+                {
+                    Username = userName,
+                    Direction = 45,
+                    Location = new(100, 100),
+                    Health = 200,
+                    Score = 0,
+                };
+
+                gameState.ships.Add(ship);
+            }
 
             var self = Self;
             Sender.Tell(new JoinLobbyResponse(self));
@@ -183,6 +203,7 @@ public class LobbyActor : ReceiveActor
 
                 if (allShipsDead)
                 {
+
                     gameState = gameState with
                     {
                         state = GameState.GAMEOVER,
@@ -204,6 +225,15 @@ public class LobbyActor : ReceiveActor
                 self.Tell(new LobbyDeath(""));
             }
 
+        });
+
+        Receive<LeaveLobby>(message =>
+        {
+            Ship removalShip = gameState.ships.First(ship => ship.Username == message.Username);
+            if (removalShip.Username == message.Username)
+            {
+                gameState.ships.Remove(removalShip);
+            }
         });
 
         Receive<TestShipCollision>(message =>
@@ -372,6 +402,7 @@ public class LobbyActor : ReceiveActor
             Location = location,
             Speed = speed,
         };
+
     }
 
     private Location CalculateNextPosition(Location location, int speed, int direction)
@@ -437,9 +468,22 @@ public class LobbyActor : ReceiveActor
         List<Ship> myShipList = new(shipList);
         List<Ship> newShipList = [];
 
+
         foreach (Ship ship in myShipList)
         {
-            newShipList.Add(ProcessMovement(ship));
+            Ship processedShip = ProcessMovement(ship);
+            if (ship.Health <= 0 && ship.HasExtraLife)
+            {
+                processedShip = processedShip with
+                {
+                    HasExtraLife = false,
+                    Health = 200
+                };
+            }
+            newShipList.Add(processedShip);
+        }
+        foreach (Ship ship in newShipList)
+        {
         }
 
         if (myShipList.Count != newShipList.Count())
@@ -602,26 +646,86 @@ public class LobbyActor : ReceiveActor
 
     public List<Bullet> CreateAllBulletsThatShouldExist(List<Ship> ships)
     {
-        List<Bullet> newBulletList = [];
-
+        List<Bullet> newBulletList = new List<Bullet>();
 
         foreach (Ship ship in ships)
         {
-            if (ship.IsFiring)
+            if (ship.IsFiring && ship.Health > 0)
             {
-                Bullet bullet = new Bullet()
-                {
-                    Location = ship.Location,
-                    Username = ship.Username,
-                    Speed = 20,
-                    Direction = ship.Direction,
-                };
+                CreateBulletsForShip(ship, newBulletList);
 
-                newBulletList.Add(bullet);
+                if (ship.HasDoubleDamage)
+                {
+                    CreateBulletsForShip(ship, newBulletList);
+                }
             }
         }
 
         return newBulletList;
+    }
+
+    private void CreateBulletsForShip(Ship ship, List<Bullet> bulletList)
+    {
+        CreatePrimaryBullets(ship, bulletList);
+
+        if (ship.CanFireBackwards)
+        {
+            CreateBackwardsBullets(ship, bulletList);
+        }
+    }
+
+    private void CreatePrimaryBullets(Ship ship, List<Bullet> bulletList)
+    {
+        Bullet bullet = new()
+        {
+            Location = ship.Location,
+            Username = ship.Username,
+            Speed = 20,
+            Direction = ship.Direction,
+        };
+        bulletList.Add(bullet);
+
+        if (ship.IsTriple)
+        {
+            CreateTripleBullets(ship.Direction, bullet.Location, bullet.Username, bulletList);
+        }
+    }
+
+    private void CreateBackwardsBullets(Ship ship, List<Bullet> bulletList)
+    {
+        Bullet bullet = new()
+        {
+            Location = ship.Location,
+            Username = ship.Username,
+            Speed = 20,
+            Direction = ship.Direction + 180,
+        };
+        bulletList.Add(bullet);
+
+        if (ship.IsTriple)
+        {
+            CreateTripleBullets(ship.Direction + 180, bullet.Location, bullet.Username, bulletList);
+        }
+    }
+
+    private void CreateTripleBullets(int baseDirection, Location location, string username, List<Bullet> bulletList)
+    {
+        Bullet bullet2 = new()
+        {
+            Location = location,
+            Username = username,
+            Speed = 20,
+            Direction = baseDirection - 10,
+        };
+        Bullet bullet3 = new()
+        {
+            Location = location,
+            Username = username,
+            Speed = 20,
+            Direction = baseDirection + 10,
+        };
+        bulletList.Add(bullet2);
+        bulletList.Add(bullet3);
     }
 
 
@@ -633,7 +737,7 @@ public class LobbyActor : ReceiveActor
 
     public bool IsColliding(Bullet colliding, Asteroid asteroid)
     {
-        return Distance(colliding.Location.X, asteroid.Location.X) + Distance(colliding.Location.Y, asteroid.Location.Y) <= (9 + (asteroid.Size * asteroid.Size));
+        return Distance(colliding.Location.X, asteroid.Location.X) + Distance(colliding.Location.Y, asteroid.Location.Y) <= (25 + (asteroid.Size * asteroid.Size));
     }
 
     public int Distance(int x, int y)

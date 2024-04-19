@@ -79,6 +79,11 @@ public class RemoteAkkaService : IHostedService
         clientSupervisor.Tell(new CreateClientActor(username, hubConnection));
     }
 
+    public void LeaveLobby(string username)
+    {
+        clientSupervisor.Tell(new LeaveLobby(username));
+    }
+
     public async Task<string> CreateLobby(string lobbyName)
     {
         Console.WriteLine("Requesting lobby from Akka service.");

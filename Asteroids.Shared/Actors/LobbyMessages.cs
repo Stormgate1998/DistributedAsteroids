@@ -64,3 +64,5 @@ public record StoreState(string Key, GameStateObject Value);
 public record GetSavedState(string Key);
 public record ReceiveSavedState(GameStateObject Stored);
 public record RemoveSavedState(string Key);
+
+public record LeaveLobby(string Username);

@@ -72,6 +72,12 @@ public class ClientActor : ReceiveActor
             }
         });
 
+        Receive<LeaveLobby>(message =>
+        {
+            CurrentLobby.Tell(message);
+            CurrentLobby = null;
+        });
+
         Receive<GetState>(message =>
         {
             if (CurrentLobby != null)

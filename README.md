@@ -43,12 +43,12 @@
  
 ## Week 3 - April 20th
 - [ ] Set up Raft cluster
-- [ ] Set up deploy pipeline
-- [ ] Implement timing logic for starting a lobby
+- [X] Set up deploy pipeline
+- [X] Implement timing logic for starting a lobby
 - [ ] Add store page to front-end
   - Minimum of 1 upgrade
-- [ ] Create scoring logic
-- [ ] Run multiple front-ends
+- [X] Create scoring logic
+- [X] Run multiple front-ends
 - [ ] Handle crashed lobby actors
 - [ ] Add additional power-ups/upgrades
 - [ ] Improve telemetry metrics
