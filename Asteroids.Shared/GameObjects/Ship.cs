@@ -14,6 +14,8 @@ public record Ship
     public bool IsFiring { get; init; }
     public bool IsTriple { get; init; }
     public bool HasExtraLife { get; init; }
+    public bool HasDoubleDamage { get; init; }
+    public bool CanFireBackwards { get; init; }
 }
 
 public record Location(int X, int Y);

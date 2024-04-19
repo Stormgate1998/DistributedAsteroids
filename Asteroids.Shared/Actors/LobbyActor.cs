@@ -46,6 +46,8 @@ public class LobbyActor : ReceiveActor
                     Score = 0,
                     IsTriple = true,
                     HasExtraLife = true,
+                    CanFireBackwards = true,
+                    HasDoubleDamage = true,
                 };
 
                 gameState.ships.Add(ship);
@@ -644,48 +646,86 @@ public class LobbyActor : ReceiveActor
 
     public List<Bullet> CreateAllBulletsThatShouldExist(List<Ship> ships)
     {
-        List<Bullet> newBulletList = [];
-
+        List<Bullet> newBulletList = new List<Bullet>();
 
         foreach (Ship ship in ships)
         {
             if (ship.IsFiring && ship.Health > 0)
             {
-                Bullet bullet = new()
-                {
-                    Location = ship.Location,
-                    Username = ship.Username,
-                    Speed = 20,
-                    Direction = ship.Direction,
-                };
-                newBulletList.Add(bullet);
+                CreateBulletsForShip(ship, newBulletList);
 
-                if (ship.IsTriple)
+                if (ship.HasDoubleDamage)
                 {
-
-                    Bullet bullet2 = new()
-                    {
-                        Location = ship.Location,
-                        Username = ship.Username,
-                        Speed = 20,
-                        Direction = ship.Direction - 10,
-                    };
-                    Bullet bullet3 = new()
-                    {
-                        Location = ship.Location,
-                        Username = ship.Username,
-                        Speed = 20,
-                        Direction = ship.Direction + 10,
-                    };
-                    newBulletList.Add(bullet);
-                    newBulletList.Add(bullet2);
-                    newBulletList.Add(bullet3);
+                    CreateBulletsForShip(ship, newBulletList);
                 }
-
             }
         }
 
         return newBulletList;
+    }
+
+    private void CreateBulletsForShip(Ship ship, List<Bullet> bulletList)
+    {
+        CreatePrimaryBullets(ship, bulletList);
+
+        if (ship.CanFireBackwards)
+        {
+            CreateBackwardsBullets(ship, bulletList);
+        }
+    }
+
+    private void CreatePrimaryBullets(Ship ship, List<Bullet> bulletList)
+    {
+        Bullet bullet = new()
+        {
+            Location = ship.Location,
+            Username = ship.Username,
+            Speed = 20,
+            Direction = ship.Direction,
+        };
+        bulletList.Add(bullet);
+
+        if (ship.IsTriple)
+        {
+            CreateTripleBullets(ship.Direction, bullet.Location, bullet.Username, bulletList);
+        }
+    }
+
+    private void CreateBackwardsBullets(Ship ship, List<Bullet> bulletList)
+    {
+        Bullet bullet = new()
+        {
+            Location = ship.Location,
+            Username = ship.Username,
+            Speed = 20,
+            Direction = ship.Direction + 180,
+        };
+        bulletList.Add(bullet);
+
+        if (ship.IsTriple)
+        {
+            CreateTripleBullets(ship.Direction + 180, bullet.Location, bullet.Username, bulletList);
+        }
+    }
+
+    private void CreateTripleBullets(int baseDirection, Location location, string username, List<Bullet> bulletList)
+    {
+        Bullet bullet2 = new()
+        {
+            Location = location,
+            Username = username,
+            Speed = 20,
+            Direction = baseDirection - 10,
+        };
+        Bullet bullet3 = new()
+        {
+            Location = location,
+            Username = username,
+            Speed = 20,
+            Direction = baseDirection + 10,
+        };
+        bulletList.Add(bullet2);
+        bulletList.Add(bullet3);
     }
 
 
