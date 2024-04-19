@@ -11,18 +11,20 @@ namespace Asteroids.Shared.Actors;
 public class LobbyActor : ReceiveActor
 {
     private readonly Action<string> onDeathCallback;
+
+    private IActorRef StorageActor;
     private string LobbyName;
     private Timer timer;
     private int Ticks = 0;
     private int AsteroidSpawnInterval = 30;
-    private Dictionary<string, IActorRef> particpatingUsers = [];
     private GameStateObject gameState = new() { state = GameState.JOINING, ships = [], asteroids = [], bullets = [] };
 
-    public LobbyActor(string lobbyName, Action<string> onDeathCallback)
+    public LobbyActor(string lobbyName, Action<string> onDeathCallback, IActorRef storage)
     {
         IActorRef self = Self;
         LobbyName = lobbyName;
         this.onDeathCallback = onDeathCallback;
+        StorageActor = storage;
 
         Receive<LobbyDeath>(death =>
         {
@@ -34,7 +36,7 @@ public class LobbyActor : ReceiveActor
         Receive<JoinLobby>(message =>
         {
             string userName = message.Username;
-            particpatingUsers[message.Username] = Sender;
+            gameState.particpatingUsers[message.Username] = Sender;
             if (userName == "DEMO_TEST")
             {
                 Ship ship = new()
@@ -87,7 +89,7 @@ public class LobbyActor : ReceiveActor
 
         Receive<CountDown>(message =>
         {
-            foreach (var user in particpatingUsers.Values)
+            foreach (var user in gameState.particpatingUsers.Values)
             {
                 user.Tell(message);
             }
@@ -212,7 +214,7 @@ public class LobbyActor : ReceiveActor
 
                 Console.WriteLine($"GAMESTATE: {JsonSerializer.Serialize(gameState)}");
 
-                foreach (var user in particpatingUsers.Values)
+                foreach (var user in gameState.particpatingUsers.Values)
                 {
                     user.Tell(new GameStateSnapshot(gameState));
                 }
@@ -287,6 +289,10 @@ public class LobbyActor : ReceiveActor
                 asteroids = updatedAsteroids,
                 bullets = updatedBullets,
             };
+            if (Ticks % 10 == 0)
+            {
+                StorageActor.Tell(new StoreState(LobbyName, gameState));
+            }
             Sender.Tell(new GameStateSnapshot(gameState));
         });
 
@@ -647,19 +653,22 @@ public class LobbyActor : ReceiveActor
     public List<Bullet> CreateAllBulletsThatShouldExist(List<Ship> ships)
     {
         List<Bullet> newBulletList = new List<Bullet>();
-
-        foreach (Ship ship in ships)
+        if (Ticks % 4 == 0)
         {
-            if (ship.IsFiring && ship.Health > 0)
+            foreach (Ship ship in ships)
             {
-                CreateBulletsForShip(ship, newBulletList);
-
-                if (ship.HasDoubleDamage)
+                if (ship.IsFiring && ship.Health > 0)
                 {
                     CreateBulletsForShip(ship, newBulletList);
+
+                    if (ship.HasDoubleDamage)
+                    {
+                        CreateBulletsForShip(ship, newBulletList);
+                    }
                 }
             }
         }
+
 
         return newBulletList;
     }

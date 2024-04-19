@@ -6,6 +6,8 @@ public class LobbySupervisorActor : ReceiveActor
 {
     private readonly Dictionary<string, IActorRef> lobbies = [];
 
+    private IActorRef StorageActor;
+
     public LobbySupervisorActor()
     {
         Receive<CreateLobby>(message =>
@@ -14,7 +16,7 @@ public class LobbySupervisorActor : ReceiveActor
 
             if (!lobbies.ContainsKey(message.LobbyName))
             {
-                IActorRef newLobby = Context.ActorOf(Props.Create(() => new LobbyActor(message.LobbyName, OnLobbyDeath)), message.LobbyName);
+                IActorRef newLobby = Context.ActorOf(Props.Create(() => new LobbyActor(message.LobbyName, OnLobbyDeath, StorageActor)), message.LobbyName);
 
                 lobbies.Add(message.LobbyName, newLobby);
                 Sender.Tell(new CreateLobbyResponse($"Lobby '{message.LobbyName}' created.", Self));
@@ -150,5 +152,12 @@ public class LobbySupervisorActor : ReceiveActor
         {
             lobbies.Remove(lobbyName);
         }
+    }
+
+
+    protected override void PreStart()
+    {
+        IActorRef storageActor = Context.ActorSelection("/user/storageActor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+        StorageActor = storageActor;
     }
 }

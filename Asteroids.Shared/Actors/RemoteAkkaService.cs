@@ -54,11 +54,16 @@ public class RemoteAkkaService : IHostedService
             settings: ClusterSingletonProxySettings.Create(_actorSystem).WithRole("lobby")
         );
 
+        var storageProps = ClusterSingletonProxy.Props(
+            singletonManagerPath: "/user/storageActor",
+            settings: ClusterSingletonProxySettings.Create(_actorSystem).WithRole("lobby")
+        );
+
         lobbySupervisor = _actorSystem.ActorOf(proxyProps, "lobbySupervisorProxy");
 
         // lobbySupervisor = _actorSystem.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
         clientSupervisor = _actorSystem.ActorOf(Props.Create<ClientSupervisorActor>(lobbySupervisor, serviceProvider), "clientSupervisor");
-        storageActor = _actorSystem.ActorOf(Props.Create<StorageActor>(), "storageActor");
+        storageActor = _actorSystem.ActorOf(storageProps, "storageActor");
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
