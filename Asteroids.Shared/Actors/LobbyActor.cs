@@ -201,6 +201,7 @@ public class LobbyActor : ReceiveActor
 
                 if (allShipsDead)
                 {
+
                     gameState = gameState with
                     {
                         state = GameState.GAMEOVER,
@@ -393,27 +394,12 @@ public class LobbyActor : ReceiveActor
 
         speed = Math.Clamp(speed, 0, 10);
 
-        if (ship.Health <= 0 && ship.HasExtraLife)
+        return ship with
         {
-            return ship with
-            {
-                Direction = direction,
-                Location = location,
-                Speed = speed,
-                HasExtraLife = false,
-                Health = 200
-            };
-        }
-        else
-        {
-            return ship with
-            {
-                Direction = direction,
-                Location = location,
-                Speed = speed,
-            };
-        }
-
+            Direction = direction,
+            Location = location,
+            Speed = speed,
+        };
 
     }
 
@@ -480,9 +466,22 @@ public class LobbyActor : ReceiveActor
         List<Ship> myShipList = new(shipList);
         List<Ship> newShipList = [];
 
+
         foreach (Ship ship in myShipList)
         {
-            newShipList.Add(ProcessMovement(ship));
+            Ship processedShip = ProcessMovement(ship);
+            if (ship.Health <= 0 && ship.HasExtraLife)
+            {
+                processedShip = processedShip with
+                {
+                    HasExtraLife = false,
+                    Health = 200
+                };
+            }
+            newShipList.Add(processedShip);
+        }
+        foreach (Ship ship in newShipList)
+        {
         }
 
         if (myShipList.Count != newShipList.Count())
