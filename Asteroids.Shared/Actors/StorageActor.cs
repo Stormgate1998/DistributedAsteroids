@@ -36,5 +36,13 @@ public class StorageActor : ReceiveActor
             }
         });
 
+        Receive<RemoveSavedState>(message =>
+        {
+            if (gameObjects.ContainsKey(message.Key))
+            {
+                gameObjects.Remove(message.Key);
+            }
+        });
+
     }
 }
