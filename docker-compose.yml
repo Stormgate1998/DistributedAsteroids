@@ -91,15 +91,6 @@ services:
   #         }
   #       }
 
-  # je-asteroids-akka:
-  #   container_name: je-asteroids-akka
-  #   image: je-asteroids-akka-node
-  #   build:
-  #     context: .
-  #     dockerfile: AkkaCluster/Dockerfile
-  #   ports:
-  #     - 2555:8081
-
   je-asteroids-otel-collector:
     container_name: je-asteroids-otel-collector
     image: otel/opentelemetry-collector-contrib
