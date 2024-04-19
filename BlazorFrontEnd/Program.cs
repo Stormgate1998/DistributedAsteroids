@@ -30,7 +30,7 @@ builder.Services.AddSingleton<RemoteAkkaService>();
 builder.Services.AddHostedService(sp =>
   sp.GetRequiredService<RemoteAkkaService>()
 );
-builder.Services.AddSingleton<SignalRService>();
+builder.Services.AddScoped<SignalRService>();
 
 var app = builder.Build();
 
