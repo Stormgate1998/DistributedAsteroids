@@ -35,17 +35,35 @@ public class LobbyActor : ReceiveActor
         {
             string userName = message.Username;
             particpatingUsers[message.Username] = Sender;
-
-            Ship ship = new()
+            if (userName == "DEMO_TEST")
             {
-                Username = userName,
-                Direction = 45,
-                Location = new(100, 100),
-                Health = 200,
-                Score = 0,
-            };
+                Ship ship = new()
+                {
+                    Username = userName,
+                    Direction = 45,
+                    Location = new(100, 100),
+                    Health = 200,
+                    Score = 0,
+                    IsTriple = true,
+                    HasExtraLife = true,
+                };
 
-            gameState.ships.Add(ship);
+                gameState.ships.Add(ship);
+            }
+            else
+            {
+
+                Ship ship = new()
+                {
+                    Username = userName,
+                    Direction = 45,
+                    Location = new(100, 100),
+                    Health = 200,
+                    Score = 0,
+                };
+
+                gameState.ships.Add(ship);
+            }
 
             var self = Self;
             Sender.Tell(new JoinLobbyResponse(self));
@@ -375,12 +393,28 @@ public class LobbyActor : ReceiveActor
 
         speed = Math.Clamp(speed, 0, 10);
 
-        return ship with
+        if (ship.Health <= 0 && ship.HasExtraLife)
         {
-            Direction = direction,
-            Location = location,
-            Speed = speed,
-        };
+            return ship with
+            {
+                Direction = direction,
+                Location = location,
+                Speed = speed,
+                HasExtraLife = false,
+                Health = 200
+            };
+        }
+        else
+        {
+            return ship with
+            {
+                Direction = direction,
+                Location = location,
+                Speed = speed,
+            };
+        }
+
+
     }
 
     private Location CalculateNextPosition(Location location, int speed, int direction)
@@ -625,8 +659,30 @@ public class LobbyActor : ReceiveActor
                     Speed = 20,
                     Direction = ship.Direction,
                 };
-
                 newBulletList.Add(bullet);
+
+                if (ship.IsTriple)
+                {
+
+                    Bullet bullet2 = new()
+                    {
+                        Location = ship.Location,
+                        Username = ship.Username,
+                        Speed = 20,
+                        Direction = ship.Direction - 10,
+                    };
+                    Bullet bullet3 = new()
+                    {
+                        Location = ship.Location,
+                        Username = ship.Username,
+                        Speed = 20,
+                        Direction = ship.Direction + 10,
+                    };
+                    newBulletList.Add(bullet);
+                    newBulletList.Add(bullet2);
+                    newBulletList.Add(bullet3);
+                }
+
             }
         }
 
