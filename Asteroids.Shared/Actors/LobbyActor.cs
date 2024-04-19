@@ -17,14 +17,15 @@ public class LobbyActor : ReceiveActor
     private Timer timer;
     private int Ticks = 0;
     private int AsteroidSpawnInterval = 30;
+    private Dictionary<string, IActorRef> particpatingUsers = [];
     private GameStateObject gameState = new() { state = GameState.JOINING, ships = [], asteroids = [], bullets = [] };
 
-    public LobbyActor(string lobbyName, Action<string> onDeathCallback, IActorRef storage)
+    public LobbyActor(string lobbyName, Action<string> onDeathCallback)
     {
         IActorRef self = Self;
         LobbyName = lobbyName;
         this.onDeathCallback = onDeathCallback;
-        StorageActor = storage;
+        // StorageActor = storage;
 
         Receive<LobbyDeath>(death =>
         {
@@ -36,7 +37,7 @@ public class LobbyActor : ReceiveActor
         Receive<JoinLobby>(message =>
         {
             string userName = message.Username;
-            gameState.particpatingUsers[message.Username] = Sender;
+            particpatingUsers[message.Username] = Sender;
             if (userName == "DEMO_TEST")
             {
                 Ship ship = new()
@@ -89,7 +90,7 @@ public class LobbyActor : ReceiveActor
 
         Receive<CountDown>(message =>
         {
-            foreach (var user in gameState.particpatingUsers.Values)
+            foreach (var user in particpatingUsers.Values)
             {
                 user.Tell(message);
             }
@@ -214,7 +215,7 @@ public class LobbyActor : ReceiveActor
 
                 Console.WriteLine($"GAMESTATE: {JsonSerializer.Serialize(gameState)}");
 
-                foreach (var user in gameState.particpatingUsers.Values)
+                foreach (var user in particpatingUsers.Values)
                 {
                     user.Tell(new GameStateSnapshot(gameState));
                 }
@@ -291,7 +292,7 @@ public class LobbyActor : ReceiveActor
             };
             if (Ticks % 10 == 0)
             {
-                StorageActor.Tell(new StoreState(LobbyName, gameState));
+                // StorageActor.Tell(new StoreState(LobbyName, gameState));
             }
             Sender.Tell(new GameStateSnapshot(gameState));
         });
