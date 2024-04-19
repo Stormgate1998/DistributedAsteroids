@@ -93,8 +93,4 @@ public class LobbyTests : TestKit
 
         response.Lobbies.Should().BeEquivalentTo(["testLobby"]);
     }
-
-
-
-
 }

@@ -31,7 +31,7 @@ public class ClientTests : TestKit
 
     var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
 
-    var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(provider)), "clientSupervisor");
+    var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(lobbySupervisor, provider)), "clientSupervisor");
     clientSupervisor.Tell(new CreateClientActor("tony", "connectionId"), probe.Ref);
 
     await Task.Delay(100);
@@ -44,8 +44,8 @@ public class ClientTests : TestKit
     var probe = CreateTestProbe();
     var (provider, signalRMock) = getServiceProvider();
 
-    _ = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
-    var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(provider)), "clientSupervisor");
+    var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
+    var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(lobbySupervisor, provider)), "clientSupervisor");
 
     clientSupervisor.Tell(new CreateClientActor("tony", "connectionId"), probe.Ref);
     await Task.Delay(100);
@@ -142,7 +142,7 @@ public class ClientTests : TestKit
     var (provider, signalRMock) = getServiceProvider();
     var probe = CreateTestProbe();
     var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
-    var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(provider)), "clientSupervisor");
+    var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(lobbySupervisor, provider)), "clientSupervisor");
 
     clientSupervisor.Tell(new CreateClientActor("tony", ""));
     await Task.Delay(100);
@@ -163,7 +163,6 @@ public class ClientTests : TestKit
     };
     List<Ship> ships = [ship];
     response.Game.ships.Should().BeEquivalentTo(ships);
-
   }
 
   [Fact]
@@ -171,11 +170,9 @@ public class ClientTests : TestKit
   {
     var (provider, signalRMock) = getServiceProvider();
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(), 
+    var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(),
     "lobbySupervisor");
-    var clientSupervisor = Sys.ActorOf(Props.Create(() =>
-    new ClientSupervisorActor(provider)),
-    "clientSupervisor");
+    var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(lobbySupervisor, provider)), "clientSupervisor");
 
     clientSupervisor.Tell(new CreateClientActor("tony", ""));
     await Task.Delay(100);
@@ -195,8 +192,4 @@ public class ClientTests : TestKit
     response.Game.state.Should().Be(GameState.PLAYING);
 
   }
-
-  //test 2 players join works
-
-
 }

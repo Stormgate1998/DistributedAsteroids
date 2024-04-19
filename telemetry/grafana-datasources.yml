@@ -32,9 +32,3 @@ datasources:
     version: 1
     editable: false
     apiVersion: 1
-    jsonData:
-      derivedFields:
-        - datasourceUid: otlp
-          matcherRegex: (?:"traceid"):"(\w+)"
-          name: TraceID
-          url: $${__value.raw}
