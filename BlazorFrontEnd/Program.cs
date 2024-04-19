@@ -4,6 +4,19 @@ using Asteroids.Shared.Actors;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// builder.Services.AddLogging(l =>
+// {
+//   l.AddOpenTelemetry(o =>
+//   {
+//     o.SetResourceBuilder(
+//         ResourceBuilder.CreateDefault().AddService("File_Sevice"))
+//     .AddOtlpExporter(options =>
+//     {
+//       options.Endpoint = collector_uri;
+//     });
+//   });
+// });
+
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();

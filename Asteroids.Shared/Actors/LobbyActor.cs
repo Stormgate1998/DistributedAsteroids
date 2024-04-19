@@ -58,29 +58,11 @@ public class LobbyActor : ReceiveActor
 
         Receive<StartGame>(message =>
         {
-            var self = Self;
-
-            for (int i = 10; i > 0; i--)
-            {
-                Console.WriteLine($"LOBBY ACTOR | Countdown: {i}s");
-                Task.Delay(1000)
-                    .PipeTo(
-                        Self,
-                        success: () => new CountDown(i)
-                    );
-            }
-
-            GameStateObject newState = new()
-            {
-                state = GameState.PLAYING,
-                ships = gameState.ships,
-                asteroids = gameState.asteroids,
-                bullets = gameState.bullets,
-            };
-
-            gameState = newState;
-            StartTimer();
-            Sender.Tell(new GameStateSnapshot(newState));
+            Task.Delay(1000)
+                .PipeTo(
+                    Self,
+                    success: () => new CountDown(9)
+                );
         });
 
         Receive<CountDown>(message =>
@@ -88,6 +70,29 @@ public class LobbyActor : ReceiveActor
             foreach (var user in particpatingUsers.Values)
             {
                 user.Tell(message);
+            }
+
+            if (message.Number <= 0)
+            {
+                GameStateObject newState = new()
+                {
+                    state = GameState.PLAYING,
+                    ships = gameState.ships,
+                    asteroids = gameState.asteroids,
+                    bullets = gameState.bullets,
+                };
+
+                gameState = newState;
+                StartTimer();
+                Sender.Tell(new GameStateSnapshot(newState));
+            }
+            else
+            {
+                Task.Delay(1000)
+                    .PipeTo(
+                        Self,
+                        success: () => new CountDown(message.Number - 1)
+                    );
             }
         });
 
