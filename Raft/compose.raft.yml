@@ -1,0 +1,50 @@
+version: "3"
+
+services:
+  je-raft-gateway:
+    container_name: je-raft-gateway
+    image: gateway
+    build:
+      context: .
+      dockerfile: Gateway/Dockerfile
+    # ports:
+    #   - 5000:8080
+    environment:
+      - NODES=je-raft-node-1:8080,je-raft-node-2:8080,je-raft-node-3:8080
+    restart: unless-stopped
+
+  je-raft-node-1:
+    container_name: je-raft-node-1
+    image: node
+    build:
+      context: .
+      dockerfile: Node/Dockerfile
+    # ports:
+    #   - 5005:8080
+    environment:
+      - NODES=je-raft-node-2:8080,je-raft-node-3:8080
+    restart: unless-stopped
+
+  je-raft-node-2:
+    container_name: je-raft-node-2
+    image: node
+    build:
+      context: .
+      dockerfile: Node/Dockerfile
+    # ports:
+    #   - 5006:8080
+    environment:
+      - NODES=je-raft-node-1:8080,je-raft-node-3:8080
+    restart: unless-stopped
+
+  je-raft-node-3:
+    container_name: je-raft-node-3
+    image: node
+    build:
+      context: .
+      dockerfile: Node/Dockerfile
+    # ports:
+    #   - 5007:8080
+    environment:
+      - NODES=je-raft-node-1:8080,je-raft-node-2:8080
+    restart: unless-stopped
