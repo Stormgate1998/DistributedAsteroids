@@ -1,8 +1,8 @@
 # version: "3"
 
 services:
-  je-asteroids-web:
-    container_name: je-asteroids-web
+  je-asteroids-web-1:
+    container_name: je-asteroids-web-1
     image: je-asteroids-web
     build:
       context: .
@@ -15,7 +15,31 @@ services:
           }
           remote {
             dot-netty.tcp {
-              hostname = "je-asteroids-web"
+              hostname = "je-asteroids-web-1"
+              port = 2551
+            }
+          }
+          cluster {
+            seed-nodes = ["akka.tcp://je-actor-system@je-asteroids-akka-1:2551"]
+            roles = ["client"]
+          }
+        }
+
+  je-asteroids-web-2:
+    container_name: je-asteroids-web-2
+    image: je-asteroids-web
+    build:
+      context: .
+      dockerfile: BlazorFrontEnd/Dockerfile
+    environment:
+      ASTEROIDS_CLUSTER_CONFIG: |
+        akka {
+          actor {
+            provider = cluster
+          }
+          remote {
+            dot-netty.tcp {
+              hostname = "je-asteroids-web-2"
               port = 2551
             }
           }
@@ -28,8 +52,6 @@ services:
   je-asteroids-reverse-proxy:
     container_name: je-asteroids-reverse-proxy
     image: nginx
-    depends_on:
-      - je-asteroids-web
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
@@ -82,6 +104,30 @@ services:
           remote {
             dot-netty.tcp {
               hostname = "je-asteroids-akka-2"
+              port = 2551
+            }
+          }
+          cluster {
+            seed-nodes = ["akka.tcp://je-actor-system@je-asteroids-akka-1:2551"]
+            roles = ["lobby"]
+          }
+        }
+
+  je-asteroids-akka-3:
+    container_name: je-asteroids-akka-3
+    image: cluster
+    build:
+      context: .
+      dockerfile: Cluster/Dockerfile
+    environment:
+      ASTEROIDS_CLUSTER_CONFIG: |
+        akka {
+          actor {
+            provider = cluster
+          }
+          remote {
+            dot-netty.tcp {
+              hostname = "je-asteroids-akka-3"
               port = 2551
             }
           }
