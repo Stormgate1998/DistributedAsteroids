@@ -9,18 +9,27 @@ public class LobbySupervisorActor : ReceiveActor
 
     private IActorRef StorageActor;
 
-    public LobbySupervisorActor()
+    protected override void PreStart()
     {
         StorageActor = Context.ActorSelection("/user/storageActor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+        Console.WriteLine($"Storage actor is {StorageActor.Path}. ");
+        StorageActor.Tell(new TestMessage("Storage Actor is called"));
+
+    }
+
+    public LobbySupervisorActor()
+    {
         Receive<CreateLobby>(message =>
         {
             Console.WriteLine("Creating lobby in lobby supervisor.");
 
             if (!lobbies.ContainsKey(message.LobbyName))
             {
-                IActorRef newLobby = Context.ActorOf(Props.Create(() => new LobbyActor(message.LobbyName, OnLobbyDeath, StorageActor, new Dictionary<string, IActorRef>())), message.LobbyName);
+                IActorRef newLobby = Context.ActorOf(Props.Create(() => new LobbyActor(message.LobbyName, StorageActor, new Dictionary<string, IActorRef>())), message.LobbyName);
 
                 lobbies.Add(message.LobbyName, newLobby);
+                Console.WriteLine($"Created lobby {newLobby}");
+                Console.WriteLine($"Lobby created is {lobbies[message.LobbyName]}");
                 Context.Watch(newLobby);
                 Sender.Tell(new CreateLobbyResponse($"Lobby '{message.LobbyName}' created.", Self));
             }
@@ -32,7 +41,9 @@ public class LobbySupervisorActor : ReceiveActor
 
         Receive<Terminated>(message =>
         {
+            Console.WriteLine($"Lobby {message} died");
             string key = lobbies.FirstOrDefault(x => x.Value == message.ActorRef).Key;
+            Console.WriteLine($"Lobby {key} died");
             lobbies.Remove(key);
 
             StorageActor.Tell(new GetSavedState(key));
@@ -40,6 +51,7 @@ public class LobbySupervisorActor : ReceiveActor
 
         Receive<ReceiveSavedState>(message =>
         {
+            Console.WriteLine($"Bringing back {message.Stored.LobbyName}");
 
             if (message.Stored.state != GameState.GAMEOVER)
             {
@@ -51,11 +63,16 @@ public class LobbySupervisorActor : ReceiveActor
                     var actorRef = actor.ResolveOne(TimeSpan.FromSeconds(1)).Result;
                     storedList.Add(item.Key, actorRef);
                 }
-                IActorRef newLobby = Context.ActorOf(Props.Create(() => new LobbyActor(LobbyName, OnLobbyDeath, StorageActor, storedList)), LobbyName);
+                IActorRef newLobby = Context.ActorOf(Props.Create(() => new LobbyActor(LobbyName, StorageActor, storedList)), LobbyName);
 
                 lobbies.Add(LobbyName, newLobby);
                 Context.Watch(newLobby);
                 newLobby.Tell(new RehydrateState(message.Stored));
+            }
+            else
+            {
+                Console.WriteLine($"{message.Stored.LobbyName} already ended");
+
             }
 
         });
@@ -182,9 +199,9 @@ public class LobbySupervisorActor : ReceiveActor
 
     private void OnLobbyDeath(string lobbyName)
     {
-        if (lobbies.ContainsKey(lobbyName))
-        {
-            lobbies.Remove(lobbyName);
-        }
+        // if (lobbies.ContainsKey(lobbyName))
+        // {
+        //     lobbies.Remove(lobbyName);
+        // }
     }
 }

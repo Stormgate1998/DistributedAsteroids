@@ -68,3 +68,5 @@ public record RemoveSavedState(string Key);
 public record LeaveLobby(string Username);
 
 public record RehydrateState(GameStateObject Stored);
+
+public record TestMessage(string Content);

@@ -10,8 +10,6 @@ namespace Asteroids.Shared.Actors;
 
 public class LobbyActor : ReceiveActor
 {
-    private readonly Action<string> onDeathCallback;
-
     private IActorRef StorageActor;
     private string LobbyName;
     private Timer timer;
@@ -20,16 +18,16 @@ public class LobbyActor : ReceiveActor
     private Dictionary<string, IActorRef> particpatingUsers = [];
     private GameStateObject gameState = new() { state = GameState.JOINING, ships = [], asteroids = [], bullets = [], particpatingUsers = [] };
 
-    public LobbyActor(string lobbyName, Action<string> onDeathCallback, IActorRef storageActor, Dictionary<string, IActorRef> particpatingUsers)
+    public LobbyActor(string lobbyName, IActorRef storageActor, Dictionary<string, IActorRef> particpatingUsers)
     {
         IActorRef self = Self;
         LobbyName = lobbyName;
-        this.onDeathCallback = onDeathCallback;
         this.particpatingUsers = particpatingUsers;
         StorageActor = storageActor;
 
         Receive<LobbyDeath>(death =>
         {
+            Console.WriteLine($"Lobby {lobbyName} has been asked to die");
             var self = Self;
             Context.Stop(self);
 
@@ -37,9 +35,9 @@ public class LobbyActor : ReceiveActor
 
         Receive<RehydrateState>(message =>
         {
+            Console.WriteLine($"Lobby {lobbyName} has been asked to come back");
             gameState = message.Stored;
             StartTimer();
-
         });
 
         Receive<JoinLobby>(message =>
@@ -237,6 +235,7 @@ public class LobbyActor : ReceiveActor
                         LobbyName = gameState.LobbyName,
                     };
                     StorageActor.Tell(new StoreState(LobbyName, stored));
+                    Console.WriteLine("Sent message to storage actor");
                 }
 
                 if (Ticks % 10 == 0)
@@ -256,6 +255,7 @@ public class LobbyActor : ReceiveActor
                         LobbyName = gameState.LobbyName,
                     };
                     StorageActor.Tell(new StoreState(LobbyName, stored));
+                    Console.WriteLine("Sent message to storage actor");
                 }
 
                 Console.WriteLine($"GAMESTATE: {JsonSerializer.Serialize(gameState)}");
@@ -817,8 +817,5 @@ public class LobbyActor : ReceiveActor
     protected override void PostStop()
     {
         base.PostStop();
-
-        var self = Self;
-        onDeathCallback?.Invoke(self.Path.Name);
     }
 }
