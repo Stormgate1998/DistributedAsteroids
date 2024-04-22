@@ -9,8 +9,9 @@ public record GameStateObject
     public List<Ship> ships { get; init; }
     public List<Asteroid> asteroids { get; init; }
     public List<Bullet> bullets { get; init; }
-    public Dictionary<string, IActorRef> particpatingUsers { get; init; }
+    public Dictionary<string, string> particpatingUsers { get; init; }
 }
+
 
 
 

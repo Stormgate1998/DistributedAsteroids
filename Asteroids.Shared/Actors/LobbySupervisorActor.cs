@@ -1,5 +1,6 @@
 using Akka.Actor;
 using Asteroids.Shared.Actors;
+using Asteroids.Shared.GameObjects;
 namespace Asteroids.Shared.Actors;
 
 public class LobbySupervisorActor : ReceiveActor
@@ -10,15 +11,17 @@ public class LobbySupervisorActor : ReceiveActor
 
     public LobbySupervisorActor()
     {
+        StorageActor = Context.ActorSelection("/user/storageActor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
         Receive<CreateLobby>(message =>
         {
             Console.WriteLine("Creating lobby in lobby supervisor.");
 
             if (!lobbies.ContainsKey(message.LobbyName))
             {
-                IActorRef newLobby = Context.ActorOf(Props.Create(() => new LobbyActor(message.LobbyName, OnLobbyDeath)), message.LobbyName);
+                IActorRef newLobby = Context.ActorOf(Props.Create(() => new LobbyActor(message.LobbyName, OnLobbyDeath, StorageActor, new Dictionary<string, IActorRef>())), message.LobbyName);
 
                 lobbies.Add(message.LobbyName, newLobby);
+                Context.Watch(newLobby);
                 Sender.Tell(new CreateLobbyResponse($"Lobby '{message.LobbyName}' created.", Self));
             }
             else
@@ -27,8 +30,39 @@ public class LobbySupervisorActor : ReceiveActor
             }
         });
 
+        Receive<Terminated>(message =>
+        {
+            string key = lobbies.FirstOrDefault(x => x.Value == message.ActorRef).Key;
+            lobbies.Remove(key);
+
+            StorageActor.Tell(new GetSavedState(key));
+        });
+
+        Receive<ReceiveSavedState>(message =>
+        {
+
+            if (message.Stored.state != GameState.GAMEOVER)
+            {
+                var storedList = new Dictionary<string, IActorRef>();
+                string LobbyName = message.Stored.LobbyName;
+                foreach (var item in message.Stored.particpatingUsers)
+                {
+                    var actor = Context.ActorSelection(item.Value);
+                    var actorRef = actor.ResolveOne(TimeSpan.FromSeconds(1)).Result;
+                    storedList.Add(item.Key, actorRef);
+                }
+                IActorRef newLobby = Context.ActorOf(Props.Create(() => new LobbyActor(LobbyName, OnLobbyDeath, StorageActor, storedList)), LobbyName);
+
+                lobbies.Add(LobbyName, newLobby);
+                Context.Watch(newLobby);
+                newLobby.Tell(new RehydrateState(message.Stored));
+            }
+
+        });
+
         Receive<LobbyDeath>(message =>
         {
+            StorageActor.Tell(new GetSavedState(message.LobbyName));
             if (lobbies.TryGetValue(message.LobbyName, out var lobby))
             {
                 lobby.Forward(message);
@@ -152,12 +186,5 @@ public class LobbySupervisorActor : ReceiveActor
         {
             lobbies.Remove(lobbyName);
         }
-    }
-
-
-    protected override void PreStart()
-    {
-        IActorRef storageActor = Context.ActorSelection("/user/storageActor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
-        StorageActor = storageActor;
     }
 }

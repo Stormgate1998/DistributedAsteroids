@@ -12,7 +12,8 @@ public class LobbyTests : TestKit
     public void LobbySupervisorCanCreateLobby()
     {
         var probe = CreateTestProbe();
-        var supervisor = Sys.ActorOf<LobbySupervisorActor>();
+        var storageProbe = CreateTestProbe();
+        var supervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)));
 
         supervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         var response = probe.ExpectMsg<CreateLobbyResponse>();
@@ -25,7 +26,8 @@ public class LobbyTests : TestKit
     {
         var probe = CreateTestProbe();
 
-        var supervisor = Sys.ActorOf<LobbySupervisorActor>();
+        var storageProbe = CreateTestProbe();
+        var supervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)));
 
         supervisor.Tell(new CreateLobby("testLobby1"), probe.Ref);
         var response = probe.ExpectMsg<CreateLobbyResponse>();
@@ -61,7 +63,8 @@ public class LobbyTests : TestKit
     public void LobbySupervisorCanCreateMultipleLobbies()
     {
         var probe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+        var storageProbe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)));
 
         lobbySupervisor.Tell(new CreateLobby("testLobby1"), probe.Ref);
         var lobby1 = probe.ExpectMsg<CreateLobbyResponse>();
@@ -80,7 +83,8 @@ public class LobbyTests : TestKit
     public void LobbySupervisorCanNotCreateExisitingLobby()
     {
         var probe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf<LobbySupervisorActor>();
+        var storageProbe = CreateTestProbe();
+        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)));
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();

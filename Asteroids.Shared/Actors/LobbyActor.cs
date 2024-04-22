@@ -18,14 +18,15 @@ public class LobbyActor : ReceiveActor
     private int Ticks = 0;
     private int AsteroidSpawnInterval = 30;
     private Dictionary<string, IActorRef> particpatingUsers = [];
-    private GameStateObject gameState = new() { state = GameState.JOINING, ships = [], asteroids = [], bullets = [] };
+    private GameStateObject gameState = new() { state = GameState.JOINING, ships = [], asteroids = [], bullets = [], particpatingUsers = [] };
 
-    public LobbyActor(string lobbyName, Action<string> onDeathCallback)
+    public LobbyActor(string lobbyName, Action<string> onDeathCallback, IActorRef storageActor, Dictionary<string, IActorRef> particpatingUsers)
     {
         IActorRef self = Self;
         LobbyName = lobbyName;
         this.onDeathCallback = onDeathCallback;
-        // StorageActor = storage;
+        this.particpatingUsers = particpatingUsers;
+        StorageActor = storageActor;
 
         Receive<LobbyDeath>(death =>
         {
@@ -34,9 +35,17 @@ public class LobbyActor : ReceiveActor
 
         });
 
+        Receive<RehydrateState>(message =>
+        {
+            gameState = message.Stored;
+            StartTimer();
+
+        });
+
         Receive<JoinLobby>(message =>
         {
             string userName = message.Username;
+
             particpatingUsers[message.Username] = Sender;
             if (userName == "DEMO_TEST")
             {
@@ -202,6 +211,7 @@ public class LobbyActor : ReceiveActor
                     bullets = updatedBullets,
                 };
 
+
                 bool allShipsDead = updatedShips.All(ship => ship.Health <= 0);
 
                 if (allShipsDead)
@@ -211,6 +221,41 @@ public class LobbyActor : ReceiveActor
                     {
                         state = GameState.GAMEOVER,
                     };
+
+                    Dictionary<string, string> lobbyNames = [];
+                    foreach (var client in particpatingUsers)
+                    {
+                        lobbyNames.Add(client.Key, client.Value.Path.ToString());
+                    }
+                    GameStateObject stored = new()
+                    {
+                        state = gameState.state,
+                        particpatingUsers = lobbyNames,
+                        ships = gameState.ships,
+                        bullets = gameState.bullets,
+                        asteroids = gameState.asteroids,
+                        LobbyName = gameState.LobbyName,
+                    };
+                    StorageActor.Tell(new StoreState(LobbyName, stored));
+                }
+
+                if (Ticks % 10 == 0)
+                {
+                    Dictionary<string, string> lobbyNames = [];
+                    foreach (var client in particpatingUsers)
+                    {
+                        lobbyNames.Add(client.Key, client.Value.Path.ToString());
+                    }
+                    GameStateObject stored = new()
+                    {
+                        state = gameState.state,
+                        particpatingUsers = lobbyNames,
+                        ships = gameState.ships,
+                        bullets = gameState.bullets,
+                        asteroids = gameState.asteroids,
+                        LobbyName = gameState.LobbyName,
+                    };
+                    StorageActor.Tell(new StoreState(LobbyName, stored));
                 }
 
                 Console.WriteLine($"GAMESTATE: {JsonSerializer.Serialize(gameState)}");
@@ -292,7 +337,21 @@ public class LobbyActor : ReceiveActor
             };
             if (Ticks % 10 == 0)
             {
-                // StorageActor.Tell(new StoreState(LobbyName, gameState));
+                Dictionary<string, string> lobbyNames = [];
+                foreach (var client in particpatingUsers)
+                {
+                    lobbyNames.Add(client.Key, client.Value.Path.ToString());
+                }
+                GameStateObject stored = new GameStateObject()
+                {
+                    state = gameState.state,
+                    particpatingUsers = lobbyNames,
+                    ships = gameState.ships,
+                    bullets = gameState.bullets,
+                    asteroids = gameState.asteroids,
+                    LobbyName = gameState.LobbyName,
+                };
+                StorageActor.Tell(new StoreState(LobbyName, stored));
             }
             Sender.Tell(new GameStateSnapshot(gameState));
         });
