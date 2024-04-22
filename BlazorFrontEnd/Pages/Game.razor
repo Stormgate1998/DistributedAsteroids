@@ -141,6 +141,9 @@ else
     }
 }
 
+
+<button class="btn btn-primary" @onclick="KillLobby">Kill Lobby</button>
+
 <style>
     .game-board:focus {
         border-color: blue !important;
@@ -290,6 +293,10 @@ else
     private void LeaveLobby(){
         AkkaService.LeaveLobby(Username);
         NavigationManager.NavigateTo($"/home/{Username}");
+    }
+
+    private void KillLobby(){
+        AkkaService.KillLobby(Username);
     }
 
     public void Dispose()

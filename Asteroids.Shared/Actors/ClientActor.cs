@@ -143,6 +143,11 @@ public class ClientActor : ReceiveActor
         {
             CurrentLobby.Tell(message);
         });
+
+        Receive<LobbyDeath>(message =>
+        {
+            CurrentLobby.Tell(message);
+        });
     }
 }
 

@@ -125,4 +125,9 @@ public class RemoteAkkaService : IHostedService
     {
         clientSupervisor.Tell(new SendShipInput(input));
     }
+
+    public void KillLobby(string username)
+    {
+        clientSupervisor.Tell(new LobbyDeath(username));
+    }
 }

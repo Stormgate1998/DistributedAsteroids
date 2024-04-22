@@ -98,6 +98,14 @@ public class ClientSupervisorActor : ReceiveActor
         user.Forward(message);
       }
     });
+
+    Receive<LobbyDeath>(message =>
+    {
+      if (clients.TryGetValue(message.LobbyName, out var user))
+      {
+        user.Forward(message);
+      }
+    });
   }
 
 
