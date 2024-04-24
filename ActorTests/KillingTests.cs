@@ -3,23 +3,26 @@ using FluentAssertions;
 using Akka.TestKit.Xunit2;
 using Asteroids.Shared.Actors;
 using Asteroids.Shared.GameObjects;
+using Akka.Dispatch.SysMsg;
 using Akka.TestKit;
 
 namespace ActorTests;
 
-public class LobbyTests : TestKit
+public class KillingTests : TestKit
 {
-    private void CreateProbeAndLobbySupervisor(out TestProbe probe, out IActorRef supervisor)
+    private void CreateProbeAndSupervisor(out TestProbe probe, out IActorRef supervisor)
     {
         probe = CreateTestProbe();
         var storageProbe = CreateTestProbe();
         supervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor()));
     }
 
+
+
     [Fact]
     public void LobbySupervisorCanCreateLobby()
     {
-        CreateProbeAndLobbySupervisor(out TestProbe probe, out IActorRef supervisor);
+        CreateProbeAndSupervisor(out TestProbe probe, out IActorRef supervisor);
 
         supervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         var response = probe.ExpectMsg<CreateLobbyResponse>();
@@ -28,11 +31,11 @@ public class LobbyTests : TestKit
     }
 
 
-
     [Fact]
     public void LobbySupervisorCanGetLobbyList()
     {
-        CreateProbeAndLobbySupervisor(out TestProbe probe, out IActorRef supervisor);
+        CreateProbeAndSupervisor(out TestProbe probe, out IActorRef supervisor);
+
 
         supervisor.Tell(new CreateLobby("testLobby1"), probe.Ref);
         var response = probe.ExpectMsg<CreateLobbyResponse>();
@@ -67,8 +70,7 @@ public class LobbyTests : TestKit
     [Fact]
     public void LobbySupervisorCanCreateMultipleLobbies()
     {
-        CreateProbeAndLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
-
+        CreateProbeAndSupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         lobbySupervisor.Tell(new CreateLobby("testLobby1"), probe.Ref);
         var lobby1 = probe.ExpectMsg<CreateLobbyResponse>();
@@ -86,7 +88,7 @@ public class LobbyTests : TestKit
     [Fact]
     public void LobbySupervisorCanNotCreateExisitingLobby()
     {
-        CreateProbeAndLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
+        CreateProbeAndSupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
@@ -99,4 +101,6 @@ public class LobbyTests : TestKit
 
         response.Lobbies.Should().BeEquivalentTo(["testLobby"]);
     }
+
+
 }

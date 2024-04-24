@@ -7,6 +7,7 @@ using Asteroids.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Microsoft.Extensions.Logging;
+using Akka.TestKit;
 
 namespace ActorTests;
 
@@ -22,31 +23,42 @@ public class ClientTests : TestKit
     var provider = services.BuildServiceProvider();
     return (provider, realTimeMock);
   }
-
+  private void CreateClientSupervisor(out TestProbe probe, out IHubService signalRMock, out IActorRef clientSupervisor, out IActorRef lobbySupervisor)
+  {
+    probe = CreateTestProbe();
+    ServiceProvider provider;
+    (provider, signalRMock) = getServiceProvider();
+    var storageProbe = CreateTestProbe();
+    lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor()), "lobbySupervisor");
+    IActorRef newOne = lobbySupervisor;
+    clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(newOne, provider)), "clientSupervisor");
+  }
   [Fact]
   public async void ClientSupervisorCanCreateClient()
   {
-    var probe = CreateTestProbe();
-    var (provider, signalRMock) = getServiceProvider();
-    var storageProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
-
-    var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(lobbySupervisor, provider)), "clientSupervisor");
+    CreateClientSupervisor(out TestProbe probe, out IHubService signalRMock, out IActorRef clientSupervisor, out IActorRef lobbySupervisor);
     clientSupervisor.Tell(new CreateClientActor("tony", "connectionId"), probe.Ref);
 
     await Task.Delay(100);
     await signalRMock.Received().SendClientState(Arg.Any<string>(), Arg.Is<ClientState>(s => s == ClientState.NoLobby));
   }
 
+  private void CreateClientActor(string name, string connectionId, out TestProbe probe, out IActorRef lobbySupervisor, out IActorRef client)
+  {
+    var (provider, signalRMock) = getServiceProvider();
+
+    probe = CreateTestProbe();
+    var storageProbe = CreateTestProbe();
+    lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor()), "lobbySupervisor");
+    client = Sys.ActorOf(Props.Create<ClientActor>(name, connectionId, lobbySupervisor, provider), name);
+  }
+
+
+
   [Fact]
   public async void ClientSupervisorCanNotCreateDuplicateClient()
   {
-    var probe = CreateTestProbe();
-    var (provider, signalRMock) = getServiceProvider();
-
-    var storageProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
-    var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(lobbySupervisor, provider)), "clientSupervisor");
+    CreateClientSupervisor(out TestProbe probe, out IHubService signalRMock, out IActorRef clientSupervisor, out IActorRef lobbySupervisor);
 
     clientSupervisor.Tell(new CreateClientActor("tony", "connectionId"), probe.Ref);
     await Task.Delay(100);
@@ -64,12 +76,7 @@ public class ClientTests : TestKit
   [Fact]
   public async void ClientCanCreateLobby()
   {
-    var (provider, signalRMock) = getServiceProvider();
-
-    var probe = CreateTestProbe();
-    var storageProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
-    var client = Sys.ActorOf(Props.Create<ClientActor>("tony", "fake id", lobbySupervisor, provider), "tony");
+    CreateClientActor("tony", "fake id", out TestProbe probe, out IActorRef lobbySupervisor, out IActorRef client);
 
     client.Tell(new CreateLobby("tony"));
     await Task.Delay(100);
@@ -81,6 +88,8 @@ public class ClientTests : TestKit
     List<string> TestList = ["tony"];
     response.Lobbies.Should().BeEquivalentTo(TestList);
   }
+
+
 
   // [Fact]
   // public async void ClientCanJoinExisitingLobby()
@@ -106,12 +115,8 @@ public class ClientTests : TestKit
   [Fact]
   public async void ClientCannotJoinNonExisitingLobby()
   {
-    var probe = CreateTestProbe();
-    var (provider, signalRMock) = getServiceProvider();
+    CreateClientActor("tony", "fake id", out TestProbe probe, out IActorRef lobbySupervisor, out IActorRef client);
 
-    var storageProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
-    var client = Sys.ActorOf(Props.Create<ClientActor>("tony", "connectionId", lobbySupervisor, provider), "tony");
 
     client.Tell(new JoinLobby("testLobby", "tony"), probe.Ref);
     await Task.Delay(100);
@@ -143,11 +148,7 @@ public class ClientTests : TestKit
   [Fact]
   public async void JoiningLobbyCreatesShip()
   {
-    var (provider, signalRMock) = getServiceProvider();
-    var probe = CreateTestProbe();
-    var storageProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
-    var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(lobbySupervisor, provider)), "clientSupervisor");
+    CreateClientSupervisor(out TestProbe probe, out IHubService signalRMock, out IActorRef clientSupervisor, out IActorRef lobbySupervisor);
 
     clientSupervisor.Tell(new CreateClientActor("tony", ""));
     await Task.Delay(100);
@@ -173,11 +174,7 @@ public class ClientTests : TestKit
   [Fact]
   public async void CreatingClientCanStartGame()
   {
-    var (provider, signalRMock) = getServiceProvider();
-    var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(Props.Create<LobbySupervisorActor>(),
-    "lobbySupervisor");
-    var clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(lobbySupervisor, provider)), "clientSupervisor");
+    CreateClientSupervisor(out TestProbe probe, out IHubService signalRMock, out IActorRef clientSupervisor, out IActorRef lobbySupervisor);
 
     clientSupervisor.Tell(new CreateClientActor("tony", ""));
     await Task.Delay(100);

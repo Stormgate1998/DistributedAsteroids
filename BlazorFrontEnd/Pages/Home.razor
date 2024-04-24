@@ -51,7 +51,7 @@
     private async Task CreateLobby()
     {
         Console.WriteLine("Create lobby button has been pressed.");
-        response = await AkkaService.CreateLobby(Username);
+        AkkaService.CreateLobby(Username);
         await GetList();
     }
 

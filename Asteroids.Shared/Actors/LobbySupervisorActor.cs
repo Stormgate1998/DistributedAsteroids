@@ -7,11 +7,15 @@ public class LobbySupervisorActor : ReceiveActor
 {
     private readonly Dictionary<string, IActorRef> lobbies = [];
 
-    private IActorRef StorageActor;
+    private IActorRef StorageActor = Context.ActorOf<StorageActor>();
 
     protected override void PreStart()
     {
-        StorageActor = Context.ActorSelection("/user/storageActor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+        var actorRef = Context.ActorSelection("/user/storageActor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+        if (actorRef != null)
+        {
+            StorageActor = actorRef;
+        }
         Console.WriteLine($"Storage actor is {StorageActor.Path}. ");
         StorageActor.Tell(new TestMessage("Storage Actor is called"));
 

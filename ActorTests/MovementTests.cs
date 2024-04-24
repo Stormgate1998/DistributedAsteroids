@@ -4,22 +4,23 @@ using Akka.TestKit.Xunit2;
 using Asteroids.Shared.Actors;
 using Asteroids.Shared.GameObjects;
 using Akka.Dispatch.SysMsg;
+using Akka.TestKit;
 
 namespace ActorTests;
 
 public class MovementTests : TestKit
 {
-    private void OnLobbyDeath(string lobbyName)
+    private void CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor)
     {
-
+        probe = CreateTestProbe();
+        var storageProbe = CreateTestProbe();
+        lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor()), "lobbySupervisor");
     }
 
     [Fact]
     public void MovementFunctionMovesShipHorizontal()
     {
-        var probe = CreateTestProbe();
-        var storageProbe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
+        CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
@@ -58,12 +59,12 @@ public class MovementTests : TestKit
         response.Updated.Should().Be(expectedShip);
     }
 
+
+
     [Fact]
     public void MovementFunctionMovesShipVertical()
     {
-        var probe = CreateTestProbe();
-        var storageProbe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
+        CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
@@ -104,9 +105,7 @@ public class MovementTests : TestKit
     [Fact]
     public void MovementFunctionMovesShipTilted()
     {
-        var probe = CreateTestProbe();
-        var storageProbe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
+        CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
@@ -142,13 +141,10 @@ public class MovementTests : TestKit
         response.Updated.Should().Be(expectedShip);
     }
 
-
     [Fact]
     public void MovementFunctionRotatesShipLeftAndRight()
     {
-        var probe = CreateTestProbe();
-        var storageProbe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
+        CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
@@ -216,9 +212,7 @@ public class MovementTests : TestKit
     [Fact]
     public void TestProcessMovementDoesMovementAndTurningRight()
     {
-        var probe = CreateTestProbe();
-        var storageProbe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
+        CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
@@ -255,14 +249,10 @@ public class MovementTests : TestKit
         response.Updated.Should().Be(expectedShip);
     }
 
-
-
     [Fact]
     public void TestProcessesListOfShipsCorrectly()
     {
-        var probe = CreateTestProbe();
-        var storageProbe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
+        CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
@@ -328,9 +318,7 @@ public class MovementTests : TestKit
     [Fact]
     public void TestMoveForwardIncreasesSpeedBy2AndNotDecreasesBy1()
     {
-        var probe = CreateTestProbe();
-        var storageProbe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
+        CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
@@ -398,14 +386,10 @@ public class MovementTests : TestKit
 
     }
 
-
-
     [Fact]
     public void TestSpeedUpperAndLowerBoundsSet()
     {
-        var probe = CreateTestProbe();
-        var storageProbe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
+        CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
@@ -448,14 +432,10 @@ public class MovementTests : TestKit
         response.Updated.Speed.Should().Be(10);
     }
 
-
-
     [Fact]
     public void TestCollisionShipRegistersTrue()
     {
-        var probe = CreateTestProbe();
-        var storageProbe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
+        CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
@@ -491,9 +471,8 @@ public class MovementTests : TestKit
     [Fact]
     public void TestCollisionShipRegistersFalse()
     {
-        var probe = CreateTestProbe();
-        var storageProbe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
+        CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
+
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
 
@@ -525,14 +504,10 @@ public class MovementTests : TestKit
         response.result.Should().Be(false);
     }
 
-
-
     [Fact]
     public void TestCollisionBulletRegistersTrue()
     {
-        var probe = CreateTestProbe();
-        var storageProbe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
+        CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
@@ -558,13 +533,10 @@ public class MovementTests : TestKit
         response.result.Should().Be(true);
     }
 
-
     [Fact]
     public void TestCollisionBulletRegistersFalse()
     {
-        var probe = CreateTestProbe();
-        var storageProbe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
+        CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
@@ -594,9 +566,7 @@ public class MovementTests : TestKit
     [Fact]
     public async void TestShipCollisionRemovesHealth()
     {
-        var probe = CreateTestProbe();
-        var storageProbe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
+        CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
@@ -637,13 +607,10 @@ public class MovementTests : TestKit
 
     }
 
-
     [Fact]
     public async void TestBulletCollisionRemovesHealthAndIncreasesScore()
     {
-        var probe = CreateTestProbe();
-        var storageProbe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
+        CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
@@ -702,9 +669,7 @@ public class MovementTests : TestKit
     [Fact]
     public async Task TestIsFiringCreatesABullet()
     {
-        var probe = CreateTestProbe();
-        var storageProbe = CreateTestProbe();
-        var lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageProbe)), "lobbySupervisor");
+        CreateLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
 
         List<string> strings = new List<string>();
 
@@ -751,8 +716,7 @@ public class MovementTests : TestKit
     [Fact]
     public void LobbyCanSpawnAsteroid()
     {
-        var probe = CreateTestProbe();
-        var lobby = Sys.ActorOf(Props.Create(() => new LobbyActor("testLobby", OnLobbyDeath, new Dictionary<string, IActorRef>())), "testLobby");
+        CreateLobby(out TestProbe probe, out IActorRef lobby);
 
         lobby.Tell(new TestOneTick("testLobby", 1), probe.Ref);
         var snapshot = probe.ExpectMsg<GameStateSnapshot>();
@@ -760,11 +724,17 @@ public class MovementTests : TestKit
         snapshot.Game.asteroids.Count.Should().Be(1);
     }
 
+    private void CreateLobby(out TestProbe probe, out IActorRef lobby)
+    {
+        probe = CreateTestProbe();
+        var newOne = probe;
+        lobby = Sys.ActorOf(Props.Create(() => new LobbyActor("testLobby", newOne, new Dictionary<string, IActorRef>())), "testLobby");
+    }
+
     [Fact]
     public void AstroidMovesAfterOneTick()
     {
-        var probe = CreateTestProbe();
-        var lobby = Sys.ActorOf(Props.Create(() => new LobbyActor("testLobby", OnLobbyDeath, new Dictionary<string, IActorRef>())), "testLobby");
+        CreateLobby(out TestProbe probe, out IActorRef lobby);
 
         lobby.Tell(new TestOneTick("testLobby", 100), probe.Ref);
         var firstSnapshot = probe.ExpectMsg<GameStateSnapshot>();

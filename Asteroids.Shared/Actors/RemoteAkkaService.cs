@@ -75,13 +75,6 @@ public class RemoteAkkaService : IHostedService
         return Task.CompletedTask;
     }
 
-
-
-    // public async Task<string> CreateClient(string username, string hubConnection)
-    // {
-    //     var response = await clientSupervisor.Ask<CreateClientActorResponse>(new CreateClientActor(username, hubConnection));
-    //     return response.Message;
-    // }
     public void CreateClient(string username, string hubConnection)
     {
         clientSupervisor.Tell(new CreateClientActor(username, hubConnection));
@@ -92,11 +85,10 @@ public class RemoteAkkaService : IHostedService
         clientSupervisor.Tell(new LeaveLobby(username));
     }
 
-    public async Task<string> CreateLobby(string lobbyName)
+    public async Task CreateLobby(string lobbyName)
     {
         Console.WriteLine("Requesting lobby from Akka service.");
-        var response = await clientSupervisor.Ask<CreateLobbyResponse>(new CreateLobby(lobbyName));
-        return response.Message;
+        clientSupervisor.Tell(new CreateLobby(lobbyName));
     }
     public void JoinLobby(string username, string lobbyName)
     {
@@ -109,16 +101,14 @@ public class RemoteAkkaService : IHostedService
         clientSupervisor.Tell(new StartGame(username));
     }
 
-    public async Task<List<string>> GetLobbies(string username)
+    public async Task GetLobbies(string username)
     {
-        var response = await clientSupervisor.Ask<GetLobbiesResponse>(new GetLobbies(username));
-        return response.Lobbies;
+        clientSupervisor.Tell(new GetLobbies(username));
     }
 
-    public async Task<GameStateObject> GetState(string lobby, string username)
+    public async Task GetState(string lobby, string username)
     {
-        var response = await clientSupervisor.Ask<GameStateSnapshot>(new GetState(lobby, username));
-        return response.Game;
+        clientSupervisor.Tell(new GetState(lobby, username));
     }
 
     public void SendShipInput(ShipInput input)
