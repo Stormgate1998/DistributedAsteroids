@@ -12,6 +12,7 @@ public class KillingTests : TestKit
 {
     private void CreateProbeAndSupervisor(out TestProbe probe, out IActorRef supervisor)
     {
+        var storageActor = Sys.ActorOf(Props.Create(() => new StorageActor()), "storageActor");
         probe = CreateTestProbe();
         var storageProbe = CreateTestProbe();
         supervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor()));

@@ -128,10 +128,9 @@ public class LobbyActor : ReceiveActor
 
         Receive<TestProcessMovement>(message =>
         {
+            Console.WriteLine("Running TestProcessMovement");
             Ship testShip = ProcessMovement(message.TestShip);
             Sender.Tell(new ShipUpdate(testShip));
-
-
         });
 
         Receive<TestProcessMovementList>(message =>

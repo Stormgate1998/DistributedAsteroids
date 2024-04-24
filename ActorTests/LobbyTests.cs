@@ -11,6 +11,7 @@ public class LobbyTests : TestKit
 {
     private void CreateProbeAndLobbySupervisor(out TestProbe probe, out IActorRef supervisor)
     {
+        var storageActor = Sys.ActorOf(Props.Create(() => new StorageActor()), "storageActor");
         probe = CreateTestProbe();
         var storageProbe = CreateTestProbe();
         supervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor()));
