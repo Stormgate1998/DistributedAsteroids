@@ -813,40 +813,356 @@ public class MovementTests : TestKit
     [Fact]
     public void TripleFiringCreatesThreeBullets()
     {
+        var probe = CreateTestProbe();
+        CreateLobbySupervisor(out IActorRef lobbySupervisor);
 
-        Assert.False(true);
+        List<string> strings = [];
+
+        List<string> newStrigns = ["hi", "hi"];
+        strings.AddRange(newStrigns);
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+        Ship testShip = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Location = new(45, 45),
+            Direction = 90,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+            IsFiring = true,
+            IsTriple = true,
+        };
+
+        Bullet bullet = new()
+        {
+            Location = new(45, 45),
+            Direction = 90,
+            Speed = 20,
+            Username = "tony",
+        };
+
+        Bullet bullet1 = new()
+        {
+            Location = new(45, 45),
+            Direction = 80,
+            Speed = 20,
+            Username = "tony",
+        };
+        Bullet bullet2 = new()
+        {
+            Location = new(45, 45),
+            Direction = 100,
+            Speed = 20,
+            Username = "tony",
+        };
+
+        lobbySupervisor.Tell(new TestingAddShip("testLobby", testShip), probe.Ref);
+        var response = probe.ExpectMsg<GameStateSnapshot>();
+        response.Game.ships.Count.Should().Be(1);
+
+
+
+        lobbySupervisor.Tell(new TestOneTick("testLobby"), probe.Ref);
+        response = probe.ExpectMsg<GameStateSnapshot>();
+        response.Game.ships.Count.Should().Be(1);
+        response.Game.bullets.Count.Should().Be(3);
+        response.Game.bullets[0].Should().Be(bullet);
+        response.Game.bullets[1].Should().Be(bullet1);
+        response.Game.bullets[2].Should().Be(bullet2);
+
+
     }
 
     [Fact]
     public void BackwardsFiringCreatesTwoBullets()
     {
 
-        Assert.False(true);
+        var probe = CreateTestProbe();
+        CreateLobbySupervisor(out IActorRef lobbySupervisor);
+
+        List<string> strings = [];
+
+        List<string> newStrigns = ["hi", "hi"];
+        strings.AddRange(newStrigns);
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+        Ship testShip = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Location = new(45, 45),
+            Direction = 90,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+            IsFiring = true,
+            CanFireBackwards = true,
+        };
+
+        Bullet bullet = new()
+        {
+            Location = new(45, 45),
+            Direction = 90,
+            Speed = 20,
+            Username = "tony",
+        };
+
+        Bullet bullet1 = new()
+        {
+            Location = new(45, 45),
+            Direction = 270,
+            Speed = 20,
+            Username = "tony",
+        };
+
+        lobbySupervisor.Tell(new TestingAddShip("testLobby", testShip), probe.Ref);
+        var response = probe.ExpectMsg<GameStateSnapshot>();
+        response.Game.ships.Count.Should().Be(1);
+
+
+
+        lobbySupervisor.Tell(new TestOneTick("testLobby"), probe.Ref);
+        response = probe.ExpectMsg<GameStateSnapshot>();
+        response.Game.ships.Count.Should().Be(1);
+        response.Game.bullets.Count.Should().Be(2);
+        response.Game.bullets[0].Should().Be(bullet);
+        response.Game.bullets[1].Should().Be(bullet1);
+
     }
+
     [Fact]
     public void BackwardsFiringAndTripleCreates6Bullets()
     {
 
-        Assert.False(true);
+        var probe = CreateTestProbe();
+        CreateLobbySupervisor(out IActorRef lobbySupervisor);
+
+        List<string> strings = [];
+
+        List<string> newStrigns = ["hi", "hi"];
+        strings.AddRange(newStrigns);
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+        Ship testShip = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Location = new(45, 45),
+            Direction = 90,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+            IsFiring = true,
+            CanFireBackwards = true,
+            IsTriple = true,
+        };
+
+        Bullet bullet = new()
+        {
+            Location = new(45, 45),
+            Direction = 90,
+            Speed = 20,
+            Username = "tony",
+        };
+
+        Bullet bullet1 = new()
+        {
+            Location = new(45, 45),
+            Direction = 270,
+            Speed = 20,
+            Username = "tony",
+        };
+        Bullet bullet2 = new()
+        {
+            Location = new(45, 45),
+            Direction = 80,
+            Speed = 20,
+            Username = "tony",
+        };
+
+        Bullet bullet3 = new()
+        {
+            Location = new(45, 45),
+            Direction = 260,
+            Speed = 20,
+            Username = "tony",
+        };
+        Bullet bullet4 = new()
+        {
+            Location = new(45, 45),
+            Direction = 100,
+            Speed = 20,
+            Username = "tony",
+        };
+
+        Bullet bullet5 = new()
+        {
+            Location = new(45, 45),
+            Direction = 280,
+            Speed = 20,
+            Username = "tony",
+        };
+
+        lobbySupervisor.Tell(new TestingAddShip("testLobby", testShip), probe.Ref);
+        var response = probe.ExpectMsg<GameStateSnapshot>();
+        response.Game.ships.Count.Should().Be(1);
+
+
+
+        lobbySupervisor.Tell(new TestOneTick("testLobby"), probe.Ref);
+        response = probe.ExpectMsg<GameStateSnapshot>();
+        response.Game.ships.Count.Should().Be(1);
+        response.Game.bullets.Count.Should().Be(6);
+        response.Game.bullets[0].Should().Be(bullet);
+        response.Game.bullets[1].Should().Be(bullet2);
+        response.Game.bullets[2].Should().Be(bullet4);
+        response.Game.bullets[3].Should().Be(bullet1);
+        response.Game.bullets[4].Should().Be(bullet3);
+        response.Game.bullets[5].Should().Be(bullet5);
+
+    }
+
+
+
+
+    [Fact]
+    public async void CanDynamicallySetExtrasInLobby()
+    {
+        var probe = CreateTestProbe();
+        CreateLobbySupervisor(out IActorRef lobbySupervisor);
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+        lobbySupervisor.Tell(new GameExtrasUpdate(1, "testLobby"), probe.Ref);
+        probe.ExpectNoMsg();
+        lobbySupervisor.Tell(new StartGame("testLobby"));
+        await Task.Delay(100);
+        lobbySupervisor.Tell(new GameExtrasUpdate(2, "testLobby"), probe.Ref);
+        lobbySupervisor.Tell(new TestOneTick("testLobby", 100), probe.Ref);
+        GameStateSnapshot secondSnapshot = probe.ExpectMsg<GameStateSnapshot>();
+        secondSnapshot.Game.Extras.Should().Be(2);
+
     }
     [Fact]
-    public void CanDynamicallySetExtrasInLobby()
+    public async void DynamicSettingMakesIsTripleTrueForShips()
     {
-        Assert.False(true);
+        var probe = CreateTestProbe();
+        CreateLobbySupervisor(out IActorRef lobbySupervisor);
+        Ship testShip = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Location = new(45, 45),
+            Direction = 90,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+        };
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+        lobbySupervisor.Tell(new TestingAddShip("testLobby", testShip), probe.Ref);
+        probe.ExpectMsg<GameStateSnapshot>();
+        lobbySupervisor.Tell(new GameExtrasUpdate(1, "testLobby"));
+        await Task.Delay(100);
+        lobbySupervisor.Tell(new StartGame("testLobby"));
+        bool isJoining = true;
+        while (isJoining)
+        {
+            lobbySupervisor.Tell(new GetState("testLobby", "testLobby"), probe.Ref);
+            GameStateSnapshot testSnapshot = probe.ExpectMsg<GameStateSnapshot>();
+            isJoining = testSnapshot.Game.state == GameState.JOINING;
+        }
+        lobbySupervisor.Tell(new GetState("testLobby", "testLobby"), probe.Ref);
+        GameStateSnapshot secondSnapshot = probe.ExpectMsg<GameStateSnapshot>();
+        secondSnapshot.Game.state.Should().Be(GameState.PLAYING);
+        secondSnapshot.Game.Extras.Should().Be(1);
+        secondSnapshot.Game.ships[0].IsTriple.Should().BeTrue();
+
     }
     [Fact]
-    public void DynamicSettingMakesIsTripleTrueForShips()
+    public async void DynamicSettingMakesBackwardsTrueForShips()
     {
-        Assert.False(true);
+        var probe = CreateTestProbe();
+        CreateLobbySupervisor(out IActorRef lobbySupervisor);
+        Ship testShip = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Location = new(45, 45),
+            Direction = 90,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+        };
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+        lobbySupervisor.Tell(new TestingAddShip("testLobby", testShip), probe.Ref);
+        probe.ExpectMsg<GameStateSnapshot>();
+        lobbySupervisor.Tell(new GameExtrasUpdate(2, "testLobby"));
+        await Task.Delay(100);
+        lobbySupervisor.Tell(new StartGame("testLobby"));
+        bool isJoining = true;
+        while (isJoining)
+        {
+            lobbySupervisor.Tell(new GetState("testLobby", "testLobby"), probe.Ref);
+            GameStateSnapshot testSnapshot = probe.ExpectMsg<GameStateSnapshot>();
+            isJoining = testSnapshot.Game.state == GameState.JOINING;
+        }
+        lobbySupervisor.Tell(new GetState("testLobby", "testLobby"), probe.Ref);
+        GameStateSnapshot secondSnapshot = probe.ExpectMsg<GameStateSnapshot>();
+        secondSnapshot.Game.state.Should().Be(GameState.PLAYING);
+        secondSnapshot.Game.Extras.Should().Be(2);
+        secondSnapshot.Game.ships[0].CanFireBackwards.Should().BeTrue();
     }
     [Fact]
-    public void DynamicSettingMakesBackwardsTrueForShips()
+    public async void DynamicSettingMakesBackwardsAndTripleTrueForShips()
     {
-        Assert.False(true);
-    }
-    [Fact]
-    public void DynamicSettingMakesBackwardsAndTripleTrueForShips()
-    {
-        Assert.False(true);
+        var probe = CreateTestProbe();
+        CreateLobbySupervisor(out IActorRef lobbySupervisor);
+        Ship testShip = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 0,
+            Location = new(45, 45),
+            Direction = 90,
+            MovingForward = false,
+            TurningLeft = false,
+            TurningRight = false,
+        };
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+        lobbySupervisor.Tell(new TestingAddShip("testLobby", testShip), probe.Ref);
+        probe.ExpectMsg<GameStateSnapshot>();
+        lobbySupervisor.Tell(new GameExtrasUpdate(3, "testLobby"));
+        await Task.Delay(100);
+        lobbySupervisor.Tell(new StartGame("testLobby"));
+        bool isJoining = true;
+        while (isJoining)
+        {
+            lobbySupervisor.Tell(new GetState("testLobby", "testLobby"), probe.Ref);
+            GameStateSnapshot testSnapshot = probe.ExpectMsg<GameStateSnapshot>();
+            isJoining = testSnapshot.Game.state == GameState.JOINING;
+        }
+        lobbySupervisor.Tell(new GetState("testLobby", "testLobby"), probe.Ref);
+        GameStateSnapshot secondSnapshot = probe.ExpectMsg<GameStateSnapshot>();
+        secondSnapshot.Game.state.Should().Be(GameState.PLAYING);
+        secondSnapshot.Game.Extras.Should().Be(3);
+        secondSnapshot.Game.ships[0].CanFireBackwards.Should().BeTrue();
+        secondSnapshot.Game.ships[0].IsTriple.Should().BeTrue();
+
     }
 }

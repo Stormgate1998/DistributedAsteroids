@@ -171,6 +171,14 @@ public class LobbySupervisorActor : ReceiveActor
             }
         });
 
+        Receive<GameExtrasUpdate>(message =>
+        {
+            if (lobbies.TryGetValue(message.LobbyName, out var lobby))
+            {
+                lobby.Forward(message);
+            }
+        });
+
         Receive<TestingAddAsteroid>(message =>
         {
             if (lobbies.TryGetValue(message.LobbyName, out var lobby))
