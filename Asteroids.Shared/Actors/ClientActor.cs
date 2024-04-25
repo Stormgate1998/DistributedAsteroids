@@ -148,6 +148,16 @@ public class ClientActor : ReceiveActor
         {
             CurrentLobby.Tell(message);
         });
+
+        Receive<GameExtrasUpdate>(message =>
+        {
+            if (username == message.LobbyName)
+            {
+                Console.WriteLine($"Updating Game extras as Client:{message.Extras}");
+                CurrentLobby.Tell(message);
+            }
+
+        });
     }
 }
 

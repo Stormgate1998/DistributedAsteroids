@@ -162,7 +162,7 @@ public class MovementTests : TestKit
     }
 
     [Fact]
-    public void MovementFunctionRotatesShipLeftAndRight()
+    public void MovementFunctionRotatesShipLeft()
     {
         var probe = CreateTestProbe();
         CreateLobbySupervisor(out IActorRef lobbySupervisor);
@@ -200,6 +200,16 @@ public class MovementTests : TestKit
         var response = probe.ExpectMsg<ShipUpdate>();
 
         response.Updated.Should().Be(expectedShip);
+    }
+
+    [Fact]
+    public void MovementFunctionRotatesShipRight()
+    {
+        var probe = CreateTestProbe();
+        CreateLobbySupervisor(out IActorRef lobbySupervisor);
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
         Ship testShip2 = new()
         {
             Username = "tony",
@@ -226,7 +236,7 @@ public class MovementTests : TestKit
             TurningRight = true,
         };
         lobbySupervisor.Tell(new TestProcessMovement(testShip2, "testLobby"), probe.Ref);
-        response = probe.ExpectMsg<ShipUpdate>();
+        var response = probe.ExpectMsg<ShipUpdate>();
         response.Updated.Should().Be(expectedShip2);
     }
 
@@ -339,7 +349,7 @@ public class MovementTests : TestKit
     }
 
     [Fact]
-    public void TestMoveForwardIncreasesSpeedBy2AndNotDecreasesBy1()
+    public void TestMoveForwardIncreasesSpeedBy2()
     {
         var probe = CreateTestProbe();
         CreateLobbySupervisor(out IActorRef lobbySupervisor);
@@ -379,7 +389,18 @@ public class MovementTests : TestKit
         var response = probe.ExpectMsg<ShipUpdate>();
 
         response.Updated.Should().Be(expectedShip);
-        Ship testShip2 = new()
+    }
+
+    [Fact]
+    public void TestNotMoveForwardDecreasesSpeedBy1()
+    {
+        var probe = CreateTestProbe();
+        CreateLobbySupervisor(out IActorRef lobbySupervisor);
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        Ship testShip = new()
         {
             Username = "tony",
             Health = 40,
@@ -392,7 +413,7 @@ public class MovementTests : TestKit
             TurningRight = false,
 
         };
-        Ship secondExpectedShip = new()
+        Ship ExpectedShip = new()
         {
             Username = "tony",
             Health = 40,
@@ -404,14 +425,15 @@ public class MovementTests : TestKit
             TurningLeft = false,
             TurningRight = false,
         };
-        lobbySupervisor.Tell(new TestProcessMovement(testShip2, "testLobby"), probe.Ref);
-        response = probe.ExpectMsg<ShipUpdate>();
-        response.Updated.Should().Be(secondExpectedShip);
+        lobbySupervisor.Tell(new TestProcessMovement(testShip, "testLobby"), probe.Ref);
+        var response = probe.ExpectMsg<ShipUpdate>();
+        response.Updated.Should().Be(ExpectedShip);
 
     }
 
+
     [Fact]
-    public void TestSpeedUpperAndLowerBoundsSet()
+    public void TestSpeedUpperBoundsSet()
     {
         var probe = CreateTestProbe();
         CreateLobbySupervisor(out IActorRef lobbySupervisor);
@@ -419,7 +441,35 @@ public class MovementTests : TestKit
         lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
         probe.ExpectMsg<CreateLobbyResponse>();
 
-        Ship testShip = new Ship()
+        Ship testShip = new()
+        {
+            Username = "tony",
+            Health = 40,
+            Score = 40,
+            Speed = 10,
+            Location = new(0, 0),
+            Direction = 90,
+            MovingForward = true,
+            TurningLeft = false,
+            TurningRight = false,
+
+        };
+
+        lobbySupervisor.Tell(new TestProcessMovement(testShip, "testLobby"), probe.Ref);
+        var response = probe.ExpectMsg<ShipUpdate>();
+        response.Updated.Speed.Should().Be(10);
+    }
+
+    [Fact]
+    public void TestSpeedLowerBoundsSet()
+    {
+        var probe = CreateTestProbe();
+        CreateLobbySupervisor(out IActorRef lobbySupervisor);
+
+        lobbySupervisor.Tell(new CreateLobby("testLobby"), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        Ship testShip = new()
         {
             Username = "tony",
             Health = 40,
@@ -437,25 +487,8 @@ public class MovementTests : TestKit
         var response = probe.ExpectMsg<ShipUpdate>();
 
         response.Updated.Speed.Should().Be(0);
-
-        Ship testShip2 = new()
-        {
-            Username = "tony",
-            Health = 40,
-            Score = 40,
-            Speed = 10,
-            Location = new(0, 0),
-            Direction = 90,
-            MovingForward = true,
-            TurningLeft = false,
-            TurningRight = false,
-
-        };
-
-        lobbySupervisor.Tell(new TestProcessMovement(testShip2, "testLobby"), probe.Ref);
-        response = probe.ExpectMsg<ShipUpdate>();
-        response.Updated.Speed.Should().Be(10);
     }
+
 
     [Fact]
     public void TestCollisionShipRegistersTrue()
@@ -774,5 +807,46 @@ public class MovementTests : TestKit
 
         firstSnapshot.Value.asteroids.First().Location.X.Should().NotBe(secondSnapshot.Game.asteroids.First().Location.X);
         firstSnapshot.Value.asteroids.First().Location.Y.Should().NotBe(secondSnapshot.Game.asteroids.First().Location.Y);
+    }
+
+
+    [Fact]
+    public void TripleFiringCreatesThreeBullets()
+    {
+
+        Assert.False(true);
+    }
+
+    [Fact]
+    public void BackwardsFiringCreatesTwoBullets()
+    {
+
+        Assert.False(true);
+    }
+    [Fact]
+    public void BackwardsFiringAndTripleCreates6Bullets()
+    {
+
+        Assert.False(true);
+    }
+    [Fact]
+    public void CanDynamicallySetExtrasInLobby()
+    {
+        Assert.False(true);
+    }
+    [Fact]
+    public void DynamicSettingMakesIsTripleTrueForShips()
+    {
+        Assert.False(true);
+    }
+    [Fact]
+    public void DynamicSettingMakesBackwardsTrueForShips()
+    {
+        Assert.False(true);
+    }
+    [Fact]
+    public void DynamicSettingMakesBackwardsAndTripleTrueForShips()
+    {
+        Assert.False(true);
     }
 }

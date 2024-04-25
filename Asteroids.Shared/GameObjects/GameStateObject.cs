@@ -10,6 +10,7 @@ public record GameStateObject
     public List<Asteroid> asteroids { get; init; }
     public List<Bullet> bullets { get; init; }
     public Dictionary<string, string> particpatingUsers { get; init; }
+    public int Extras { get; init; }
 }
 
 

@@ -123,4 +123,10 @@ public class RemoteAkkaService : IHostedService
     {
         clientSupervisor.Tell(new LobbyDeath(username));
     }
+
+    public void UpdateExtras(string username, int extras)
+    {
+        Console.WriteLine($"Updating Extras: {extras}");
+        clientSupervisor.Tell(new GameExtrasUpdate(extras, username));
+    }
 }
