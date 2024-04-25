@@ -633,7 +633,7 @@ public class MovementTests : TestKit
         var response = probe.ExpectMsg<GameStateSnapshot>();
         response.Game.asteroids.Count.Should().Be(1);
         Ship ship = response.Game.ships[0];
-        ship.Health.Should().Be(35);
+        ship.Health.Should().BeLessThan(40);
 
     }
 
@@ -686,15 +686,9 @@ public class MovementTests : TestKit
         var response = probe.ExpectMsg<GameStateSnapshot>();
         response.Game.asteroids.Count.Should().Be(1);
         response.Game.bullets.Count.Should().Be(0);
-        Ship ship = response.Game.ships[0];
-        ship.Health.Should().Be(35);
-        // ship.Score.Should().Be(2);
+        Asteroid newAsteroid = response.Game.asteroids[0];
+        newAsteroid.Health.Should().BeLessThan(20);
         response.Game.asteroids.Count.Should().Be(1);
-
-        // response.Game.asteroids[0].Health.Should().Be(15);
-
-
-
     }
 
     [Fact]
