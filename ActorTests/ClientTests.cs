@@ -19,21 +19,26 @@ public class ClientTests : TestKit
     services.AddLogging(builder => builder.AddConsole());
     var realTimeMock = Substitute.For<IHubService>();
     services.AddSingleton(_ => realTimeMock);
+    var raftServiceMock = Substitute.For<IRaftService>();
+    services.AddSingleton(_ => raftServiceMock);
 
     var provider = services.BuildServiceProvider();
     return (provider, realTimeMock);
   }
+
   private void CreateClientSupervisor(out TestProbe probe, out IHubService signalRMock, out IActorRef clientSupervisor, out IActorRef lobbySupervisor)
   {
-    var storageActor = Sys.ActorOf(Props.Create(() => new StorageActor()), "storageActor");
     probe = CreateTestProbe();
-    ServiceProvider provider;
-    (provider, signalRMock) = getServiceProvider();
+    (var provider, signalRMock) = getServiceProvider();
+
+    var storageActor = Sys.ActorOf(Props.Create(() => new StorageActor(provider)), "storageActor");
+
     var storageProbe = CreateTestProbe();
-    lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor()), "lobbySupervisor");
+    lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageActor)), "lobbySupervisor");
     IActorRef newOne = lobbySupervisor;
     clientSupervisor = Sys.ActorOf(Props.Create(() => new ClientSupervisorActor(newOne, provider)), "clientSupervisor");
   }
+
   [Fact]
   public async void ClientSupervisorCanCreateClient()
   {
@@ -46,12 +51,12 @@ public class ClientTests : TestKit
 
   private void CreateClientActor(string name, string connectionId, out TestProbe probe, out IActorRef lobbySupervisor, out IActorRef client)
   {
-    var storageActor = Sys.ActorOf(Props.Create(() => new StorageActor()), "storageActor");
     var (provider, signalRMock) = getServiceProvider();
+    var storageActor = Sys.ActorOf(Props.Create(() => new StorageActor(provider)), "storageActor");
 
     probe = CreateTestProbe();
     var storageProbe = CreateTestProbe();
-    lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor()), "lobbySupervisor");
+    lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageActor)), "lobbySupervisor");
     client = Sys.ActorOf(Props.Create<ClientActor>(name, connectionId, lobbySupervisor, provider), name);
   }
 

@@ -7,7 +7,7 @@ public class LobbySupervisorActor : ReceiveActor
 {
     private readonly Dictionary<string, IActorRef> lobbies = [];
 
-    private IActorRef StorageActor = Context.ActorOf<StorageActor>();
+    private IActorRef StorageActor;
 
     protected override void PreStart()
     {
@@ -21,8 +21,10 @@ public class LobbySupervisorActor : ReceiveActor
 
     }
 
-    public LobbySupervisorActor()
+    public LobbySupervisorActor(IActorRef storageActor)
     {
+        StorageActor = storageActor;
+
         Receive<CreateLobby>(message =>
         {
             Console.WriteLine("Creating lobby in lobby supervisor.");

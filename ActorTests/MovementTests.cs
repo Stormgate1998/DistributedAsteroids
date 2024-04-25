@@ -3,18 +3,34 @@ using FluentAssertions;
 using Akka.TestKit.Xunit2;
 using Asteroids.Shared.Actors;
 using Asteroids.Shared.GameObjects;
-using Akka.Dispatch.SysMsg;
 using Akka.TestKit;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
+using Asteroids.Shared.Services;
 
 namespace ActorTests;
 
 public class MovementTests : TestKit
 {
+    private ServiceProvider getServiceProvider()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging(builder => builder.AddConsole());
+        var raftServiceMock = Substitute.For<IRaftService>();
+        services.AddSingleton(_ => raftServiceMock);
+
+        var provider = services.BuildServiceProvider();
+        return provider;
+    }
+
     private void CreateLobbySupervisor(out IActorRef lobbySupervisor)
     {
-        var storageActor = Sys.ActorOf(Props.Create(() => new StorageActor()), "storageActor");
+        var provider = getServiceProvider();
+
+        var storageActor = Sys.ActorOf(Props.Create(() => new StorageActor(provider)), "storageActor");
         var storageProbe = CreateTestProbe();
-        lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor()), "lobbySupervisor");
+        lobbySupervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageActor)), "lobbySupervisor");
     }
 
     [Fact]

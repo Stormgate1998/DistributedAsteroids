@@ -20,7 +20,10 @@ services:
             }
           }
           cluster {
-            seed-nodes = ["akka.tcp://je-actor-system@je-asteroids-akka-1:2551"]
+            seed-nodes = [
+              "akka.tcp://je-actor-system@je-asteroids-akka-1:2551"
+              "akka.tcp://je-actor-system@je-asteroids-akka-2:2551"
+              ]
             roles = ["client"]
           }
         }
@@ -44,7 +47,10 @@ services:
             }
           }
           cluster {
-            seed-nodes = ["akka.tcp://je-actor-system@je-asteroids-akka-1:2551"]
+            seed-nodes = [
+              "akka.tcp://je-actor-system@je-asteroids-akka-1:2551"
+              "akka.tcp://je-actor-system@je-asteroids-akka-2:2551"
+              ]
             roles = ["client"]
           }
         }
@@ -84,7 +90,10 @@ services:
             }
           }
           cluster {
-            seed-nodes = ["akka.tcp://je-actor-system@je-asteroids-akka-1:2551"]
+            seed-nodes = [
+              "akka.tcp://je-actor-system@je-asteroids-akka-1:2551"
+              "akka.tcp://je-actor-system@je-asteroids-akka-2:2551"
+              ]
             roles = ["lobby"]
           }
         }
@@ -108,34 +117,41 @@ services:
             }
           }
           cluster {
-            seed-nodes = ["akka.tcp://je-actor-system@je-asteroids-akka-1:2551"]
+            seed-nodes = [
+              "akka.tcp://je-actor-system@je-asteroids-akka-1:2551"
+              "akka.tcp://je-actor-system@je-asteroids-akka-2:2551"
+              ]
             roles = ["lobby"]
           }
         }
 
-  je-asteroids-akka-3:
-    container_name: je-asteroids-akka-3
-    image: cluster
-    build:
-      context: .
-      dockerfile: Cluster/Dockerfile
-    environment:
-      ASTEROIDS_CLUSTER_CONFIG: |
-        akka {
-          actor {
-            provider = cluster
-          }
-          remote {
-            dot-netty.tcp {
-              hostname = "je-asteroids-akka-3"
-              port = 2551
-            }
-          }
-          cluster {
-            seed-nodes = ["akka.tcp://je-actor-system@je-asteroids-akka-1:2551"]
-            roles = ["lobby"]
-          }
-        }
+  # je-asteroids-akka-3:
+  #   container_name: je-asteroids-akka-3
+  #   image: cluster
+  #   build:
+  #     context: .
+  #     dockerfile: Cluster/Dockerfile
+  #   environment:
+  #     ASTEROIDS_CLUSTER_CONFIG: |
+  #       akka {
+  #         actor {
+  #           provider = cluster
+  #         }
+  #         remote {
+  #           dot-netty.tcp {
+  #             hostname = "je-asteroids-akka-3"
+  #             port = 2551
+  #           }
+  #         }
+  #         cluster {
+  #           seed-nodes = [
+  #             "akka.tcp://je-actor-system@je-asteroids-akka-1:2551"
+  #             "akka.tcp://je-actor-system@je-asteroids-akka-2:2551"
+  #             "akka.tcp://je-actor-system@je-asteroids-akka-3:2551"
+  #             ]
+  #           roles = ["lobby"]
+  #         }
+  #       }
 
   je-asteroids-otel-collector:
     container_name: je-asteroids-otel-collector
@@ -153,7 +169,6 @@ services:
     depends_on:
       - je-asteroids-prometheus
       - je-asteroids-loki
-      - je-asteroids-zipkin
 
   je-asteroids-grafana:
     container_name: je-asteroids-grafana
@@ -185,14 +200,6 @@ services:
     image: grafana/loki
     # ports:
     #   - 3100:3100
-
-  je-asteroids-zipkin:
-    container_name: je-asteroids-zipkin
-    image: ghcr.io/openzipkin/zipkin-slim:${TAG:-latest}
-    environment:
-      STORAGE_TYPE: mem
-    # ports:
-    #   - 9411:9411
 
 volumes:
   grafana_data:

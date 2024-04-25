@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Akka.Configuration;
 using Akka.Cluster.Tools.Singleton;
+using Akka.Dispatch.SysMsg;
 namespace Asteroids.Shared.Actors;
 
 
@@ -39,13 +40,16 @@ public class RemoteAkkaService : IHostedService
 
         if (cluster.SelfRoles.Contains("lobby"))
         {
-            var storageProps = ClusterSingletonProxy.Props(
-            singletonManagerPath: "/user/storageActor",
-            settings: ClusterSingletonProxySettings.Create(_actorSystem).WithRole("lobby")
-            );
+            // var storageProps = ClusterSingletonProxy.Props(
+            // singletonManagerPath: "/user/storageActor",
+            // settings: ClusterSingletonProxySettings.Create(_actorSystem).WithRole("lobby")
+            // );
+            // storageActor = _actorSystem.ActorOf(storageProps, "storageActor");
 
-            storageActor = _actorSystem.ActorOf(storageProps, "storageActor");
-            var lobbyProps = DependencyResolver.For(_actorSystem).Props<LobbySupervisorActor>();
+            var storageActorProps = DependencyResolver.For(_actorSystem).Props<StorageActor>();
+            var storageActor = _actorSystem.ActorOf(storageActorProps, "storageActor");
+
+            var lobbyProps = DependencyResolver.For(_actorSystem).Props<LobbySupervisorActor>(storageActor);
             var singletonProps = ClusterSingletonManager.Props(
                 singletonProps: lobbyProps,
                 terminationMessage: PoisonPill.Instance,
@@ -60,7 +64,6 @@ public class RemoteAkkaService : IHostedService
             singletonManagerPath: "/user/lobbyManagerSingleton",
             settings: ClusterSingletonProxySettings.Create(_actorSystem).WithRole("lobby")
         );
-
 
         lobbySupervisor = _actorSystem.ActorOf(proxyProps, "lobbySupervisorProxy");
 

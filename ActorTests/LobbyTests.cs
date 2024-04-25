@@ -2,19 +2,36 @@ using Akka.Actor;
 using FluentAssertions;
 using Akka.TestKit.Xunit2;
 using Asteroids.Shared.Actors;
-using Asteroids.Shared.GameObjects;
 using Akka.TestKit;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
+using Asteroids.Shared.Services;
 
 namespace ActorTests;
 
 public class LobbyTests : TestKit
 {
+    private ServiceProvider getServiceProvider()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging(builder => builder.AddConsole());
+        var raftServiceMock = Substitute.For<IRaftService>();
+        services.AddSingleton(_ => raftServiceMock);
+
+        var provider = services.BuildServiceProvider();
+        return provider;
+    }
+
     private void CreateProbeAndLobbySupervisor(out TestProbe probe, out IActorRef supervisor)
     {
-        var storageActor = Sys.ActorOf(Props.Create(() => new StorageActor()), "storageActor");
+        var provider = getServiceProvider();
+
+        var storageActor = Sys.ActorOf(Props.Create(() => new StorageActor(provider)), "storageActor");
         probe = CreateTestProbe();
+
         var storageProbe = CreateTestProbe();
-        supervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor()));
+        supervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageActor)));
     }
 
     [Fact]
@@ -27,8 +44,6 @@ public class LobbyTests : TestKit
 
         response.Message.Should().Be("Lobby 'testLobby' created.");
     }
-
-
 
     [Fact]
     public void LobbySupervisorCanGetLobbyList()
