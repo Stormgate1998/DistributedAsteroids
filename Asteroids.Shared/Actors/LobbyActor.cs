@@ -16,7 +16,7 @@ public class LobbyActor : ReceiveActor
     private int Ticks = 0;
     private int AsteroidSpawnInterval = 30;
     private Dictionary<string, IActorRef> particpatingUsers = [];
-    private GameStateObject gameState = new() { state = GameState.JOINING, ships = [], asteroids = [], bullets = [], particpatingUsers = [] };
+    private GameStateObject gameState = new() { state = GameState.JOINING, ships = [], asteroids = [], bullets = [], particpatingUsers = [], Extras = 0 };
 
     public LobbyActor(string lobbyName, IActorRef storageActor, Dictionary<string, IActorRef> particpatingUsers)
     {
@@ -30,6 +30,7 @@ public class LobbyActor : ReceiveActor
             Console.WriteLine($"Lobby {lobbyName} has been asked to die");
             var self = Self;
             Context.Stop(self);
+
         });
 
         Receive<RehydrateState>(message =>
@@ -72,6 +73,30 @@ public class LobbyActor : ReceiveActor
                     Health = 200,
                     Score = 0,
                 };
+                switch (gameState.Extras)
+                {
+                    case 1:
+                        ship = ship with
+                        {
+                            IsTriple = true,
+                        };
+                        break;
+                    case 2:
+                        ship = ship with
+                        {
+                            CanFireBackwards = true,
+                        };
+                        break;
+                    case 3:
+                        ship = ship with
+                        {
+                            IsTriple = true,
+                            CanFireBackwards = true,
+                        };
+                        break;
+                    default:
+                        break;
+                }
 
                 gameState.ships.Add(ship);
             }
@@ -87,6 +112,7 @@ public class LobbyActor : ReceiveActor
 
         Receive<StartGame>(message =>
         {
+
             Task.Delay(1000)
                 .PipeTo(
                     Self,
@@ -103,20 +129,17 @@ public class LobbyActor : ReceiveActor
 
             if (message.Number <= 0)
             {
-                GameStateObject newState = new()
+                UpdateShipsWithExtras();
+                gameState = gameState with
                 {
                     state = GameState.PLAYING,
-                    ships = gameState.ships,
-                    asteroids = gameState.asteroids,
-                    bullets = gameState.bullets,
                 };
-
-                gameState = newState;
                 StartTimer();
-                Sender.Tell(new GameStateSnapshot(newState));
+                Sender.Tell(new GameStateSnapshot(gameState));
             }
             else
             {
+
                 Task.Delay(1000)
                     .PipeTo(
                         Self,
@@ -136,6 +159,16 @@ public class LobbyActor : ReceiveActor
         {
             List<Ship> testShip = ProcessAllShipMovement(message.TestShip);
             Sender.Tell(new ShipsUpdate(testShip));
+        });
+
+        Receive<GameExtrasUpdate>(message =>
+        {
+            Console.WriteLine($"Updating Game extras as lobby:{message.Extras}");
+            gameState = gameState with
+            {
+                Extras = message.Extras,
+            };
+
         });
 
         Receive<SendShipInput>(message =>
@@ -387,6 +420,40 @@ public class LobbyActor : ReceiveActor
         }
 
         return ProcessAllAsteroidMovement(asteroids);
+    }
+
+
+    private void UpdateShipsWithExtras()
+    {
+        Console.WriteLine($"Updating Game extras as UpdateShipsWithExtras:{gameState.Extras}");
+
+        List<Ship> newShips = [];
+
+        foreach (Ship ship in gameState.ships)
+        {
+            Ship newShip = gameState.Extras switch
+            {
+                1 => ship with
+                {
+                    IsTriple = true,
+                },
+                2 => ship with
+                {
+                    CanFireBackwards = true,
+                },
+                3 => ship with
+                {
+                    IsTriple = true,
+                    CanFireBackwards = true,
+                },
+                _ => ship,
+            };
+            newShips.Add(newShip);
+        }
+        gameState = gameState with
+        {
+            ships = newShips,
+        };
     }
 
     private Asteroid SpawnAsteroid()
@@ -804,7 +871,7 @@ public class LobbyActor : ReceiveActor
 
     public bool IsColliding(Bullet colliding, Asteroid asteroid)
     {
-        return Distance(colliding.Location.X, asteroid.Location.X) + Distance(colliding.Location.Y, asteroid.Location.Y) <= (25 + (asteroid.Size * asteroid.Size));
+        return Distance(colliding.Location.X, asteroid.Location.X) + Distance(colliding.Location.Y, asteroid.Location.Y) <= (25 + (asteroid.Size * asteroid.Size * 5));
     }
 
     public int Distance(int x, int y)

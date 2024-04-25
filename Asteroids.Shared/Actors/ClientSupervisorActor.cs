@@ -106,6 +106,16 @@ public class ClientSupervisorActor : ReceiveActor
         user.Forward(message);
       }
     });
+
+    Receive<GameExtrasUpdate>(message =>
+    {
+      if (clients.TryGetValue(message.LobbyName, out var user))
+      {
+        Console.WriteLine($"Updating Game extras:{message.Extras}");
+        user.Forward(message);
+      }
+
+    });
   }
 
 

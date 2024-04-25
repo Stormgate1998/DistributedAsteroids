@@ -70,3 +70,5 @@ public record LeaveLobby(string Username);
 public record RehydrateState(GameStateObject Stored);
 
 public record TestMessage(string Content);
+
+public record GameExtrasUpdate(int Extras, string LobbyName);
