@@ -78,7 +78,6 @@ public class LobbySupervisorActor : ReceiveActor
             else
             {
                 Console.WriteLine($"{message.Stored.LobbyName} already ended");
-
             }
 
         });
@@ -90,7 +89,6 @@ public class LobbySupervisorActor : ReceiveActor
             {
                 lobby.Forward(message);
             }
-
         });
 
         Receive<GetLobbies>(message =>
