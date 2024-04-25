@@ -128,4 +128,18 @@ public class LobbyTests : TestKit
         lobbySupervisor.Tell(new LobbyDeath(lobbyName), probe.Ref);
         probe.ExpectTerminated(lobby);
     }
+
+    [Fact]
+    public void LobbyCanGetSnapshotFromStorage()
+    {
+
+    }
+
+    [Fact]
+    public void LobbyCanStoreSnapshotToStorage()
+    {
+
+    }
+
+    // 
 }
