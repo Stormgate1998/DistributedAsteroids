@@ -1,16 +1,20 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using Asteroids.Shared.GameObjects;
+using Microsoft.Extensions.Logging;
 
 namespace Asteroids.Shared.Services;
 
 public class HubService : IHubService
 {
   private readonly HubConnection _connectionId;
+  private readonly ILogger<HubService> _logger;
   // private readonly string _receiverConnectionId;
 
-  public HubService()
+  public HubService(ILogger<HubService> logger)
   {
     // _receiverConnectionId = connectionId;
+    _logger = logger;
+
     _connectionId = new HubConnectionBuilder()
       .WithUrl("http://je-asteroids-signalr:8080/asteroidsHub")
       .WithAutomaticReconnect()
@@ -21,16 +25,17 @@ public class HubService : IHubService
   {
     if (_connectionId.State == HubConnectionState.Disconnected)
     {
-      Console.WriteLine("Establishing connection to websocket hub.");
+      _logger.LogInformation("Establishing connection to websocket hub.");
+      
       await _connectionId.StartAsync().ContinueWith(task =>
     {
       if (task.IsFaulted)
       {
-        Console.WriteLine($"Error connecting to SignalR hub: {task.Exception.GetBaseException().Message}");
+        _logger.LogInformation($"Error connecting to SignalR hub: {task.Exception.GetBaseException().Message}");
       }
       else
       {
-        Console.WriteLine("SignalR connection established");
+        _logger.LogInformation("SignalR connection established.");
       }
     });
     }
@@ -40,15 +45,15 @@ public class HubService : IHubService
   {
     await EnsureHubConnection();
 
-    Console.WriteLine("Sending client state to hub.");
+    _logger.LogInformation($"Sending client state to hub for connection ID: {connectionId}.");
     await _connectionId.SendAsync("SendClientState", state, connectionId);
   }
 
   public async Task SendGameSnapshot(string connectionId, GameStateObject game)
   {
     await EnsureHubConnection();
-    Console.WriteLine("sending current game state");
-    Console.WriteLine($"Ship count: {game.ships.Count}");
+
+    _logger.LogInformation($"Sending game snapshot of {game.LobbyName} to hub for connection ID: {connectionId}.");
     await _connectionId.SendAsync("SendGameState", game, connectionId);
   }
 
@@ -58,7 +63,7 @@ public class HubService : IHubService
   {
     await EnsureHubConnection();
 
-    Console.WriteLine("Sending list of lobbies to hub.");
+    _logger.LogInformation($"Sending list of lobbies to hub for connection ID: {connectionId}.");
     await _connectionId.SendAsync("SendLobbyList", lobbyList, connectionId);
   }
 
@@ -66,8 +71,7 @@ public class HubService : IHubService
   {
     await EnsureHubConnection();
 
-    Console.WriteLine($"Sending countdown number to hub: {number}");
+    _logger.LogInformation($"Sending countdown number to hub: {number} for connection ID: {connectionId}");
     await _connectionId.SendAsync("SendCountdown", number, connectionId);
-
   }
 }
