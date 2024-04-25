@@ -30,7 +30,6 @@ public class LobbyActor : ReceiveActor
             Console.WriteLine($"Lobby {lobbyName} has been asked to die");
             var self = Self;
             Context.Stop(self);
-
         });
 
         Receive<RehydrateState>(message =>

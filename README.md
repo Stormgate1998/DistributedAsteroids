@@ -38,15 +38,11 @@
   - [X] Create entity removal logic
 - [X] Create entity collision logic
 - [X] Add "Game Over" page
-- ~~[ ] Add store page to front-end~~
-  - ~~Minimum of 1 upgrade~~
  
 ## Week 3 - April 20th
 - [X] Set up Raft cluster
 - [X] Set up deploy pipeline
 - [X] Implement timing logic for starting a lobby
-- [ ] Add store page to front-end
-  - Minimum of 1 upgrade
 - [X] Create scoring logic
 - [X] Run multiple front-ends
 - [ ] Handle crashed lobby actors

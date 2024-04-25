@@ -31,7 +31,7 @@ public class LobbyTests : TestKit
         probe = CreateTestProbe();
 
         var storageProbe = CreateTestProbe();
-        supervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageActor)));
+        supervisor = Sys.ActorOf(Props.Create(() => new LobbySupervisorActor(storageActor)), "lobbySupervisor");
     }
 
     [Fact]
@@ -58,7 +58,6 @@ public class LobbyTests : TestKit
         var responselobbies = probe.ExpectMsg<GetLobbiesResponse>();
         responselobbies.Lobbies.Should().BeEquivalentTo(["testLobby1"]);
 
-
         supervisor.Tell(new CreateLobby("testLobby2"), probe.Ref);
         response = probe.ExpectMsg<CreateLobbyResponse>();
         response.Message.Should().Be("Lobby 'testLobby2' created.");
@@ -67,11 +66,9 @@ public class LobbyTests : TestKit
         responselobbies = probe.ExpectMsg<GetLobbiesResponse>();
         responselobbies.Lobbies.Should().BeEquivalentTo(["testLobby1", "testLobby2"]);
 
-
         supervisor.Tell(new CreateLobby("testLobby3"), probe.Ref);
         response = probe.ExpectMsg<CreateLobbyResponse>();
         response.Message.Should().Be("Lobby 'testLobby3' created.");
-
 
         supervisor.Tell(new GetLobbies("TestUser"), probe.Ref);
         responselobbies = probe.ExpectMsg<GetLobbiesResponse>();
@@ -84,7 +81,6 @@ public class LobbyTests : TestKit
     public void LobbySupervisorCanCreateMultipleLobbies()
     {
         CreateProbeAndLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
-
 
         lobbySupervisor.Tell(new CreateLobby("testLobby1"), probe.Ref);
         var lobby1 = probe.ExpectMsg<CreateLobbyResponse>();
@@ -115,4 +111,39 @@ public class LobbyTests : TestKit
 
         response.Lobbies.Should().BeEquivalentTo(["testLobby"]);
     }
+
+    [Fact]
+    public void LobbySupervisorCanKillExistingLobby()
+    {
+        string lobbyName = "testLobby";
+        CreateProbeAndLobbySupervisor(out TestProbe probe, out IActorRef lobbySupervisor);
+
+        lobbySupervisor.Tell(new CreateLobby(lobbyName), probe.Ref);
+        probe.ExpectMsg<CreateLobbyResponse>();
+
+        var lobby = Sys.ActorSelection($"/user/lobbySupervisor/{lobbyName}").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+
+        probe.Watch(lobby);
+
+        lobbySupervisor.Tell(new LobbyDeath(lobbyName), probe.Ref);
+        probe.ExpectTerminated(lobby);
+    }
+
+    // [Fact]
+    // public void LobbyCanGetSnapshotFromStorage()
+    // {
+        
+    // }
+
+    // [Fact]
+    // public void LobbyCanStoreSnapshotToStorage()
+    // {
+
+    // }
+
+    // [Fact]
+    // public void LobbyDoesNotGetSnapshotUponCreation()
+    // {
+
+    // }
 }
