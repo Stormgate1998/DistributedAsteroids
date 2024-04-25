@@ -129,17 +129,21 @@ public class LobbyTests : TestKit
         probe.ExpectTerminated(lobby);
     }
 
-    [Fact]
-    public void LobbyCanGetSnapshotFromStorage()
-    {
+    // [Fact]
+    // public void LobbyCanGetSnapshotFromStorage()
+    // {
+        
+    // }
 
-    }
+    // [Fact]
+    // public void LobbyCanStoreSnapshotToStorage()
+    // {
 
-    [Fact]
-    public void LobbyCanStoreSnapshotToStorage()
-    {
+    // }
 
-    }
+    // [Fact]
+    // public void LobbyDoesNotGetSnapshotUponCreation()
+    // {
 
-    // 
+    // }
 }
