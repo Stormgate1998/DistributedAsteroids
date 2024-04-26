@@ -20,7 +20,6 @@
     <div class="my-3">
     <input type="checkbox" @bind="tripleChecked" @onclick="ToggleTriple" /> Triple Firing<br />
     <input type="checkbox" @bind="backwardsChecked" @onclick="ToggleBackwards" /> Backwards Firing<br />
-    <button class="btn btn-primary" @onclick="SubmitExtras">Submit Extras</button>
     </div>
 } 
 else if (@gameObject.state == GameState.PLAYING)
@@ -32,7 +31,7 @@ else
     <div> Game Over</div>
 }
 
-@if (Lobbyname == Username && gameObject.state == GameState.JOINING)
+@if (Lobbyname == Username && gameObject.state == GameState.JOINING && NotStarted)
 {
     <button class="btn btn-primary" @onclick="StartGame">Start Game</button>
 }
@@ -164,6 +163,7 @@ else
     public string? Lobbyname { get; set; }
 
     private List<string> list = new();
+    private bool NotStarted = true;
     private GameStateObject gameObject { get; set; }
 
     private int countDown { get; set; } = 10;
@@ -238,6 +238,7 @@ else
         if (Username == Lobbyname)
         {
             AkkaService.StartGame(Username);
+            NotStarted = false;
         }
     }
 
@@ -314,12 +315,14 @@ else
     {
         tripleNum = Toggle(tripleChecked, 1);
         Console.WriteLine(tripleNum);
+        SubmitExtras();
     }
 
     public void ToggleBackwards()
     {
         backwardsNum = Toggle(backwardsChecked, 2);
         Console.WriteLine(backwardsNum);
+        SubmitExtras();
     }
 
     public int Toggle(bool input, int switchto){

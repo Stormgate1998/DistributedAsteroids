@@ -61,7 +61,7 @@ public record AdvanceTicks();
 public record CountDown(int Number);
 
 public record StoreState(string Key, GameStateObject Value);
-public record GetSavedState(string Key);
+public record GetSavedState(string Key, IActorRef Ref);
 public record ReceiveSavedState(GameStateObject Stored);
 public record RemoveSavedState(string Key);
 
@@ -72,3 +72,11 @@ public record RehydrateState(GameStateObject Stored);
 public record TestMessage(string Content);
 
 public record GameExtrasUpdate(int Extras, string LobbyName);
+
+public record UpdateLobby(IActorRef Lobby);
+
+public record StoreLobbyList(List<string> List);
+
+public record RetrievedLobbyList(List<string> List);
+
+public record GetLobbyList();

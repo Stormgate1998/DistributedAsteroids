@@ -20,7 +20,7 @@ public class GatewayController : ControllerBase
   public async Task<ActionResult> EventualGet(string key)
   {
     var result = await _gateway.EventualGet(key);
-    
+
     if (result.HasValue)
     {
       var (value, logIndex) = result.Value;
@@ -52,12 +52,12 @@ public class GatewayController : ControllerBase
   public async Task<ActionResult<bool>> CompareVersionAndSwap(string key, string expectedValue, string newValue)
   {
     var result = await _gateway.CompareVersionAndSwap(key, expectedValue, newValue);
-    
+
     return Ok(result);
   }
 
   [HttpPost("Write")]
-  public async Task<ActionResult<bool>> Write(string key, int value)
+  public async Task<ActionResult<bool>> Write(string key, string value)
   {
     var result = await _gateway.Write(key, value);
 

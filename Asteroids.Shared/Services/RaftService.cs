@@ -19,11 +19,14 @@ public class RaftService : IRaftService
   public async Task StoreGameSnapshot(string key, GameStateObject snapshot)
   {
     string value = JsonSerializer.Serialize(snapshot);
+    _logger.LogInformation($"value is {value}");
 
     _logger.LogInformation($"Updating data for key: {key}.");
-    await _http.PostAsync("/Gateway/Write" +
+    var response = await _http.PostAsync("/Gateway/Write" +
       $"?key={key}" +
       $"&value={value}", null);
+    _logger.LogInformation($"Update response{response.StatusCode.ToString()}");
+    _logger.LogInformation($"Response content: {response.Content}");
   }
 
   public async Task<GameStateObject> GetGameSnapshot(string key)
@@ -31,7 +34,27 @@ public class RaftService : IRaftService
     _logger.LogInformation($"Getting game snapshot for key: {key}");
     var response = await _http.GetFromJsonAsync<Data>($"/Gateway/StrongGet?key={key}");
     var state = JsonSerializer.Deserialize<GameStateObject>(response.Value);
+    _logger.LogInformation($"Game state: {state.state}");
+    _logger.LogInformation($"Game ship count: {state.ships.Count}");
+    _logger.LogInformation($"Game first player: {state.particpatingUsers.First().Value}");
+    return state;
+  }
 
+  public async Task StoreLobbyList(List<string> List)
+  {
+    string value = JsonSerializer.Serialize(List);
+    _logger.LogInformation($"value is {value} for lobby list");
+
+    var response = await _http.PostAsync("/Gateway/Write" +
+      $"?key=lobbyListThisWillNotBeDuplicated" +
+      $"&value={value}", null);
+    _logger.LogInformation($"Update response for lobby list {response.StatusCode.ToString()}");
+    _logger.LogInformation($"Response content for lobby list: {response.Content}");
+  }
+  public async Task<List<string>> GetLobbyList()
+  {
+    var response = await _http.GetFromJsonAsync<Data>($"/Gateway/StrongGet?key=lobbyListThisWillNotBeDuplicated");
+    var state = JsonSerializer.Deserialize<List<string>>(response.Value);
     return state;
   }
 }

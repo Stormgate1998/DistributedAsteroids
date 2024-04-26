@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Akka.Configuration;
 using Akka.Cluster.Tools.Singleton;
 using Akka.Dispatch.SysMsg;
+using Akka.Event;
 namespace Asteroids.Shared.Actors;
 
 
@@ -49,6 +50,7 @@ public class RemoteAkkaService : IHostedService
             var storageActorProps = DependencyResolver.For(_actorSystem).Props<StorageActor>();
             var storageActor = _actorSystem.ActorOf(storageActorProps, "storageActor");
 
+
             var lobbyProps = DependencyResolver.For(_actorSystem).Props<LobbySupervisorActor>(storageActor);
             var singletonProps = ClusterSingletonManager.Props(
                 singletonProps: lobbyProps,
@@ -69,7 +71,11 @@ public class RemoteAkkaService : IHostedService
 
         // lobbySupervisor = _actorSystem.ActorOf(Props.Create<LobbySupervisorActor>(), "lobbySupervisor");
         clientSupervisor = _actorSystem.ActorOf(Props.Create<ClientSupervisorActor>(lobbySupervisor, serviceProvider), "clientSupervisor");
+        var deadletterWatchMonitorProps = Props.Create(() => new DeadletterMonitor());
+        var deadletterWatchActorRef = _actorSystem.ActorOf(deadletterWatchMonitorProps, "DeadLetterMonitoringActor");
 
+        // subscribe to the event stream for messages of type "DeadLetter"
+        _actorSystem.EventStream.Subscribe(deadletterWatchActorRef, typeof(DeadLetter));
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
