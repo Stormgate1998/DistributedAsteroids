@@ -14,7 +14,7 @@ public class LobbyActor : ReceiveActor
     private string LobbyName;
     private Timer timer;
     private int Ticks = 0;
-    private int AsteroidSpawnInterval = 30;
+    private int UpperAsteroidSpawnInterval = 50;
     private Dictionary<string, IActorRef> particpatingUsers = [];
     private GameStateObject gameState = new() { state = GameState.JOINING, ships = [], asteroids = [], bullets = [], particpatingUsers = [], Extras = 0 };
 
@@ -139,7 +139,6 @@ public class LobbyActor : ReceiveActor
             }
             else
             {
-
                 Task.Delay(1000)
                     .PipeTo(
                         Self,
@@ -343,7 +342,7 @@ public class LobbyActor : ReceiveActor
         });
         Receive<TestOneTick>(message =>
         {
-            AsteroidSpawnInterval = message.SpawnInterval;
+            UpperAsteroidSpawnInterval = message.SpawnInterval;
             List<Bullet> updatedBullets = new(gameState.bullets);
             var updatedShips = ProcessAllShipMovement(gameState.ships);
             var newBullets = CreateAllBulletsThatShouldExist(updatedShips);
@@ -414,7 +413,10 @@ public class LobbyActor : ReceiveActor
 
     private List<Asteroid> ProcessAsteroids(List<Asteroid> asteroids)
     {
-        if (Ticks % AsteroidSpawnInterval == 0)
+        var rng = new Random();
+        int spawnInterval = rng.Next(1, UpperAsteroidSpawnInterval);
+
+        if (Ticks % spawnInterval == 0)
         {
             asteroids.Add(SpawnAsteroid());
         }
@@ -489,7 +491,7 @@ public class LobbyActor : ReceiveActor
 
         Random rng = new Random();
 
-        int offset = rng.Next(-10, 11);
+        int offset = rng.Next(-15, 15);
         angleDegrees += offset;
 
         return (int)((angleDegrees + 360) % 360);

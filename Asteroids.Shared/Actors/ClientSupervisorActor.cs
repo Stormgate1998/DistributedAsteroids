@@ -1,6 +1,8 @@
 using System.Runtime.CompilerServices;
 using Akka.Actor;
 using Asteroids.Shared.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Asteroids.Shared.Actors;
 
@@ -22,7 +24,9 @@ public class ClientSupervisorActor : ReceiveActor
           throw new NullReferenceException("Cannot create client actor. SignalR connection ID is null.");
         }
 
-        IActorRef newClient = Context.ActorOf(Props.Create(() => new ClientActor(message.Username, message.ConnectionId, LobbySupervisor, serviceProvider)));
+        var logger = serviceProvider.GetRequiredService<ILogger<ClientActor>>();
+
+        IActorRef newClient = Context.ActorOf(Props.Create(() => new ClientActor(message.Username, message.ConnectionId, LobbySupervisor, logger, serviceProvider)));
         clients.Add(message.Username, newClient);
 
         // Sender.Tell(new CreateClientActorResponse(message.Username));
