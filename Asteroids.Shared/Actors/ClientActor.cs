@@ -2,6 +2,7 @@ using Akka.Actor;
 using Asteroids.Shared.Actors;
 using Asteroids.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 public class ClientActor : ReceiveActor
 {
@@ -11,54 +12,56 @@ public class ClientActor : ReceiveActor
     public IActorRef? CurrentLobby { get; private set; }
     private readonly IActorRef LobbySupervisor;
     private IHubService _hubService;
+    private readonly ILogger<ClientActor> _logger;
     private readonly IServiceScope scope;
 
     public ClientActor(
         string username,
         string connectionId,
         IActorRef lobbySupervisor,
+        ILogger<ClientActor> logger,
         IServiceProvider serviceProvider)
     {
         Username = username;
         ConnectionId = connectionId;
         CurrentLobby = null;
         LobbySupervisor = lobbySupervisor;
+        _logger = logger;
         scope = serviceProvider.CreateScope();
         _hubService = scope.ServiceProvider.GetRequiredService<IHubService>();
 
         Receive<GetClientState>(message =>
         {
+            _logger.LogInformation($"Getting state of client for {Username}.");
             Sender.Tell(new GetClientStateResponse(State));
         });
 
         Receive<CreateLobby>(createLobby =>
         {
-            Console.WriteLine("Sending CreateLobby to lobby supervisor.");
-            Console.WriteLine(LobbySupervisor);
+            _logger.LogInformation($"{Username} is requesting lobby supervisor to create lobby.");
             LobbySupervisor.Tell(createLobby);
         });
 
-        Receive<CreateLobbyResponse>(response =>
+        Receive<CreateLobbyResponse>(message =>
         {
-            IActorRef? result = response.Actor;
-            if (result != null)
+            IActorRef? lobby = message.Actor;
+
+            if (lobby != null)
             {
-                CurrentLobby = result;
+                _logger.LogInformation($"{Username} has created and joined lobby {lobby}.");
+                CurrentLobby = lobby;
             }
         });
 
         Receive<JoinLobby>(message =>
         {
+            _logger.LogInformation($"{Username} is requesting lobby supervisor to join {message.LobbyName}.");
             LobbySupervisor.Tell(message);
         });
 
         Receive<JoinLobbyResponse>(message =>
         {
-            // var result = response.Actor;
-            // if (result != null)
-            // {
-            // CurrentLobby = result;
-            // }
+            _logger.LogInformation($"{Username} has successfully joined lobby.");
             CurrentLobby = message.Actor;
             State = ClientState.InLobby;
         });
@@ -67,13 +70,14 @@ public class ClientActor : ReceiveActor
         {
             if (username == message.Username)
             {
+                _logger.LogInformation($"{Username} is requesting lobby {CurrentLobby} to start game.");
                 CurrentLobby.Tell(message);
-
             }
         });
 
         Receive<LeaveLobby>(message =>
         {
+            _logger.LogInformation($"{Username} is leaving lobby {CurrentLobby}.");
             CurrentLobby.Tell(message);
             CurrentLobby = null;
         });
@@ -82,18 +86,23 @@ public class ClientActor : ReceiveActor
         {
             if (CurrentLobby != null)
             {
+                _logger.LogInformation($"{Username} is requesting state of lobby {CurrentLobby}.");
                 CurrentLobby.Tell(message);
             }
         });
 
         Receive<GetLobbies>(message =>
         {
+            _logger.LogInformation($"{Username} is requesting lobby supervisor to get the list of lobbies.");
             LobbySupervisor.Tell(message);
         });
 
         ReceiveAsync<GetLobbiesResponse>(async message =>
         {
-            Console.WriteLine("Sending list of lobbies to service.");
+            _logger.LogInformation(
+                $"{Username} has received the list of lobbies from lobby supervisor.\n" +
+                "Sending list to websocket hub service."
+            );
             await _hubService.SendLobbyList(message.Lobbies, ConnectionId)
                 .PipeTo(
                     Self,
@@ -104,7 +113,10 @@ public class ClientActor : ReceiveActor
 
         Receive<CountDown>(message =>
         {
-            Console.WriteLine("Received countdown message");
+            _logger.LogInformation(
+                $"{Username} has received countdown message.\n" +
+                "Sending countdown to websocket hub service."
+            );
             _hubService.SendCountDownNumber(message.Number, ConnectionId)
                 .PipeTo(
                     Self,
@@ -115,6 +127,7 @@ public class ClientActor : ReceiveActor
         // Make this function generic. Upon receiving new client state, forward to hub
         Receive<SendClientStateToHub>(message =>
         {
+            _logger.LogInformation($"Sending {Username}'s state to websocket hub service.");
             _hubService.SendClientState(ConnectionId, message.state)
                 .PipeTo(
                     Self,
@@ -124,8 +137,8 @@ public class ClientActor : ReceiveActor
 
         Receive<ClientError>(error =>
         {
-            Console.WriteLine("Got client related error.");
-            Console.WriteLine(error.Message);
+            _logger.LogInformation($"{Username} recieved a client-related error.");
+            _logger.LogInformation(error.Message);
         });
 
         Receive<GameStateSnapshot>(message =>
@@ -146,6 +159,7 @@ public class ClientActor : ReceiveActor
 
         Receive<LobbyDeath>(message =>
         {
+            _logger.LogInformation($"{Username} is requesting lobby {CurrentLobby} to die.");
             CurrentLobby.Tell(message);
         });
 
@@ -165,4 +179,3 @@ public class ClientActor : ReceiveActor
         });
     }
 }
-

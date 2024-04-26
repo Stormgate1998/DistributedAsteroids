@@ -31,10 +31,8 @@ public class RaftService : IRaftService
 
   public async Task<GameStateObject> GetGameSnapshot(string key)
   {
-    _logger.LogInformation($"Getting data for key: {key}.");
-
+    _logger.LogInformation($"Getting game snapshot for key: {key}");
     var response = await _http.GetFromJsonAsync<Data>($"/Gateway/StrongGet?key={key}");
-
     var state = JsonSerializer.Deserialize<GameStateObject>(response.Value);
     _logger.LogInformation($"Game state: {state.state}");
     _logger.LogInformation($"Game ship count: {state.ships.Count}");
