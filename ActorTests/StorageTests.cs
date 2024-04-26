@@ -73,9 +73,4 @@ public class StorageTests : TestKit
     storage[testKey].Ticks.Should().Be(snapshot.Ticks);
   }
 
-  // [Fact]
-  // public void StorageCanGetSnapshotFromRaft()
-  // {
-
-  // }
 }

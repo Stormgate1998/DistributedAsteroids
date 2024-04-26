@@ -44,7 +44,6 @@ public class LobbyTests : TestKit
 
         response.Message.Should().Be("Lobby 'testLobby' created.");
     }
-
     [Fact]
     public void LobbySupervisorCanGetLobbyList()
     {
@@ -76,7 +75,6 @@ public class LobbyTests : TestKit
         List<string> TestList = ["testLobby1", "testLobby2", "testLobby3"];
         responselobbies.Lobbies.Should().BeEquivalentTo(TestList);
     }
-
     [Fact]
     public void LobbySupervisorCanCreateMultipleLobbies()
     {
@@ -94,7 +92,6 @@ public class LobbyTests : TestKit
         lobby1.Should().NotBe(lobby2);
         response.Lobbies.Should().BeEquivalentTo(["testLobby1", "testLobby2"]);
     }
-
     [Fact]
     public void LobbySupervisorCanNotCreateExisitingLobby()
     {
@@ -111,7 +108,6 @@ public class LobbyTests : TestKit
 
         response.Lobbies.Should().BeEquivalentTo(["testLobby"]);
     }
-
     [Fact]
     public void LobbySupervisorCanKillExistingLobby()
     {
@@ -129,21 +125,4 @@ public class LobbyTests : TestKit
         probe.ExpectTerminated(lobby);
     }
 
-    // [Fact]
-    // public void LobbyCanGetSnapshotFromStorage()
-    // {
-        
-    // }
-
-    // [Fact]
-    // public void LobbyCanStoreSnapshotToStorage()
-    // {
-
-    // }
-
-    // [Fact]
-    // public void LobbyDoesNotGetSnapshotUponCreation()
-    // {
-
-    // }
 }

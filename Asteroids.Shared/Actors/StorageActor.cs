@@ -19,15 +19,6 @@ public class StorageActor : ReceiveActor
 
         Receive<StoreState>(message =>
         {
-            // Console.WriteLine($"Asked to store game for {message.Key}");
-            // if (gameObjects.ContainsKey(message.Key))
-            // {
-            //     gameObjects[message.Key] = message.Value;
-            // }
-            // else
-            // {
-            //     gameObjects.Add(message.Key, message.Value);
-            // }
             Console.WriteLine($"Storing key {message.Key}");
             _service.StoreGameSnapshot(message.Key, message.Value);
         });
@@ -35,10 +26,6 @@ public class StorageActor : ReceiveActor
         Receive<GetSavedState>(message =>
         {
             Console.WriteLine($"Asked to retrieve game for {message.Key}");
-            // if (gameObjects.TryGetValue(message.Key, out GameStateObject? value))
-            // {
-            //     Sender.Tell(new ReceiveSavedState(value));
-            // }
             _service.GetGameSnapshot(message.Key)
             .PipeTo(
                 message.Ref,

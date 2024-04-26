@@ -15,6 +15,7 @@ public class LobbySupervisorActor : ReceiveActor
 
     protected override void PreStart()
     {
+        
         var actorRef = Context.ActorSelection("/user/storageActor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
         StorageActor = actorRef;
 
@@ -35,7 +36,7 @@ public class LobbySupervisorActor : ReceiveActor
 
         Receive<RetrievedLobbyList>(message =>
         {
-            if (message.List.Count > 0)
+            if (message.List != null && message.List.Count > 0)
             {
                 foreach (var item in message.List)
                 {

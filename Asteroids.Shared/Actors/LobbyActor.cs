@@ -49,25 +49,7 @@ public class LobbyActor : ReceiveActor
             string userName = message.Username;
 
             particpatingUsers[message.Username] = Sender;
-            if (userName == "DEMO_TEST")
-            {
-                Ship ship = new()
-                {
-                    Username = userName,
-                    Direction = 45,
-                    Location = new(100, 100),
-                    Health = 200,
-                    Score = 0,
-                    IsTriple = true,
-                    HasExtraLife = true,
-                    CanFireBackwards = true,
-                    HasDoubleDamage = true,
-                };
-
-                gameState.ships.Add(ship);
-            }
-            else
-            {
+            
 
                 Ship ship = new()
                 {
@@ -101,9 +83,7 @@ public class LobbyActor : ReceiveActor
                     default:
                         break;
                 }
-
                 gameState.ships.Add(ship);
-            }
 
             var self = Self;
             Sender.Tell(new JoinLobbyResponse(self));

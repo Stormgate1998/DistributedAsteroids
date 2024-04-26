@@ -17,7 +17,7 @@ public class MovementTests : TestKit
     {
 
     }
-    private ServiceProvider getServiceProvider()
+    private static ServiceProvider GetServiceProvider()
     {
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.AddConsole());
@@ -30,7 +30,7 @@ public class MovementTests : TestKit
 
     private void CreateLobbySupervisor(out IActorRef lobbySupervisor)
     {
-        var provider = getServiceProvider();
+        var provider = GetServiceProvider();
 
         var storageActor = Sys.ActorOf(Props.Create(() => new StorageActor(provider)), "storageActor");
         var storageProbe = CreateTestProbe();
@@ -80,9 +80,6 @@ public class MovementTests : TestKit
 
         response.Updated.Should().Be(expectedShip);
     }
-
-
-
     [Fact]
     public void MovementFunctionMovesShipVertical()
     {
@@ -124,7 +121,6 @@ public class MovementTests : TestKit
 
         response.Updated.Should().Be(expectedShip);
     }
-
     [Fact]
     public void MovementFunctionMovesShipTilted()
     {
@@ -164,7 +160,6 @@ public class MovementTests : TestKit
 
         response.Updated.Should().Be(expectedShip);
     }
-
     [Fact]
     public void MovementFunctionRotatesShipLeft()
     {
@@ -205,7 +200,6 @@ public class MovementTests : TestKit
 
         response.Updated.Should().Be(expectedShip);
     }
-
     [Fact]
     public void MovementFunctionRotatesShipRight()
     {
@@ -243,7 +237,6 @@ public class MovementTests : TestKit
         var response = probe.ExpectMsg<ShipUpdate>();
         response.Updated.Should().Be(expectedShip2);
     }
-
     [Fact]
     public void TestProcessMovementDoesMovementAndTurningRight()
     {
@@ -284,7 +277,6 @@ public class MovementTests : TestKit
 
         response.Updated.Should().Be(expectedShip);
     }
-
     [Fact]
     public void TestProcessesListOfShipsCorrectly()
     {
@@ -351,7 +343,6 @@ public class MovementTests : TestKit
 
         response.Updated.Should().BeEquivalentTo(expectedShipList);
     }
-
     [Fact]
     public void TestMoveForwardIncreasesSpeedBy2()
     {
@@ -394,7 +385,6 @@ public class MovementTests : TestKit
 
         response.Updated.Should().Be(expectedShip);
     }
-
     [Fact]
     public void TestNotMoveForwardDecreasesSpeedBy1()
     {
@@ -434,8 +424,6 @@ public class MovementTests : TestKit
         response.Updated.Should().Be(ExpectedShip);
 
     }
-
-
     [Fact]
     public void TestSpeedUpperBoundsSet()
     {
@@ -463,7 +451,6 @@ public class MovementTests : TestKit
         var response = probe.ExpectMsg<ShipUpdate>();
         response.Updated.Speed.Should().Be(10);
     }
-
     [Fact]
     public void TestSpeedLowerBoundsSet()
     {
@@ -492,8 +479,6 @@ public class MovementTests : TestKit
 
         response.Updated.Speed.Should().Be(0);
     }
-
-
     [Fact]
     public void TestCollisionShipRegistersTrue()
     {
@@ -529,8 +514,6 @@ public class MovementTests : TestKit
         var response = probe.ExpectMsg<ShipCollisionResult>();
         response.result.Should().Be(true);
     }
-
-
     [Fact]
     public void TestCollisionShipRegistersFalse()
     {
@@ -567,7 +550,6 @@ public class MovementTests : TestKit
 
         response.result.Should().Be(false);
     }
-
     [Fact]
     public void TestCollisionBulletRegistersTrue()
     {
@@ -597,7 +579,6 @@ public class MovementTests : TestKit
         var response = probe.ExpectMsg<BulletCollisionResult>();
         response.result.Should().Be(true);
     }
-
     [Fact]
     public void TestCollisionBulletRegistersFalse()
     {
@@ -611,7 +592,7 @@ public class MovementTests : TestKit
         {
             Username = "tony",
             Speed = 0,
-            Location = new(0, 50),
+            Location = new(0, 800),
             Direction = 90,
         };
 
@@ -628,7 +609,6 @@ public class MovementTests : TestKit
 
         response.result.Should().Be(false);
     }
-
     [Fact]
     public async void TestShipCollisionRemovesHealth()
     {
@@ -673,7 +653,6 @@ public class MovementTests : TestKit
         ship.Health.Should().BeLessThan(40);
 
     }
-
     [Fact]
     public async void TestBulletCollisionRemovesHealthAndIncreasesScore()
     {
@@ -727,7 +706,6 @@ public class MovementTests : TestKit
         newAsteroid.Health.Should().BeLessThan(20);
         response.Game.asteroids.Count.Should().Be(1);
     }
-
     [Fact]
     public void TestIsFiringCreatesABullet()
     {
@@ -775,7 +753,6 @@ public class MovementTests : TestKit
         response.Game.bullets[0].Should().Be(bullet);
 
     }
-
     [Fact]
     public void LobbyCanSpawnAsteroid()
     {
@@ -786,14 +763,12 @@ public class MovementTests : TestKit
 
         snapshot.Value.asteroids.Count.Should().Be(1);
     }
-
     private void CreateLobby(out TestProbe probe, out IActorRef lobby)
     {
         probe = CreateTestProbe();
         var newOne = probe;
         lobby = Sys.ActorOf(Props.Create(() => new LobbyActor("testLobby", OnLobbyDeath, newOne, new Dictionary<string, IActorRef>())), "testLobby");
     }
-
     [Fact]
     public void AstroidMovesAfterOneTick()
     {
@@ -812,8 +787,6 @@ public class MovementTests : TestKit
         firstSnapshot.Value.asteroids.First().Location.X.Should().NotBe(secondSnapshot.Game.asteroids.First().Location.X);
         firstSnapshot.Value.asteroids.First().Location.Y.Should().NotBe(secondSnapshot.Game.asteroids.First().Location.Y);
     }
-
-
     [Fact]
     public void TripleFiringCreatesThreeBullets()
     {
@@ -880,7 +853,6 @@ public class MovementTests : TestKit
 
 
     }
-
     [Fact]
     public void BackwardsFiringCreatesTwoBullets()
     {
@@ -939,7 +911,6 @@ public class MovementTests : TestKit
         response.Game.bullets[1].Should().Be(bullet1);
 
     }
-
     [Fact]
     public void BackwardsFiringAndTripleCreates6Bullets()
     {
@@ -1033,10 +1004,6 @@ public class MovementTests : TestKit
         response.Game.bullets[5].Should().Be(bullet5);
 
     }
-
-
-
-
     [Fact]
     public async void CanDynamicallySetExtrasInLobby()
     {
