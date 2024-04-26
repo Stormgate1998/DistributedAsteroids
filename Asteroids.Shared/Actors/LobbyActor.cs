@@ -5,6 +5,7 @@ using System.Threading;
 using Akka.Actor;
 using Akka.Util.Internal;
 using Asteroids.Shared.GameObjects;
+using Asteroids.Shared.Telemetry;
 
 namespace Asteroids.Shared.Actors;
 
@@ -295,6 +296,7 @@ public class LobbyActor : ReceiveActor
                     user.Tell(new GameStateSnapshot(gameState));
                 }
 
+                DiagnosticConfig.tickCount.Add(1, new KeyValuePair<string, object>("lobby", LobbyName));
                 Ticks++;
             }
             if (gameState.state == GameState.GAMEOVER)

@@ -1,6 +1,8 @@
 using Asteroids.Shared.Actors;
 using Asteroids.Shared.Services;
+using Asteroids.Shared.Telemetry;
 using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +21,22 @@ builder.Services.AddLogging(l =>
     });
   });
 });
+
+builder.Services.AddOpenTelemetry()
+  .ConfigureResource(resourceBuilder =>
+  {
+    resourceBuilder
+      .AddService("akka_cluster");
+  })
+  .WithMetrics(metrics =>
+  {
+    metrics.AddMeter(DiagnosticConfig.Meter.Name)
+      .AddPrometheusExporter()
+      .AddOtlpExporter(options =>
+      {
+        options.Endpoint = collectorUri;
+      });
+    });
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
