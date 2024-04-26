@@ -13,6 +13,10 @@ namespace ActorTests;
 
 public class MovementTests : TestKit
 {
+    private void OnLobbyDeath(string lobbyName)
+    {
+
+    }
     private ServiceProvider getServiceProvider()
     {
         var services = new ServiceCollection();
@@ -787,7 +791,7 @@ public class MovementTests : TestKit
     {
         probe = CreateTestProbe();
         var newOne = probe;
-        lobby = Sys.ActorOf(Props.Create(() => new LobbyActor("testLobby", newOne, new Dictionary<string, IActorRef>())), "testLobby");
+        lobby = Sys.ActorOf(Props.Create(() => new LobbyActor("testLobby", OnLobbyDeath, newOne, new Dictionary<string, IActorRef>())), "testLobby");
     }
 
     [Fact]

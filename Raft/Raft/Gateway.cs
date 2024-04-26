@@ -148,7 +148,7 @@ public class Gateway
     return false;
   }
 
-  public async Task<bool> Write(string key, int value)
+  public async Task<bool> Write(string key, string value)
   {
     var leaderURL = await GetLeaderNode();
 

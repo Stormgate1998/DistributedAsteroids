@@ -10,6 +10,7 @@ namespace Asteroids.Shared.Actors;
 
 public class LobbyActor : ReceiveActor
 {
+    private readonly Action<string> onDeathCallback;
     private IActorRef StorageActor;
     private string LobbyName;
     private Timer timer;
@@ -18,17 +19,19 @@ public class LobbyActor : ReceiveActor
     private Dictionary<string, IActorRef> particpatingUsers = [];
     private GameStateObject gameState = new() { state = GameState.JOINING, ships = [], asteroids = [], bullets = [], particpatingUsers = [], Extras = 0 };
 
-    public LobbyActor(string lobbyName, IActorRef storageActor, Dictionary<string, IActorRef> particpatingUsers)
+    public LobbyActor(string lobbyName, Action<string> onDeathCallback, IActorRef storageActor, Dictionary<string, IActorRef> particpatingUsers)
     {
         IActorRef self = Self;
         LobbyName = lobbyName;
         this.particpatingUsers = particpatingUsers;
+        this.onDeathCallback = onDeathCallback;
         StorageActor = storageActor;
 
         Receive<LobbyDeath>(death =>
         {
             Console.WriteLine($"Lobby {lobbyName} has been asked to die");
             var self = Self;
+
             Context.Stop(self);
 
         });
@@ -871,7 +874,7 @@ public class LobbyActor : ReceiveActor
 
     public bool IsColliding(Bullet colliding, Asteroid asteroid)
     {
-        return Distance(colliding.Location.X, asteroid.Location.X) + Distance(colliding.Location.Y, asteroid.Location.Y) <= (25 + (asteroid.Size * asteroid.Size * 5));
+        return Distance(colliding.Location.X, asteroid.Location.X) + Distance(colliding.Location.Y, asteroid.Location.Y) <= (25 + (asteroid.Size * asteroid.Size * asteroid.Size * 10));
     }
 
     public int Distance(int x, int y)
@@ -882,5 +885,9 @@ public class LobbyActor : ReceiveActor
     protected override void PostStop()
     {
         base.PostStop();
+        timer.Change(Timeout.Infinite, Timeout.Infinite);
+
+        var self = Self;
+        onDeathCallback?.Invoke(self.Path.Name);
     }
 }

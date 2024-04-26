@@ -158,6 +158,11 @@ public class ClientActor : ReceiveActor
             }
 
         });
+
+        Receive<UpdateLobby>(message =>
+        {
+            CurrentLobby = message.Lobby;
+        });
     }
 }
 

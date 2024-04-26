@@ -28,30 +28,45 @@ public class StorageActor : ReceiveActor
             // {
             //     gameObjects.Add(message.Key, message.Value);
             // }
-
+            Console.WriteLine($"Storing key {message.Key}");
             _service.StoreGameSnapshot(message.Key, message.Value)
                 .PipeTo(Self);
         });
 
         Receive<GetSavedState>(message =>
         {
-            // Console.WriteLine($"Asked to retrieve game for {message.Key}");
+            Console.WriteLine($"Asked to retrieve game for {message.Key}");
             // if (gameObjects.TryGetValue(message.Key, out GameStateObject? value))
             // {
             //     Sender.Tell(new ReceiveSavedState(value));
             // }
-
             _service.GetGameSnapshot(message.Key)
-                .PipeTo(
-                    Sender,
-                    success: (snapshot) => new ReceiveSavedState(snapshot)
-                );
+            .PipeTo(
+                message.Ref,
+                success: (snapshot) =>
+                {
+                    snapshot = snapshot with
+                    {
+                        LobbyName = message.Key,
+                    };
+                    Console.WriteLine($"Game state as storageactor: {snapshot.state}");
+                    Console.WriteLine($"Game ship count as storageactor: {snapshot.ships.Count}");
+                    Console.WriteLine($"Game first player as storageactor: {snapshot.particpatingUsers.First().Value}");
+                    return new ReceiveSavedState(snapshot);
+                }
+    );
+
         });
 
         Receive<RemoveSavedState>(message =>
         {
             Console.WriteLine($"Asked to remove game for {message.Key}");
             gameObjects.Remove(message.Key);
+        });
+
+        Receive<TestMessage>(message =>
+        {
+            Console.WriteLine(message.Content);
         });
     }
 }
