@@ -29,8 +29,7 @@ public class StorageActor : ReceiveActor
             //     gameObjects.Add(message.Key, message.Value);
             // }
             Console.WriteLine($"Storing key {message.Key}");
-            _service.StoreGameSnapshot(message.Key, message.Value)
-                .PipeTo(Self);
+            _service.StoreGameSnapshot(message.Key, message.Value);
         });
 
         Receive<GetSavedState>(message =>
@@ -67,6 +66,23 @@ public class StorageActor : ReceiveActor
         Receive<TestMessage>(message =>
         {
             Console.WriteLine(message.Content);
+        });
+        Receive<StoreLobbyList>(message =>
+        {
+            Console.WriteLine($"Storing lobby list");
+            _service.StoreLobbyList(message.List);
+        });
+
+        Receive<GetLobbyList>(message =>
+        {
+            Console.WriteLine($"Storing lobby list");
+            _service.GetLobbyList()
+            .PipeTo(
+                Sender,
+                success: (list) =>
+                {
+                    return new RetrievedLobbyList(list);
+                });
         });
     }
 }

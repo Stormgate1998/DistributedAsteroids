@@ -8,6 +8,8 @@ public class LobbySupervisorActor : ReceiveActor
 {
     private readonly Dictionary<string, IActorRef> lobbies = [];
 
+    private List<string> LobbyNames = [];
+
     private IActorRef StorageActor;
     private readonly IActorRef Myself;
 
@@ -26,6 +28,23 @@ public class LobbySupervisorActor : ReceiveActor
         Myself = Self;
         StorageActor = storageActor;
 
+        if (LobbyNames.Count == 0)
+        {
+            StorageActor.Tell(new GetLobbyList());
+        }
+
+        Receive<RetrievedLobbyList>(message =>
+        {
+            if (message.List.Count > 0)
+            {
+                foreach (var item in message.List)
+                {
+                    StorageActor.Tell(new GetSavedState(item, Myself));
+                }
+            }
+
+        });
+
         Receive<CreateLobby>(message =>
         {
             Console.WriteLine("Creating lobby in lobby supervisor.");
@@ -38,6 +57,8 @@ public class LobbySupervisorActor : ReceiveActor
                 Console.WriteLine($"Created lobby {newLobby}");
                 Console.WriteLine($"Lobby created is {lobbies[message.LobbyName]}");
                 Sender.Tell(new CreateLobbyResponse($"Lobby '{message.LobbyName}' created.", Self));
+                LobbyNames.Add(message.LobbyName);
+                StorageActor.Tell(new StoreLobbyList(LobbyNames));
             }
             else
             {
@@ -63,6 +84,7 @@ public class LobbySupervisorActor : ReceiveActor
                 }
 
                 lobbies.Add(LobbyName, newLobby);
+                LobbyNames.Add(LobbyName);
                 newLobby.Tell(new RehydrateState(message.Stored));
             }
             else
@@ -208,6 +230,8 @@ public class LobbySupervisorActor : ReceiveActor
         Console.WriteLine($"Lobby {lobbyName} died");
         Console.WriteLine($"Lobby {lobbyName} died");
         lobbies.Remove(lobbyName);
+        LobbyNames.Remove(lobbyName);
+
         Console.WriteLine("Getting back the saved state");
         StorageActor.Tell(new GetSavedState(lobbyName, Myself));
     }

@@ -39,6 +39,24 @@ public class RaftService : IRaftService
     _logger.LogInformation($"Game first player: {state.particpatingUsers.First().Value}");
     return state;
   }
+
+  public async Task StoreLobbyList(List<string> List)
+  {
+    string value = JsonSerializer.Serialize(List);
+    _logger.LogInformation($"value is {value} for lobby list");
+
+    var response = await _http.PostAsync("/Gateway/Write" +
+      $"?key=lobbyListThisWillNotBeDuplicated" +
+      $"&value={value}", null);
+    _logger.LogInformation($"Update response for lobby list {response.StatusCode.ToString()}");
+    _logger.LogInformation($"Response content for lobby list: {response.Content}");
+  }
+  public async Task<List<string>> GetLobbyList()
+  {
+    var response = await _http.GetFromJsonAsync<Data>($"/Gateway/StrongGet?key=lobbyListThisWillNotBeDuplicated");
+    var state = JsonSerializer.Deserialize<List<string>>(response.Value);
+    return state;
+  }
 }
 
 public class Data

@@ -74,3 +74,9 @@ public record TestMessage(string Content);
 public record GameExtrasUpdate(int Extras, string LobbyName);
 
 public record UpdateLobby(IActorRef Lobby);
+
+public record StoreLobbyList(List<string> List);
+
+public record RetrievedLobbyList(List<string> List);
+
+public record GetLobbyList();
