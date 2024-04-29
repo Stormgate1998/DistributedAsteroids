@@ -14,7 +14,7 @@
 
 <h1>Welcome @Username</h1>
 
-@if (@gameObject.state == GameState.JOINING)
+@if (@gameObject.state == GameState.JOINING && username == lobbyname)
 {
     <div>Joining</div>
     <div class="my-3">
